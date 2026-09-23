@@ -1,0 +1,38 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+  # react-pdf trae binarios/wasm propios: se despliega como node_module en lugar de bundlearse
+  external_node_modules = ["@react-pdf/renderer"]
+  # pdfkit carga sus fuentes estándar con require dinámico, que el bundler no detecta
+  included_files = ["node_modules/pdfkit/js/standard-fonts/**"]
+
+# SPA: /admin se sirve con index.html y lo resuelve React Router.
+# No se usa un comodín "/*" para no interferir con /api/*, que atienden las functions por su config.path.
+[[redirects]]
+  from = "/admin"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/admin/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
