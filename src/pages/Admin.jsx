@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { NAVY, NAVY_DK, EMERALD, SLATE, CREAM, WHITE } from "../theme.js";
 import { ETAPAS_DATA } from "../data/etapas.js";
 import { getNivel } from "../lib/scoring.js";
-import { supabase } from "../lib/supabase.js";
+import { supabase, authRedirectError } from "../lib/supabase.js";
 
 const NIVELES = ["Inicial", "En desarrollo", "Consolidado", "Avanzado"];
 const PAGE_SIZE = 25;
@@ -61,7 +61,13 @@ function Login() {
       // shouldCreateUser:false → solo pueden entrar usuarios creados a mano en Supabase
       options: { emailRedirectTo: `${window.location.origin}/admin`, shouldCreateUser: false },
     });
-    if (error) { setEstado("error"); setMsg(error.message); return; }
+    if (error) {
+      setEstado("error");
+      setMsg(error.status === 429 || /security purposes|rate limit/i.test(error.message)
+        ? "Pediste un link hace muy poco. Esperá un minuto y volvé a intentar."
+        : error.message);
+      return;
+    }
     setEstado("enviado");
   };
 
@@ -71,10 +77,18 @@ function Login() {
       <div style={{ fontFamily: "'DM Serif Display',serif", fontSize: 24, margin: "6px 0 8px" }}>Ingresar al panel</div>
       {estado === "enviado" ? (
         <p style={{ fontSize: 14, color: "#3A4070", lineHeight: 1.6 }}>
-          Si <strong>{email}</strong> tiene acceso, te llegó un link para entrar. Abrilo desde este mismo navegador.
+          Si <strong>{email}</strong> tiene acceso, te llegó un link para entrar.
+          Usá <strong>el último mail</strong> que recibas: cada pedido invalida los links anteriores.
         </p>
       ) : (
         <form onSubmit={enviar}>
+          {authRedirectError && (
+            <p role="alert" style={{ fontSize: 13, color: "#CC3333", background: "#FFF0F0", borderRadius: 8, padding: "10px 12px", margin: "0 0 14px", lineHeight: 1.5 }}>
+              {authRedirectError.code === "otp_expired"
+                ? "Ese link ya se usó o venció. Pedí uno nuevo y abrí el último mail que te llegue."
+                : `No pudimos iniciar sesión: ${authRedirectError.message || authRedirectError.code}`}
+            </p>
+          )}
           <p style={{ fontSize: 14, color: MUTED, lineHeight: 1.6, marginTop: 0 }}>Te enviamos un link mágico por mail. Sin contraseña.</p>
           <label htmlFor="admin-email" style={{ ...mono(10, NAVY), fontWeight: 700, display: "block", marginBottom: 6 }}>Email</label>
           <input id="admin-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="vos@campuslatina.com" style={{ ...input, background: CREAM }} />
