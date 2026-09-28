@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { NAVY, NAVY_DK, EMERALD, SLATE, CREAM, WHITE } from "../theme.js";
 import { ETAPAS_DATA } from "../data/etapas.js";
 import { getNivel } from "../lib/scoring.js";
-import { supabase, authRedirectError } from "../lib/supabase.js";
+import { supabase, authRedirectError, isRecoveryLink } from "../lib/supabase.js";
 
 const NIVELES = ["Inicial", "En desarrollo", "Consolidado", "Avanzado"];
 const PAGE_SIZE = 25;
@@ -48,57 +48,136 @@ function Shell({ children, email, onLogout }) {
   );
 }
 
-function Login() {
-  const [email, setEmail] = useState("");
-  const [estado, setEstado] = useState("idle"); // idle | enviando | enviado | error
-  const [msg, setMsg] = useState("");
+const alerta = { fontSize: 13, color: "#CC3333", background: "#FFF0F0", borderRadius: 8, padding: "10px 12px", margin: "0 0 14px", lineHeight: 1.5 };
+const ok = { fontSize: 14, color: "#3A4070", background: "rgba(0,200,150,.08)", borderRadius: 8, padding: "10px 12px", margin: "0 0 14px", lineHeight: 1.6 };
+const label = { ...mono(10, NAVY), fontWeight: 700, display: "block", marginBottom: 6 };
 
-  const enviar = async (e) => {
-    e.preventDefault();
-    setEstado("enviando");
-    const { error } = await supabase.auth.signInWithOtp({
-      email: email.trim().toLowerCase(),
-      // shouldCreateUser:false → solo pueden entrar usuarios creados a mano en Supabase
-      options: { emailRedirectTo: `${window.location.origin}/admin`, shouldCreateUser: false },
-    });
-    if (error) {
-      setEstado("error");
-      setMsg(error.status === 429 || /security purposes|rate limit/i.test(error.message)
-        ? "Pediste un link hace muy poco. Esperá un minuto y volvé a intentar."
-        : error.message);
-      return;
-    }
-    setEstado("enviado");
-  };
-
+function Card({ titulo, children }) {
   return (
     <div style={{ maxWidth: 420, margin: "40px auto", background: WHITE, border: `1px solid ${LINE}`, borderRadius: 14, padding: "28px 24px" }}>
       <span style={mono(9, EMERALD)}>Acceso restringido</span>
-      <div style={{ fontFamily: "'DM Serif Display',serif", fontSize: 24, margin: "6px 0 8px" }}>Ingresar al panel</div>
-      {estado === "enviado" ? (
-        <p style={{ fontSize: 14, color: "#3A4070", lineHeight: 1.6 }}>
-          Si <strong>{email}</strong> tiene acceso, te llegó un link para entrar.
-          Usá <strong>el último mail</strong> que recibas: cada pedido invalida los links anteriores.
-        </p>
-      ) : (
-        <form onSubmit={enviar}>
-          {authRedirectError && (
-            <p role="alert" style={{ fontSize: 13, color: "#CC3333", background: "#FFF0F0", borderRadius: 8, padding: "10px 12px", margin: "0 0 14px", lineHeight: 1.5 }}>
-              {authRedirectError.code === "otp_expired"
-                ? "Ese link ya se usó o venció. Pedí uno nuevo y abrí el último mail que te llegue."
-                : `No pudimos iniciar sesión: ${authRedirectError.message || authRedirectError.code}`}
-            </p>
-          )}
-          <p style={{ fontSize: 14, color: MUTED, lineHeight: 1.6, marginTop: 0 }}>Te enviamos un link mágico por mail. Sin contraseña.</p>
-          <label htmlFor="admin-email" style={{ ...mono(10, NAVY), fontWeight: 700, display: "block", marginBottom: 6 }}>Email</label>
-          <input id="admin-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="vos@campuslatina.com" style={{ ...input, background: CREAM }} />
-          {estado === "error" && <p role="alert" style={{ fontSize: 13, color: "#CC3333", margin: "8px 0 0" }}>No pudimos enviar el link: {msg}</p>}
-          <button type="submit" disabled={estado === "enviando"} style={{ ...btn(true), width: "100%", marginTop: 16, opacity: estado === "enviando" ? 0.6 : 1 }}>
-            {estado === "enviando" ? "Enviando…" : "Enviarme el link →"}
-          </button>
-        </form>
-      )}
+      <div style={{ fontFamily: "'DM Serif Display',serif", fontSize: 24, margin: "6px 0 16px" }}>{titulo}</div>
+      {children}
     </div>
+  );
+}
+
+function traducirError(error) {
+  if (error.status === 429 || /security purposes|rate limit/i.test(error.message)) return "Hiciste varios pedidos seguidos. Esperá un minuto y volvé a intentar.";
+  if (/invalid login credentials/i.test(error.message)) return "Email o contraseña incorrectos.";
+  if (/email not confirmed/i.test(error.message)) return "Tu usuario todavía no está confirmado en Supabase.";
+  if (/should be different/i.test(error.message)) return "La contraseña nueva tiene que ser distinta de la anterior.";
+  if (/at least|weak|short/i.test(error.message)) return "La contraseña es muy corta o débil. Usá al menos 8 caracteres.";
+  return error.message;
+}
+
+function Login() {
+  const [modo, setModo] = useState("clave"); // clave | recuperar
+  const [email, setEmail] = useState("");
+  const [clave, setClave] = useState("");
+  const [estado, setEstado] = useState("idle"); // idle | enviando | enviado | error
+  const [msg, setMsg] = useState("");
+
+  const ingresar = async (e) => {
+    e.preventDefault();
+    setEstado("enviando");
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password: clave });
+    if (error) { setEstado("error"); setMsg(traducirError(error)); return; }
+    // onAuthStateChange lleva al panel
+  };
+
+  const recuperar = async (e) => {
+    e.preventDefault();
+    setEstado("enviando");
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), { redirectTo: `${window.location.origin}/admin` });
+    if (error) { setEstado("error"); setMsg(traducirError(error)); return; }
+    setEstado("enviado");
+  };
+
+  const cambiarModo = (m) => { setModo(m); setEstado("idle"); setMsg(""); setClave(""); };
+  const campoEmail = (
+    <>
+      <label htmlFor="admin-email" style={label}>Email</label>
+      <input id="admin-email" type="email" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="vos@campuslatina.com" style={{ ...input, background: CREAM }} />
+    </>
+  );
+  const linkBtn = { background: "none", border: "none", padding: 0, color: NAVY, textDecoration: "underline", cursor: "pointer", fontSize: 13, fontFamily: "'DM Sans',sans-serif", marginTop: 14 };
+
+  if (modo === "recuperar") {
+    return (
+      <Card titulo="Crear o recuperar contraseña">
+        {estado === "enviado" ? (
+          <p style={ok}>Si <strong>{email}</strong> tiene acceso, te llegó un mail con un link para elegir tu contraseña. Usá el último mail que recibas.</p>
+        ) : (
+          <form onSubmit={recuperar}>
+            <p style={{ fontSize: 14, color: MUTED, lineHeight: 1.6, marginTop: 0 }}>Te mandamos un link por mail para que elijas una contraseña nueva.</p>
+            {campoEmail}
+            {estado === "error" && <p role="alert" style={{ ...alerta, margin: "10px 0 0" }}>{msg}</p>}
+            <button type="submit" disabled={estado === "enviando"} style={{ ...btn(true), width: "100%", marginTop: 16, opacity: estado === "enviando" ? 0.6 : 1 }}>
+              {estado === "enviando" ? "Enviando…" : "Enviarme el link →"}
+            </button>
+          </form>
+        )}
+        <button type="button" onClick={() => cambiarModo("clave")} style={linkBtn}>← Volver a ingresar</button>
+      </Card>
+    );
+  }
+
+  return (
+    <Card titulo="Ingresar al panel">
+      {authRedirectError && (
+        <p role="alert" style={alerta}>
+          {authRedirectError.code === "otp_expired"
+            ? "Ese link ya se usó o venció. Pedí uno nuevo y abrí el último mail que te llegue."
+            : `No pudimos iniciar sesión: ${authRedirectError.message || authRedirectError.code}`}
+        </p>
+      )}
+      <form onSubmit={ingresar}>
+        {campoEmail}
+        <label htmlFor="admin-clave" style={{ ...label, marginTop: 14 }}>Contraseña</label>
+        <input id="admin-clave" type="password" autoComplete="current-password" required value={clave} onChange={(e) => setClave(e.target.value)} style={{ ...input, background: CREAM }} />
+        {estado === "error" && <p role="alert" style={{ ...alerta, margin: "10px 0 0" }}>{msg}</p>}
+        <button type="submit" disabled={estado === "enviando"} style={{ ...btn(true), width: "100%", marginTop: 16, opacity: estado === "enviando" ? 0.6 : 1 }}>
+          {estado === "enviando" ? "Ingresando…" : "Ingresar →"}
+        </button>
+      </form>
+      <button type="button" onClick={() => cambiarModo("recuperar")} style={linkBtn}>¿Primera vez u olvidaste tu contraseña?</button>
+    </Card>
+  );
+}
+
+// Se muestra al entrar desde el link de "crear/recuperar contraseña".
+function NuevaClave({ email, onListo }) {
+  const [clave, setClave] = useState("");
+  const [repetir, setRepetir] = useState("");
+  const [estado, setEstado] = useState("idle");
+  const [msg, setMsg] = useState("");
+
+  const guardar = async (e) => {
+    e.preventDefault();
+    if (clave.length < 8) { setEstado("error"); setMsg("Usá al menos 8 caracteres."); return; }
+    if (clave !== repetir) { setEstado("error"); setMsg("Las contraseñas no coinciden."); return; }
+    setEstado("enviando");
+    const { error } = await supabase.auth.updateUser({ password: clave });
+    if (error) { setEstado("error"); setMsg(traducirError(error)); return; }
+    onListo();
+  };
+
+  return (
+    <Card titulo="Elegí tu contraseña">
+      <form onSubmit={guardar}>
+        <p style={{ fontSize: 14, color: MUTED, lineHeight: 1.6, marginTop: 0 }}>Para <strong>{email}</strong>. Mínimo 8 caracteres.</p>
+        <input type="email" autoComplete="username" value={email} readOnly hidden />
+        <label htmlFor="nueva-clave" style={label}>Contraseña nueva</label>
+        <input id="nueva-clave" type="password" autoComplete="new-password" required value={clave} onChange={(e) => setClave(e.target.value)} style={{ ...input, background: CREAM }} />
+        <label htmlFor="repetir-clave" style={{ ...label, marginTop: 14 }}>Repetila</label>
+        <input id="repetir-clave" type="password" autoComplete="new-password" required value={repetir} onChange={(e) => setRepetir(e.target.value)} style={{ ...input, background: CREAM }} />
+        {estado === "error" && <p role="alert" style={{ ...alerta, margin: "10px 0 0" }}>{msg}</p>}
+        <button type="submit" disabled={estado === "enviando"} style={{ ...btn(true), width: "100%", marginTop: 16, opacity: estado === "enviando" ? 0.6 : 1 }}>
+          {estado === "enviando" ? "Guardando…" : "Guardar y entrar →"}
+        </button>
+      </form>
+    </Card>
   );
 }
 
@@ -467,12 +546,21 @@ function Panel({ session }) {
 
 export default function Admin() {
   const session = useSession();
+  const [recuperando, setRecuperando] = useState(isRecoveryLink);
   const logout = () => supabase.auth.signOut();
+
+  // Si el evento llega después de montar (no siempre pasa: el cliente puede procesar el link antes).
+  useEffect(() => {
+    if (!supabase) return;
+    const { data: sub } = supabase.auth.onAuthStateChange((ev) => { if (ev === "PASSWORD_RECOVERY") setRecuperando(true); });
+    return () => sub.subscription.unsubscribe();
+  }, []);
 
   useEffect(() => { document.title = "Panel · Diagnósticos CampusLatina"; }, []);
 
   if (!supabase) return <Shell><p>Falta configurar <code>VITE_SUPABASE_URL</code> y <code>VITE_SUPABASE_ANON_KEY</code>.</p></Shell>;
   if (session === undefined) return <Shell><p style={{ color: MUTED }}>Cargando…</p></Shell>;
   if (!session) return <Shell><Login /></Shell>;
+  if (recuperando) return <Shell><NuevaClave email={session.user.email} onListo={() => setRecuperando(false)} /></Shell>;
   return <Shell email={session.user.email} onLogout={logout}><Panel session={session} /></Shell>;
 }

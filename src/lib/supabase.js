@@ -11,6 +11,8 @@ const hash = new URLSearchParams(typeof window !== "undefined" ? window.location
 export const authRedirectError = hash.get("error")
   ? { code: hash.get("error_code") || hash.get("error"), message: hash.get("error_description") || "" }
   : null;
+// Link de "crear/recuperar contraseña": el panel tiene que pedir la contraseña nueva.
+export const isRecoveryLink = hash.get("type") === "recovery";
 
 export const supabase = url && anonKey ? createClient(url, anonKey) : null;
 
