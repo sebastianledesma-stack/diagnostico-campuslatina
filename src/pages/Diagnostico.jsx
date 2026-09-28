@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { NAVY, NAVY_DK, EMERALD, SLATE, CREAM, ORANGE, WHITE } from "../theme.js";
+import { NAVY, NAVY_DK, EMERALD, SLATE, CREAM, WHITE, EMERALD_TXT, ORANGE_TXT, SLATE_TXT, MUTED, TEXT, LINE, BTN_PRIMARY, BTN_DISABLED, TOUCH, nivelDarkColor } from "../theme.js";
 import { PAISES_LATAM } from "../data/paises.js";
 import { ETAPAS_DATA } from "../data/etapas.js";
 import { FRICCIONES } from "../data/fricciones.js";
@@ -9,38 +9,45 @@ import { guardarDiagnostico } from "../lib/persist.js";
 import { EnvioBanner, ContactoCTA } from "../components/ReportExtras.jsx";
 import { NIVEL_DESC, lecturaDiagnostico } from "../data/textos.js";
 
+const nd=(score)=>nivelDarkColor(getNivel(score).label);
 function isValidEmail(e){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);}
 
-function Mono({children,color=SLATE,size=9}){
+function Mono({children,color=SLATE_TXT,size=11}){
   return <span style={{fontFamily:"'Space Mono',monospace",fontSize:size,letterSpacing:".12em",textTransform:"uppercase",color}}>{children}</span>;
 }
 function NivelPill({score}){
   const n=getNivel(score);
   return <span style={{display:"inline-flex",alignItems:"center",gap:4,background:n.bg,borderRadius:6,padding:"3px 9px"}}>
-    <span style={{fontFamily:"'DM Serif Display',serif",fontSize:15,color:n.color,lineHeight:1}}>{score.toFixed(1)}</span>
-    <span style={{fontFamily:"'Space Mono',monospace",fontSize:8,color:n.color,letterSpacing:".07em",textTransform:"uppercase"}}>{n.label}</span>
+    <span style={{fontFamily:"'DM Serif Display',serif",fontSize:16,color:n.color,lineHeight:1}}>{score.toFixed(1)}</span>
+    <span style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:n.color,letterSpacing:".07em",textTransform:"uppercase"}}>{n.label}</span>
   </span>;
 }
 
 function RadarChart({scores}){
   const ref=useRef(null);
+  const W=320,H=290;
   useEffect(()=>{
     const canvas=ref.current;if(!canvas)return;
+    // Nítido en pantallas de alta densidad
+    const dpr=window.devicePixelRatio||1;
+    canvas.width=W*dpr;canvas.height=H*dpr;
     const ctx=canvas.getContext("2d");
-    const W=280,H=260,cx=140,cy=130,R=95;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    const cx=W/2,cy=H/2,R=95;
     const labels=ETAPAS_DATA.map(e=>e.name);
     const vals=ETAPAS_DATA.map(e=>scores[e.id]||0);
     const N=labels.length;
     const angle=i=>(i/N)*2*Math.PI-Math.PI/2;
     ctx.clearRect(0,0,W,H);
-    for(let lv=1;lv<=5;lv++){ctx.beginPath();for(let i=0;i<N;i++){const r=(lv/5)*R,x=cx+r*Math.cos(angle(i)),y=cy+r*Math.sin(angle(i));i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.closePath();ctx.strokeStyle="rgba(139,148,200,.18)";ctx.lineWidth=1;ctx.stroke();}
-    for(let i=0;i<N;i++){ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+R*Math.cos(angle(i)),cy+R*Math.sin(angle(i)));ctx.strokeStyle="rgba(139,148,200,.2)";ctx.lineWidth=1;ctx.stroke();}
-    ctx.beginPath();vals.forEach((v,i)=>{const r=(v/5)*R,x=cx+r*Math.cos(angle(i)),y=cy+r*Math.sin(angle(i));i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});ctx.closePath();ctx.fillStyle="rgba(0,200,150,.15)";ctx.fill();ctx.strokeStyle=EMERALD;ctx.lineWidth=2.5;ctx.stroke();
-    vals.forEach((v,i)=>{const r=(v/5)*R,x=cx+r*Math.cos(angle(i)),y=cy+r*Math.sin(angle(i));ctx.beginPath();ctx.arc(x,y,4,0,2*Math.PI);ctx.fillStyle=EMERALD;ctx.fill();ctx.strokeStyle=WHITE;ctx.lineWidth=1.5;ctx.stroke();});
-    ctx.font="bold 8px monospace";ctx.textAlign="center";ctx.textBaseline="middle";
-    labels.forEach((label,i)=>{const r=R+17,x=cx+r*Math.cos(angle(i)),y=cy+r*Math.sin(angle(i));ctx.fillStyle="#3A4070";const words=label.split(" ");if(words.length>1){ctx.fillText(words[0],x,y-6);ctx.fillText(words.slice(1).join(" "),x,y+6);}else ctx.fillText(label,x,y);});
+    for(let lv=1;lv<=5;lv++){ctx.beginPath();for(let i=0;i<N;i++){const r=(lv/5)*R,x=cx+r*Math.cos(angle(i)),y=cy+r*Math.sin(angle(i));i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.closePath();ctx.strokeStyle="rgba(90,97,144,.22)";ctx.lineWidth=1;ctx.stroke();}
+    for(let i=0;i<N;i++){ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+R*Math.cos(angle(i)),cy+R*Math.sin(angle(i)));ctx.strokeStyle="rgba(90,97,144,.25)";ctx.lineWidth=1;ctx.stroke();}
+    ctx.beginPath();vals.forEach((v,i)=>{const r=(v/5)*R,x=cx+r*Math.cos(angle(i)),y=cy+r*Math.sin(angle(i));i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});ctx.closePath();ctx.fillStyle="rgba(0,200,150,.2)";ctx.fill();ctx.strokeStyle=EMERALD_TXT;ctx.lineWidth=2.5;ctx.stroke();
+    vals.forEach((v,i)=>{const r=(v/5)*R,x=cx+r*Math.cos(angle(i)),y=cy+r*Math.sin(angle(i));ctx.beginPath();ctx.arc(x,y,4.5,0,2*Math.PI);ctx.fillStyle=EMERALD_TXT;ctx.fill();ctx.strokeStyle=WHITE;ctx.lineWidth=1.5;ctx.stroke();});
+    ctx.font="600 12px 'DM Sans', sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";
+    labels.forEach((label,i)=>{const r=R+22,x=cx+r*Math.cos(angle(i)),y=cy+r*Math.sin(angle(i));ctx.fillStyle=TEXT;const words=label.split(" ");if(words.length>1){ctx.fillText(words[0],x,y-7);ctx.fillText(words.slice(1).join(" "),x,y+7);}else ctx.fillText(label,x,y);});
   },[scores]);
-  return <canvas ref={ref} width={280} height={260}/>;
+  const desc="Radar de puntajes por etapa: "+ETAPAS_DATA.map(e=>`${e.name} ${(scores[e.id]||0).toFixed(1)} de 5`).join(", ")+".";
+  return <canvas ref={ref} role="img" aria-label={desc} style={{width:"100%",maxWidth:W,height:"auto",aspectRatio:`${W} / ${H}`}}/>;
 }
 
 // ── WELCOME ──────────────────────────────────────────────
@@ -49,18 +56,21 @@ function Welcome({onStart}){
     <div style={{minHeight:"100vh",background:NAVY_DK,display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
       <div style={{position:"absolute",inset:0,backgroundImage:`linear-gradient(rgba(139,148,200,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(139,148,200,.06) 1px,transparent 1px)`,backgroundSize:"60px 60px"}}/>
       <div style={{position:"absolute",right:-80,top:"15%",width:400,height:400,borderRadius:"50%",background:"radial-gradient(circle, rgba(0,200,150,.08) 0%, transparent 70%)"}}/>
-      <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"60px 28px 40px",position:"relative",maxWidth:680,margin:"0 auto",width:"100%"}}>
+      <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"40px 20px 40px",position:"relative",maxWidth:680,margin:"0 auto",width:"100%"}}>
         <Mono color={SLATE}>CampusLatina & CIeLatam · Diagnóstico gratuito</Mono>
         <h1 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(28px,5vw,48px)",color:WHITE,lineHeight:1.05,margin:"12px 0 16px"}}>
           ¿Por qué se inscriben<br/><em style={{color:EMERALD}}>menos estudiantes</em><br/>de los esperados?
         </h1>
-        <p style={{fontSize:15,color:"rgba(255,255,255,.6)",lineHeight:1.7,marginBottom:28,maxWidth:480}}>
+        <p style={{fontSize:16,color:"rgba(255,255,255,.6)",lineHeight:1.7,marginBottom:28,maxWidth:480}}>
           En 10 minutos, descubra en qué momento su universidad pierde aspirantes — desde la primera búsqueda en Google hasta el primer día de clases — y qué resolver primero.
         </p>
+        <button onClick={onStart} style={{alignSelf:"flex-start",...BTN_PRIMARY,border:"none",borderRadius:10,minHeight:TOUCH,padding:"0 24px",fontSize:16,fontWeight:700,fontFamily:"'DM Sans',sans-serif",cursor:"pointer",marginBottom:32}}>
+          Descubrir dónde se pierden inscriptos →
+        </button>
 
         {/* WHAT YOU'LL GET */}
         <div style={{background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.08)",borderRadius:12,padding:"20px 20px",marginBottom:24}}>
-          <Mono color={EMERALD} size={8}>Lo que va a saber al terminar</Mono>
+          <Mono color={EMERALD}>Lo que va a saber al terminar</Mono>
           <div style={{marginTop:12,display:"flex",flexDirection:"column",gap:10}}>
             {[
               ["🗺","Dónde se van los aspirantes","Los 7 momentos del recorrido, de un vistazo: dónde el proceso es fuerte y dónde se pierden inscriptos."],
@@ -71,8 +81,8 @@ function Welcome({onStart}){
               <div key={title} style={{display:"flex",gap:12,alignItems:"flex-start"}}>
                 <span style={{fontSize:18,flexShrink:0}}>{icon}</span>
                 <div>
-                  <div style={{fontSize:13,color:WHITE,fontWeight:500}}>{title}</div>
-                  <div style={{fontSize:12,color:"rgba(255,255,255,.5)",lineHeight:1.5}}>{desc}</div>
+                  <div style={{fontSize:15,color:WHITE,fontWeight:500}}>{title}</div>
+                  <div style={{fontSize:14,color:"rgba(255,255,255,.5)",lineHeight:1.5}}>{desc}</div>
                 </div>
               </div>
             ))}
@@ -81,11 +91,11 @@ function Welcome({onStart}){
 
         {/* METHODOLOGY NOTE */}
         <div style={{background:"rgba(0,200,150,.08)",border:"1px solid rgba(0,200,150,.2)",borderRadius:10,padding:"14px 16px",marginBottom:28}}>
-          <Mono color={EMERALD} size={8}>Más publicidad no alcanza</Mono>
-          <p style={{fontSize:13,color:"rgba(255,255,255,.65)",lineHeight:1.65,margin:"6px 0 0"}}>
+          <Mono color={EMERALD}>Más publicidad no alcanza</Mono>
+          <p style={{fontSize:15,color:"rgba(255,255,255,.65)",lineHeight:1.65,margin:"6px 0 0"}}>
             Si el proceso pierde aspirantes en el camino, invertir en campañas es llenar un balde agujereado. Este diagnóstico muestra dónde está el agujero.
           </p>
-          <p style={{fontSize:13,color:"rgba(255,255,255,.65)",lineHeight:1.65,margin:"8px 0 0"}}>
+          <p style={{fontSize:15,color:"rgba(255,255,255,.65)",lineHeight:1.65,margin:"8px 0 0"}}>
             Lo creamos en CampusLatina: ayudamos a inscribir a más de 180.000 estudiantes en Argentina, y ahora llevamos esa experiencia al resto de Latinoamérica.
           </p>
         </div>
@@ -94,12 +104,12 @@ function Welcome({onStart}){
           {[["28","preguntas"],["7","etapas"],["~10 min","duración"]].map(([val,label])=>(
             <div key={label} style={{background:"rgba(255,255,255,.05)",borderRadius:10,padding:"14px 12px",textAlign:"center",border:"1px solid rgba(255,255,255,.08)"}}>
               <div style={{fontFamily:"'DM Serif Display',serif",fontSize:26,color:EMERALD,lineHeight:1}}>{val}</div>
-              <Mono color={SLATE} size={8}>{label}</Mono>
+              <Mono color={SLATE}>{label}</Mono>
             </div>
           ))}
         </div>
-        <button onClick={onStart} style={{alignSelf:"flex-start",background:EMERALD,color:NAVY_DK,border:"none",borderRadius:10,padding:"15px 32px",fontSize:15,fontWeight:700,fontFamily:"'DM Sans',sans-serif",cursor:"pointer"}}>
-          Descubrir dónde se pierden inscriptos →
+        <button onClick={onStart} style={{alignSelf:"flex-start",...BTN_PRIMARY,border:"none",borderRadius:10,minHeight:TOUCH,padding:"0 24px",fontSize:16,fontWeight:700,fontFamily:"'DM Sans',sans-serif",cursor:"pointer"}}>
+          Empezar el diagnóstico →
         </button>
       </div>
     </div>
@@ -115,89 +125,88 @@ function Register({onNext}){
   const handleEmailBlur=()=>setEmailError(form.email.length>0&&!isValidEmail(form.email));
   const set=(k,v)=>{setForm(p=>({...p,[k]:v}));if(k==="email") setEmailError(false);};
 
-  const LabelField=({label,required})=>(
-    <div style={{display:"flex",alignItems:"center",gap:5,marginBottom:6}}>
-      <span style={{fontFamily:"'Space Mono',monospace",fontSize:10,letterSpacing:".1em",textTransform:"uppercase",color:NAVY,fontWeight:700}}>{label}</span>
-      {required&&<span style={{fontFamily:"'Space Mono',monospace",fontSize:10,color:EMERALD,fontWeight:700}}>*</span>}
-    </div>
+  const LabelField=({label,required,htmlFor})=>(
+    <label htmlFor={htmlFor} style={{display:"flex",alignItems:"center",gap:5,marginBottom:6}}>
+      <span style={{fontFamily:"'Space Mono',monospace",fontSize:12,letterSpacing:".1em",textTransform:"uppercase",color:NAVY,fontWeight:700}}>{label}</span>
+      {required&&<span aria-hidden="true" style={{fontFamily:"'Space Mono',monospace",fontSize:12,color:EMERALD_TXT,fontWeight:700}}>*</span>}
+    </label>
   );
+  const campo={display:"block",width:"100%",minHeight:TOUCH,padding:"11px 14px",border:"1.5px solid #8C8A93",borderRadius:8,fontSize:16,fontFamily:"'DM Sans',sans-serif",color:NAVY,background:CREAM};
 
   return(
     <div style={{minHeight:"100vh",background:CREAM,display:"flex",flexDirection:"column"}}>
       <div style={{background:NAVY_DK,padding:"14px 20px"}}>
-        <span style={{fontFamily:"'Space Mono',monospace",fontSize:10,letterSpacing:".12em",textTransform:"uppercase",color:"rgba(255,255,255,.5)"}}>Paso 1 de 2 — Datos institucionales</span>
+        <span style={{fontFamily:"'Space Mono',monospace",fontSize:12,letterSpacing:".12em",textTransform:"uppercase",color:"rgba(255,255,255,.5)"}}>Paso 1 de 2 — Datos institucionales</span>
       </div>
       <div style={{flex:1,maxWidth:540,margin:"0 auto",padding:"36px 20px",width:"100%"}}>
-        <div style={{fontFamily:"'DM Serif Display',serif",fontSize:24,color:NAVY,marginBottom:6}}>Antes de empezar,<br/><em style={{color:EMERALD}}>cuéntenos sobre su institución</em></div>
-        <p style={{fontSize:14,color:"#3A4070",marginBottom:28,lineHeight:1.65}}>Con estos datos armamos su informe personalizado y se lo enviamos en PDF por mail, para compartirlo con su equipo.</p>
+        <div style={{fontFamily:"'DM Serif Display',serif",fontSize:24,color:NAVY,marginBottom:6}}>Antes de empezar,<br/><em style={{color:EMERALD_TXT}}>cuéntenos sobre su institución</em></div>
+        <p style={{fontSize:16,color:"#3A4070",marginBottom:28,lineHeight:1.65}}>Con estos datos armamos su informe personalizado y se lo enviamos en PDF por mail, para compartirlo con su equipo.</p>
 
-        <div style={{background:WHITE,border:"1px solid #D4D2CC",borderRadius:14,padding:"22px 20px",marginBottom:14}}>
+        <div style={{background:WHITE,border:`1px solid ${LINE}`,borderRadius:14,padding:"22px 20px",marginBottom:14}}>
           <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16,paddingBottom:12,borderBottom:"1px solid #E8E6DF"}}>
             <div style={{width:6,height:6,borderRadius:"50%",background:EMERALD,flexShrink:0}}/>
-            <span style={{fontFamily:"'Space Mono',monospace",fontSize:10,letterSpacing:".12em",textTransform:"uppercase",color:NAVY,fontWeight:700}}>Datos de la institución</span>
+            <span style={{fontFamily:"'Space Mono',monospace",fontSize:12,letterSpacing:".12em",textTransform:"uppercase",color:NAVY,fontWeight:700}}>Datos de la institución</span>
           </div>
           <div style={{display:"flex",flexDirection:"column",gap:16}}>
             <div>
-              <LabelField label="Nombre de la universidad o institución" required/>
-              <input value={form.universidad} onChange={e=>set("universidad",e.target.value)} placeholder="Ej: Universidad Nacional de Córdoba"
-                style={{display:"block",width:"100%",padding:"11px 14px",border:"1.5px solid #D4D2CC",borderRadius:8,fontSize:14,fontFamily:"'DM Sans',sans-serif",color:NAVY,background:CREAM,outline:"none"}}/>
+              <LabelField label="Nombre de la universidad o institución" required htmlFor="f-universidad"/>
+              <input id="f-universidad" required autoComplete="organization" value={form.universidad} onChange={e=>set("universidad",e.target.value)} placeholder="Ej: Universidad Nacional de Córdoba" style={campo}/>
             </div>
             <div>
-              <LabelField label="País" required/>
+              <LabelField label="País" required htmlFor="f-pais"/>
               <div style={{position:"relative"}}>
-                <select value={form.pais} onChange={e=>set("pais",e.target.value)}
-                  style={{display:"block",width:"100%",padding:"11px 14px",border:"1.5px solid #D4D2CC",borderRadius:8,fontSize:14,fontFamily:"'DM Sans',sans-serif",color:form.pais?NAVY:"#999",background:CREAM,appearance:"none",cursor:"pointer"}}>
+                <select id="f-pais" required autoComplete="country-name" value={form.pais} onChange={e=>set("pais",e.target.value)}
+                  style={{...campo,color:form.pais?NAVY:MUTED,appearance:"none",cursor:"pointer"}}>
                   <option value="">Seleccione el país</option>
                   {PAISES_LATAM.map(p=><option key={p} value={p} disabled={p.startsWith("—")}>{p}</option>)}
                 </select>
-                <span style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",color:NAVY,pointerEvents:"none",fontSize:12}}>▾</span>
+                <span style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",color:NAVY,pointerEvents:"none",fontSize:14}}>▾</span>
               </div>
             </div>
           </div>
         </div>
 
-        <div style={{background:WHITE,border:"1px solid #D4D2CC",borderRadius:14,padding:"22px 20px",marginBottom:24}}>
+        <div style={{background:WHITE,border:`1px solid ${LINE}`,borderRadius:14,padding:"22px 20px",marginBottom:24}}>
           <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16,paddingBottom:12,borderBottom:"1px solid #E8E6DF"}}>
             <div style={{width:6,height:6,borderRadius:"50%",background:SLATE,flexShrink:0}}/>
-            <span style={{fontFamily:"'Space Mono',monospace",fontSize:10,letterSpacing:".12em",textTransform:"uppercase",color:NAVY,fontWeight:700}}>Datos del directivo que responde</span>
+            <span style={{fontFamily:"'Space Mono',monospace",fontSize:12,letterSpacing:".12em",textTransform:"uppercase",color:NAVY,fontWeight:700}}>Datos del directivo que responde</span>
           </div>
           <div style={{display:"flex",flexDirection:"column",gap:16}}>
             {[
-              {key:"nombre",label:"Nombre completo",required:true,placeholder:"Ej: María González",type:"text"},
-              {key:"cargo",label:"Cargo",required:false,placeholder:"Ej: Vicerrectora de Desarrollo Institucional",type:"text"},
+              {key:"nombre",label:"Nombre completo",required:true,placeholder:"Ej: María González",type:"text",ac:"name"},
+              {key:"cargo",label:"Cargo",required:false,placeholder:"Ej: Vicerrectora de Desarrollo Institucional",type:"text",ac:"organization-title"},
             ].map(f=>(
               <div key={f.key}>
-                <LabelField label={f.label} required={f.required}/>
-                <input type={f.type} value={form[f.key]} onChange={e=>set(f.key,e.target.value)} placeholder={f.placeholder}
-                  style={{display:"block",width:"100%",padding:"11px 14px",border:"1.5px solid #D4D2CC",borderRadius:8,fontSize:14,fontFamily:"'DM Sans',sans-serif",color:NAVY,background:CREAM,outline:"none"}}/>
+                <LabelField label={f.label} required={f.required} htmlFor={`f-${f.key}`}/>
+                <input id={`f-${f.key}`} type={f.type} required={f.required} autoComplete={f.ac} value={form[f.key]} onChange={e=>set(f.key,e.target.value)} placeholder={f.placeholder} style={campo}/>
               </div>
             ))}
             <div>
-              <LabelField label="Correo electrónico" required/>
-              <input type="email" value={form.email} onChange={e=>set("email",e.target.value)} onBlur={handleEmailBlur} placeholder="Ej: maria@universidad.edu"
-                style={{display:"block",width:"100%",padding:"11px 14px",border:`1.5px solid ${emailError?"#CC3333":"#D4D2CC"}`,borderRadius:8,fontSize:14,fontFamily:"'DM Sans',sans-serif",color:NAVY,background:CREAM,outline:"none"}}/>
-              {emailError&&<p style={{fontSize:12,color:"#CC3333",margin:"5px 0 0",fontWeight:500}}>Ingrese un correo electrónico válido (ej: nombre@universidad.edu)</p>}
+              <LabelField label="Correo electrónico" required htmlFor="f-email"/>
+              <input id="f-email" type="email" required autoComplete="email" inputMode="email" value={form.email} onChange={e=>set("email",e.target.value)} onBlur={handleEmailBlur} placeholder="Ej: maria@universidad.edu"
+                aria-invalid={emailError} aria-describedby={emailError?"f-email-error":undefined}
+                style={{...campo,borderColor:emailError?"#CC3333":"#8C8A93"}}/>
+              {emailError&&<p id="f-email-error" role="alert" style={{fontSize:14,color:"#CC3333",margin:"5px 0 0",fontWeight:500}}>Ingrese un correo electrónico válido (ej: nombre@universidad.edu)</p>}
             </div>
             <div>
-              <LabelField label="WhatsApp" required/>
-              <input type="tel" value={form.whatsapp} onChange={e=>set("whatsapp",e.target.value)} placeholder="Ej: +54 9 11 1234-5678"
-                style={{display:"block",width:"100%",padding:"11px 14px",border:"1.5px solid #D4D2CC",borderRadius:8,fontSize:14,fontFamily:"'DM Sans',sans-serif",color:NAVY,background:CREAM,outline:"none"}}/>
-              <p style={{fontSize:12,color:"#6A7090",margin:"5px 0 0"}}>Incluya el código de país (ej: +54 para Argentina, +52 para México)</p>
+              <LabelField label="WhatsApp" required htmlFor="f-whatsapp"/>
+              <input id="f-whatsapp" type="tel" required autoComplete="tel" inputMode="tel" value={form.whatsapp} onChange={e=>set("whatsapp",e.target.value)} placeholder="Ej: +54 9 11 1234-5678"
+                aria-describedby="f-whatsapp-ayuda" style={campo}/>
+              <p id="f-whatsapp-ayuda" style={{fontSize:14,color:MUTED,margin:"5px 0 0"}}>Incluya el código de país (ej: +54 para Argentina, +52 para México)</p>
             </div>
           </div>
         </div>
 
-        <button onClick={()=>valid&&onNext(form)}
-          style={{width:"100%",padding:"16px 0",borderRadius:10,border:"none",
-            background:valid?NAVY:"#8B94B8",
-            color:WHITE,fontSize:15,fontFamily:"'DM Sans',sans-serif",fontWeight:600,
+        <button type="button" onClick={()=>valid&&onNext(form)} disabled={!valid}
+          style={{width:"100%",minHeight:TOUCH+4,borderRadius:10,border:"none",
+            ...(valid?BTN_PRIMARY:BTN_DISABLED),
+            fontSize:16,fontFamily:"'DM Sans',sans-serif",fontWeight:700,
             cursor:valid?"pointer":"not-allowed",
-            opacity:valid?1:0.6,
-            transition:"opacity .2s,background .2s"
+            transition:"background .2s"
           }}>
           Empezar el diagnóstico →
         </button>
-        {!valid&&<p style={{textAlign:"center",fontSize:12,color:"#3A4070",marginTop:10,fontWeight:500}}>Complete los campos obligatorios (*) para continuar</p>}
+        {!valid&&<p style={{textAlign:"center",fontSize:14,color:TEXT,marginTop:10,fontWeight:500}}>Complete los campos obligatorios (*) para continuar</p>}
       </div>
     </div>
   );
@@ -216,7 +225,7 @@ function StageIntro({etapa,onStart,etapasScores}){
             const current=e.num===etapa.num;
             return(
               <div key={e.id} style={{display:"flex",alignItems:"center",gap:4}}>
-                <div style={{width:28,height:28,borderRadius:"50%",background:current?EMERALD:done?"rgba(0,200,150,.3)":"rgba(255,255,255,.1)",border:`2px solid ${current?EMERALD:done?"rgba(0,200,150,.5)":"rgba(255,255,255,.15)"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontFamily:"'Space Mono',monospace",color:current?NAVY_DK:done?"rgba(0,200,150,.8)":"rgba(255,255,255,.3)",fontWeight:700,flexShrink:0}}>
+                <div style={{width:28,height:28,borderRadius:"50%",background:current?EMERALD:done?"rgba(0,200,150,.3)":"rgba(255,255,255,.1)",border:`2px solid ${current?EMERALD:done?"rgba(0,200,150,.5)":"rgba(255,255,255,.15)"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontFamily:"'Space Mono',monospace",color:current?NAVY_DK:done?"rgba(0,200,150,.8)":"rgba(255,255,255,.3)",fontWeight:700,flexShrink:0}}>
                   {done&&!current?"✓":e.num}
                 </div>
                 {e.num<7&&<div style={{width:12,height:2,background:done?"rgba(0,200,150,.4)":"rgba(255,255,255,.08)",borderRadius:1}}/>}
@@ -224,25 +233,30 @@ function StageIntro({etapa,onStart,etapasScores}){
             );
           })}
         </div>
-        <div style={{textAlign:"center"}}><Mono color={SLATE} size={8}>Etapa {etapa.num} de 7</Mono></div>
+        <div style={{textAlign:"center"}}><Mono color={SLATE}>Etapa {etapa.num} de 7</Mono></div>
       </div>
 
-      <div style={{flex:1,maxWidth:580,margin:"0 auto",padding:"40px 24px",width:"100%",display:"flex",flexDirection:"column",justifyContent:"center"}}>
-        <div style={{fontSize:48,textAlign:"center",marginBottom:16}}>{etapa.emoji}</div>
-        <div style={{textAlign:"center",marginBottom:8}}><Mono color={EMERALD} size={8}>Etapa {etapa.num}</Mono></div>
+      <div style={{flex:1,maxWidth:580,margin:"0 auto",padding:"24px 20px 32px",width:"100%",display:"flex",flexDirection:"column",justifyContent:"center"}}>
+        <div aria-hidden="true" style={{fontSize:44,textAlign:"center",marginBottom:12}}>{etapa.emoji}</div>
+        <div style={{textAlign:"center",marginBottom:8}}><Mono color={EMERALD_TXT}>Etapa {etapa.num}</Mono></div>
         <div style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(26px,5vw,36px)",color:NAVY,textAlign:"center",lineHeight:1.15,marginBottom:6}}>{etapa.name}</div>
-        <div style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:EMERALD,textAlign:"center",fontStyle:"italic",marginBottom:20}}>{etapa.pregunta}</div>
+        <div style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:EMERALD_TXT,textAlign:"center",fontStyle:"italic",marginBottom:20}}>{etapa.pregunta}</div>
         <div style={{background:WHITE,border:"1px solid #E8E6DF",borderRadius:14,padding:"20px 22px",marginBottom:24}}>
-          <p style={{fontSize:15,color:NAVY,lineHeight:1.7,margin:0,fontWeight:500}}>{etapa.resumen}</p>
-          <p style={{fontSize:14,color:"#6A7090",lineHeight:1.65,margin:"10px 0 0"}}>{etapa.contexto}</p>
+          <p style={{fontSize:16,color:NAVY,lineHeight:1.7,margin:0,fontWeight:500}}>{etapa.resumen}</p>
+          <p style={{fontSize:16,color:MUTED,lineHeight:1.65,margin:"10px 0 0"}}>{etapa.contexto}</p>
         </div>
-        <div style={{background:CREAM,border:"1px solid #E8E6DF",borderRadius:10,padding:"12px 16px",marginBottom:28,display:"flex",alignItems:"center",gap:10}}>
-          <span style={{fontFamily:"'Space Mono',monospace",fontSize:22,color:SLATE}}>4</span>
-          <p style={{fontSize:13,color:"#6A7090",margin:0,lineHeight:1.5}}>preguntas en esta etapa · cada una con 4 opciones — elija la que mejor describe cómo está su institución <em>hoy</em>, no cómo le gustaría que estuviera.</p>
+        <div style={{background:CREAM,border:"1px solid #E8E6DF",borderRadius:10,padding:"12px 16px",marginBottom:8,display:"flex",alignItems:"center",gap:10}}>
+          <span style={{fontFamily:"'Space Mono',monospace",fontSize:22,color:SLATE_TXT}}>4</span>
+          <p style={{fontSize:15,color:MUTED,margin:0,lineHeight:1.5}}>preguntas en esta etapa · cada una con 4 opciones — elija la que mejor describe cómo está su institución <em>hoy</em>, no cómo le gustaría que estuviera.</p>
         </div>
-        <button onClick={onStart} style={{width:"100%",padding:"15px 0",borderRadius:10,border:"none",background:EMERALD,color:NAVY_DK,fontSize:15,fontFamily:"'DM Sans',sans-serif",fontWeight:700,cursor:"pointer"}}>
-          Empezar etapa {etapa.num} →
-        </button>
+      </div>
+      {/* Barra fija: el botón siempre visible */}
+      <div style={{position:"sticky",bottom:0,zIndex:10,background:"rgba(245,244,240,.96)",backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)",borderTop:`1px solid ${LINE}`}}>
+        <div style={{maxWidth:580,margin:"0 auto",padding:"10px 16px calc(10px + env(safe-area-inset-bottom))"}}>
+          <button type="button" onClick={onStart} style={{width:"100%",minHeight:TOUCH+4,borderRadius:10,border:"none",...BTN_PRIMARY,fontSize:16,fontFamily:"'DM Sans',sans-serif",fontWeight:700,cursor:"pointer"}}>
+            Empezar etapa {etapa.num} →
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -253,75 +267,72 @@ function Question({etapaIdx,preguntaIdx,etapa,pregunta,selected,onSelect,onNext,
   const globalIdx=etapaIdx*4+preguntaIdx;
   const TOTAL=28;
   const pct=Math.round((globalIdx/TOTAL)*100);
+  const qid=`pregunta-${etapa.id}-${preguntaIdx}`;
   return(
     <div style={{minHeight:"100vh",background:CREAM,display:"flex",flexDirection:"column"}}>
-      {/* Header */}
+      {/* Header compacto */}
       <div style={{background:NAVY_DK}}>
-        <div style={{height:3,background:EMERALD,width:`${pct}%`,transition:"width .4s"}}/>
-        {/* Timeline mini */}
-        <div style={{padding:"10px 16px 8px"}}>
-          <div style={{display:"flex",gap:3,justifyContent:"center",marginBottom:8}}>
+        <div role="progressbar" aria-label="Progreso del diagnóstico" aria-valuemin={0} aria-valuemax={TOTAL} aria-valuenow={globalIdx+1} style={{height:4,background:"rgba(255,255,255,.08)"}}>
+          <div style={{height:"100%",background:EMERALD,width:`${pct}%`,transition:"width .4s"}}/>
+        </div>
+        <div style={{maxWidth:640,margin:"0 auto",padding:"10px 16px 12px"}}>
+          <div aria-hidden="true" style={{display:"flex",gap:3,justifyContent:"center",marginBottom:10}}>
             {ETAPAS_DATA.map(e=>{
               const done=e.num<etapa.num||(e.num===etapa.num&&etapasScores&&etapasScores[e.id]>0);
               const current=e.num===etapa.num;
               return(
                 <div key={e.id} style={{display:"flex",alignItems:"center",gap:3}}>
                   <div style={{
-                    width:current?32:22,height:current?32:22,borderRadius:"50%",
+                    width:current?30:22,height:current?30:22,borderRadius:"50%",
                     background:current?EMERALD:done?"rgba(0,200,150,.25)":"rgba(255,255,255,.08)",
-                    border:`2px solid ${current?EMERALD:done?"rgba(0,200,150,.4)":"rgba(255,255,255,.12)"}`,
+                    border:`2px solid ${current?EMERALD:done?"rgba(0,200,150,.45)":"rgba(255,255,255,.18)"}`,
                     display:"flex",alignItems:"center",justifyContent:"center",
-                    fontSize:current?13:10,fontFamily:"'Space Mono',monospace",
-                    color:current?NAVY_DK:done?"rgba(0,200,150,.8)":"rgba(255,255,255,.25)",
+                    fontSize:current?14:11,fontFamily:"'Space Mono',monospace",
+                    color:current?NAVY_DK:done?EMERALD:"rgba(255,255,255,.6)",
                     fontWeight:700,flexShrink:0,transition:"all .3s"
                   }}>
                     {done&&!current?"✓":current?e.emoji:e.num}
                   </div>
-                  {e.num<7&&<div style={{width:8,height:2,background:done?"rgba(0,200,150,.3)":"rgba(255,255,255,.06)",borderRadius:1}}/>}
+                  {e.num<7&&<div style={{width:8,height:2,background:done?"rgba(0,200,150,.35)":"rgba(255,255,255,.1)",borderRadius:1}}/>}
                 </div>
               );
             })}
           </div>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-            <div>
-              <span style={{fontFamily:"'Space Mono',monospace",fontSize:10,color:EMERALD,letterSpacing:".1em",textTransform:"uppercase"}}>{etapa.emoji} {etapa.name}</span>
-              <span style={{fontFamily:"'Space Mono',monospace",fontSize:9,color:SLATE,marginLeft:8}}>· Pregunta {preguntaIdx+1}/4</span>
-            </div>
-            <Mono color={SLATE}>{globalIdx+1}/{TOTAL}</Mono>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",gap:8}}>
+            <span style={{fontFamily:"'Space Mono',monospace",fontSize:12,color:EMERALD,letterSpacing:".08em",textTransform:"uppercase"}}>{etapa.name} · {preguntaIdx+1} de 4</span>
+            <Mono color={SLATE}>{globalIdx+1} / {TOTAL}</Mono>
           </div>
-        </div>
-        {/* Context bar */}
-        <div style={{background:"rgba(255,255,255,.04)",borderTop:"1px solid rgba(255,255,255,.06)",padding:"10px 16px"}}>
-          <p style={{fontSize:12,color:"rgba(255,255,255,.5)",margin:0,lineHeight:1.6}}>{etapa.resumen}</p>
         </div>
       </div>
 
-      {/* Question */}
-      <div style={{flex:1,maxWidth:640,margin:"0 auto",padding:"24px 18px 16px",width:"100%"}}>
-        <div style={{fontFamily:"'DM Serif Display',serif",fontSize:19,color:NAVY,lineHeight:1.4,marginBottom:22}}>{pregunta.texto}</div>
-        <div style={{display:"flex",flexDirection:"column",gap:10}}>
+      {/* Pregunta */}
+      <div style={{flex:1,maxWidth:640,margin:"0 auto",padding:"22px 16px 24px",width:"100%"}}>
+        <h2 id={qid} style={{fontFamily:"'DM Serif Display',serif",fontWeight:400,fontSize:21,color:NAVY,lineHeight:1.35,margin:"0 0 20px"}}>{pregunta.texto}</h2>
+        <div role="radiogroup" aria-labelledby={qid} style={{display:"flex",flexDirection:"column",gap:10}}>
           {pregunta.opciones.map(op=>{
             const isSel=selected===op.letra;
             return(
-              <div key={op.letra} onClick={()=>onSelect(op.letra)}
-                style={{display:"flex",gap:12,alignItems:"flex-start",padding:"13px 15px",background:isSel?"rgba(0,200,150,.09)":WHITE,border:`1.5px solid ${isSel?EMERALD:"#E8E6DF"}`,borderRadius:12,cursor:"pointer",transition:"all .15s"}}>
-                <div style={{width:26,height:26,borderRadius:"50%",border:`2px solid ${isSel?EMERALD:"#C0BEB7"}`,background:isSel?EMERALD:"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontFamily:"'Space Mono',monospace",fontSize:9,color:isSel?WHITE:"#6A7090",fontWeight:700,transition:"all .15s"}}>
+              <button key={op.letra} type="button" role="radio" aria-checked={isSel} onClick={()=>onSelect(op.letra)}
+                style={{display:"flex",gap:14,alignItems:"flex-start",textAlign:"left",width:"100%",padding:"14px 16px",background:isSel?"rgba(0,200,150,.08)":WHITE,border:`2px solid ${isSel?EMERALD:LINE}`,borderRadius:12,cursor:"pointer",transition:"all .15s",fontFamily:"'DM Sans',sans-serif"}}>
+                <span aria-hidden="true" style={{width:32,height:32,borderRadius:"50%",border:`2px solid ${isSel?EMERALD:"#9A98A0"}`,background:isSel?EMERALD:"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontFamily:"'Space Mono',monospace",fontSize:14,color:isSel?NAVY_DK:MUTED,fontWeight:700,transition:"all .15s"}}>
                   {isSel?"✓":op.letra}
-                </div>
-                <p style={{fontSize:13,color:isSel?NAVY:"#3A4070",lineHeight:1.6,margin:0}}>{op.texto}</p>
-              </div>
+                </span>
+                <span style={{fontSize:16,color:isSel?NAVY:TEXT,lineHeight:1.55,paddingTop:4}}>{op.texto}</span>
+              </button>
             );
           })}
         </div>
       </div>
 
-      {/* Nav */}
-      <div style={{maxWidth:640,margin:"0 auto",padding:"10px 18px 28px",width:"100%",display:"flex",gap:10}}>
-        <button onClick={onBack} style={{padding:"11px 20px",borderRadius:8,border:"1px solid #E8E6DF",background:WHITE,color:"#6A7090",cursor:"pointer",fontSize:13,fontFamily:"'DM Sans',sans-serif"}}>← Atrás</button>
-        <button onClick={()=>selected&&onNext()} disabled={!selected}
-          style={{flex:1,padding:"11px 0",borderRadius:8,border:"none",background:selected?NAVY:"#C0BEB7",color:WHITE,cursor:selected?"pointer":"not-allowed",fontSize:14,fontFamily:"'DM Sans',sans-serif",fontWeight:600}}>
-          {isLast?"Ver mi diagnóstico →":"Siguiente →"}
-        </button>
+      {/* Barra de navegación fija: siempre visible */}
+      <div style={{position:"sticky",bottom:0,zIndex:10,background:"rgba(245,244,240,.96)",backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)",borderTop:`1px solid ${LINE}`}}>
+        <div style={{maxWidth:640,margin:"0 auto",padding:"10px 16px calc(10px + env(safe-area-inset-bottom))",display:"flex",gap:10}}>
+          <button type="button" onClick={onBack} style={{minHeight:TOUCH,padding:"0 18px",borderRadius:10,border:`1px solid ${LINE}`,background:WHITE,color:NAVY,cursor:"pointer",fontSize:16,fontFamily:"'DM Sans',sans-serif"}}>← Atrás</button>
+          <button type="button" onClick={()=>selected&&onNext()} disabled={!selected} aria-disabled={!selected}
+            style={{flex:1,minHeight:TOUCH,borderRadius:10,border:"none",...(selected?BTN_PRIMARY:BTN_DISABLED),cursor:selected?"pointer":"not-allowed",fontSize:16,fontFamily:"'DM Sans',sans-serif",fontWeight:700,transition:"background .15s"}}>
+            {!selected?"Elija una opción":isLast?"Ver mi diagnóstico →":"Siguiente →"}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -341,7 +352,7 @@ function Processing(){
         <div style={{height:4,background:"rgba(255,255,255,.1)",borderRadius:2,marginBottom:20,overflow:"hidden"}}>
           <div style={{height:"100%",width:`${pct}%`,background:EMERALD,borderRadius:2,transition:"width .6s"}}/>
         </div>
-        <p style={{fontSize:15,color:"rgba(255,255,255,.6)",lineHeight:1.7}}>{steps[step]}</p>
+        <p style={{fontSize:16,color:"rgba(255,255,255,.6)",lineHeight:1.7}}>{steps[step]}</p>
       </div>
     </div>
   );
@@ -366,7 +377,7 @@ function Report({registroData,respuestas,envio}){
   const projGlobal=parseFloat((ETAPAS_DATA.reduce((s,e)=>s+calcEtapaProjected(e.id),0)/ETAPAS_DATA.length).toFixed(2));
   const totalChecked=Object.values(checked).filter(Boolean).length;
 
-  const TABS=["Resumen","Radar","Etapas","Recomendaciones","Descargar PDF"];
+  const TABS=["Resumen","Radar","Etapas","Acciones","PDF"];
 
   // ── TAB: RESUMEN
   const TabResumen=()=>(
@@ -378,71 +389,71 @@ function Report({registroData,respuestas,envio}){
             <div>
               <Mono color={SLATE}>{new Date().toLocaleDateString("es-AR",{month:"long",year:"numeric"})}</Mono>
               <div style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:WHITE,marginTop:5,lineHeight:1.2}}>{registroData.universidad||"Su institución"}</div>
-              <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:2}}>{registroData.nombre}{registroData.cargo?` · ${registroData.cargo}`:""}{registroData.pais?` · ${registroData.pais}`:""}</div>
+              <div style={{fontSize:13,color:"rgba(255,255,255,.4)",marginTop:2}}>{registroData.nombre}{registroData.cargo?` · ${registroData.cargo}`:""}{registroData.pais?` · ${registroData.pais}`:""}</div>
             </div>
             <div style={{textAlign:"right",flexShrink:0}}>
-              <div style={{fontFamily:"'DM Serif Display',serif",fontSize:40,color:EMERALD,lineHeight:1}}>{globalScore.toFixed(1)}</div>
+              <div style={{fontFamily:"'DM Serif Display',serif",fontSize:40,color:nd(globalScore),lineHeight:1}}>{globalScore.toFixed(1)}</div>
               <Mono color={SLATE}>de 5 · {globalNivel.label}</Mono>
             </div>
           </div>
           <div style={{background:"rgba(255,255,255,.06)",borderRadius:10,padding:"13px 16px",borderLeft:`3px solid ${EMERALD}`,marginBottom:14}}>
-            <Mono color={EMERALD} size={8}>Qué dice su diagnóstico</Mono>
-            <p style={{fontSize:13,color:"rgba(255,255,255,.7)",lineHeight:1.7,margin:"6px 0 0"}}>
+            <Mono color={EMERALD}>Qué dice su diagnóstico</Mono>
+            <p style={{fontSize:15,color:"rgba(255,255,255,.7)",lineHeight:1.7,margin:"6px 0 0"}}>
               <strong style={{color:WHITE,fontWeight:500}}>{globalScore.toFixed(1)} de 5 · {globalNivel.label}: {NIVEL_DESC[globalNivel.label]}.</strong> {lecturaDiagnostico(globalScore,bottleneck)}
             </p>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
             <div style={{background:"rgba(255,255,255,.05)",borderRadius:8,padding:"11px 13px"}}>
-              <Mono color={SLATE} size={8}>Donde mejor funciona</Mono>
-              <div style={{fontSize:13,color:WHITE,fontWeight:500,marginTop:4}}>{best.name}</div>
-              <div style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:EMERALD}}>{best.score.toFixed(1)}/5</div>
+              <Mono color={SLATE}>Donde mejor funciona</Mono>
+              <div style={{fontSize:15,color:WHITE,fontWeight:500,marginTop:4}}>{best.name}</div>
+              <div style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:nd(best.score)}}>{best.score.toFixed(1)}/5</div>
             </div>
-            <div style={{background:"rgba(255,255,255,.05)",borderRadius:8,padding:"11px 13px",borderLeft:`3px solid ${ORANGE}`}}>
-              <Mono color={SLATE} size={8}>Donde más inscriptos se pierden</Mono>
-              <div style={{fontSize:13,color:WHITE,fontWeight:500,marginTop:4}}>{bottleneck.name}</div>
-              <div style={{fontSize:11,color:"rgba(255,255,255,.5)",fontStyle:"italic"}}>{bottleneck.pregunta}</div>
-              <div style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:ORANGE}}>{bottleneck.score.toFixed(1)}/5</div>
+            <div style={{background:"rgba(255,255,255,.05)",borderRadius:8,padding:"11px 13px",borderLeft:`3px solid ${nd(bottleneck.score)}`}}>
+              <Mono color={SLATE}>Donde más inscriptos se pierden</Mono>
+              <div style={{fontSize:15,color:WHITE,fontWeight:500,marginTop:4}}>{bottleneck.name}</div>
+              <div style={{fontSize:13,color:"rgba(255,255,255,.5)",fontStyle:"italic"}}>{bottleneck.pregunta}</div>
+              <div style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:nd(bottleneck.score)}}>{bottleneck.score.toFixed(1)}/5</div>
             </div>
           </div>
         </div>
       </div>
       <div style={{padding:"16px 18px"}}>
-        <Mono color={SLATE}>El recorrido del aspirante — 7 etapas</Mono>
+        <Mono color={SLATE_TXT}>El recorrido del aspirante — 7 etapas</Mono>
         <div style={{marginTop:12,display:"flex",flexDirection:"column",gap:7}}>
           {etapaScores.map((e,i)=>(
             <div key={e.id} style={{display:"flex",alignItems:"center",gap:10}}>
-              <div style={{width:22,height:22,borderRadius:"50%",background:NAVY,color:EMERALD,fontFamily:"'Space Mono',monospace",fontSize:9,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{e.emoji}</div>
+              <div style={{width:22,height:22,borderRadius:"50%",background:NAVY,color:EMERALD,fontFamily:"'Space Mono',monospace",fontSize:11,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{e.emoji}</div>
               <div style={{flex:1}}>
                 <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
-                  <span style={{fontSize:12,color:NAVY,fontWeight:500}}>{e.name}</span>
-                  <span style={{fontFamily:"'Space Mono',monospace",fontSize:9,color:e.nivel.color}}>{e.score.toFixed(1)} · {e.nivel.label}</span>
+                  <span style={{fontSize:14,color:NAVY,fontWeight:500}}>{e.name}</span>
+                  <span style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:e.nivel.color}}>{e.score.toFixed(1)} · {e.nivel.label}</span>
                 </div>
                 <div style={{height:5,background:"#E8E6DF",borderRadius:3}}>
                   <div style={{height:"100%",width:`${(e.score/5)*100}%`,background:e.nivel.color,borderRadius:3}}/>
                 </div>
               </div>
-              {i<etapaScores.length-1&&<span style={{color:SLATE,fontSize:10}}>↓</span>}
+              {i<etapaScores.length-1&&<span style={{color:SLATE_TXT,fontSize:12}}>↓</span>}
             </div>
           ))}
         </div>
         <div style={{marginTop:16,background:CREAM,border:"1px solid #E8E6DF",borderRadius:10,padding:"13px 16px"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             <div>
-              <Mono color={SLATE} size={8}>Puntaje posible con todas las mejoras</Mono>
-              <p style={{fontSize:12,color:"#3A4070",marginTop:3}}>Si se implementan todas las recomendaciones</p>
+              <Mono color={SLATE_TXT}>Puntaje posible con todas las mejoras</Mono>
+              <p style={{fontSize:14,color:"#3A4070",marginTop:3}}>Si se implementan todas las recomendaciones</p>
             </div>
             <div style={{textAlign:"right"}}>
               <div style={{fontFamily:"'DM Serif Display',serif",fontSize:24,color:"#2E7D32"}}>{globalPotential.toFixed(1)}</div>
-              <Mono color="#2E7D32" size={8}>{getNivel(globalPotential).label}</Mono>
+              <Mono color="#2E7D32">{getNivel(globalPotential).label}</Mono>
             </div>
           </div>
           <div style={{marginTop:8,height:5,background:"#E8E6DF",borderRadius:3,position:"relative"}}>
-            <div style={{height:"100%",width:`${(globalScore/5)*100}%`,background:ORANGE,borderRadius:3}}/>
+            <div style={{height:"100%",width:`${(globalScore/5)*100}%`,background:getNivel(globalScore).color,borderRadius:3}}/>
             <div style={{position:"absolute",top:0,left:0,height:"100%",width:`${(globalPotential/5)*100}%`,background:"rgba(0,200,150,.3)",borderRadius:3,border:`1px dashed ${EMERALD}`}}/>
           </div>
           <div style={{display:"flex",justifyContent:"space-between",marginTop:3}}>
-            <span style={{fontSize:11,color:ORANGE}}>Hoy: {globalScore.toFixed(1)}</span>
-            <span style={{fontSize:11,color:EMERALD}}>Potencial: {globalPotential.toFixed(1)} (+{(globalPotential-globalScore).toFixed(1)} pts)</span>
+            <span style={{fontSize:13,color:getNivel(globalScore).color}}>Hoy: {globalScore.toFixed(1)}</span>
+            <span style={{fontSize:13,color:EMERALD_TXT}}>Potencial: {globalPotential.toFixed(1)} (+{(globalPotential-globalScore).toFixed(1)} pts)</span>
           </div>
         </div>
       </div>
@@ -454,26 +465,26 @@ function Report({registroData,respuestas,envio}){
     const matrix=[
       {nivel:"Avanzado",rango:"4.1–5.0",color:"#185FA5",desc:"Sistema automatizado, personalizado y en mejora continua."},
       {nivel:"Consolidado",rango:"3.1–4.0",color:"#2E7D32",desc:"Proceso definido, predecible y con métricas básicas."},
-      {nivel:"En desarrollo",rango:"2.0–3.0",color:ORANGE,desc:"Hay intención pero sin sistema ni consistencia."},
+      {nivel:"En desarrollo",rango:"2.0–3.0",color:ORANGE_TXT,desc:"Hay intención pero sin sistema ni consistencia."},
       {nivel:"Inicial",rango:"1.0–1.9",color:"#CC3333",desc:"Sin proceso. Depende de personas y del azar."},
     ];
     return(
       <div style={{padding:18}}>
-        <Mono color={EMERALD}>Visualización</Mono>
-        <div style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:NAVY,margin:"5px 0 16px"}}>Dónde está <em style={{color:EMERALD}}>cada etapa</em></div>
+        <Mono color={EMERALD_TXT}>Visualización</Mono>
+        <div style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:NAVY,margin:"5px 0 16px"}}>Dónde está <em style={{color:EMERALD_TXT}}>cada etapa</em></div>
         <div style={{background:WHITE,border:"1px solid #E8E6DF",borderRadius:14,padding:18,marginBottom:14,display:"flex",flexDirection:"column",alignItems:"center"}}>
           <RadarChart scores={scores}/>
         </div>
         {/* MATRIX */}
         <div style={{background:WHITE,border:"1px solid #E8E6DF",borderRadius:14,padding:"16px 18px"}}>
-          <Mono color={SLATE} size={8}>Matriz de niveles — dónde está cada etapa</Mono>
+          <Mono color={SLATE_TXT}>Matriz de niveles — dónde está cada etapa</Mono>
           <div style={{marginTop:12,overflowX:"auto"}}>
-            <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+            <table style={{width:"100%",borderCollapse:"collapse",fontSize:14}}>
               <thead>
                 <tr>
-                  <td style={{padding:"6px 8px",borderBottom:"1px solid #E8E6DF",fontFamily:"'Space Mono',monospace",fontSize:8,color:SLATE,textTransform:"uppercase",letterSpacing:".08em",minWidth:90}}>Nivel</td>
-                  <td style={{padding:"6px 8px",borderBottom:"1px solid #E8E6DF",fontFamily:"'Space Mono',monospace",fontSize:8,color:SLATE,textTransform:"uppercase",letterSpacing:".08em",minWidth:60}}>Rango</td>
-                  <td style={{padding:"6px 8px",borderBottom:"1px solid #E8E6DF",fontFamily:"'Space Mono',monospace",fontSize:8,color:SLATE,textTransform:"uppercase",letterSpacing:".08em"}}>Etapas en este nivel</td>
+                  <td style={{padding:"6px 8px",borderBottom:"1px solid #E8E6DF",fontFamily:"'Space Mono',monospace",fontSize:11,color:SLATE_TXT,textTransform:"uppercase",letterSpacing:".08em",minWidth:90}}>Nivel</td>
+                  <td style={{padding:"6px 8px",borderBottom:"1px solid #E8E6DF",fontFamily:"'Space Mono',monospace",fontSize:11,color:SLATE_TXT,textTransform:"uppercase",letterSpacing:".08em",minWidth:60}}>Rango</td>
+                  <td style={{padding:"6px 8px",borderBottom:"1px solid #E8E6DF",fontFamily:"'Space Mono',monospace",fontSize:11,color:SLATE_TXT,textTransform:"uppercase",letterSpacing:".08em"}}>Etapas en este nivel</td>
                 </tr>
               </thead>
               <tbody>
@@ -484,18 +495,18 @@ function Report({registroData,respuestas,envio}){
                       <td style={{padding:"10px 8px"}}>
                         <span style={{display:"inline-flex",alignItems:"center",gap:6}}>
                           <div style={{width:8,height:8,borderRadius:"50%",background:m.color,flexShrink:0}}/>
-                          <span style={{fontSize:12,fontWeight:600,color:m.color}}>{m.nivel}</span>
+                          <span style={{fontSize:14,fontWeight:600,color:m.color}}>{m.nivel}</span>
                         </span>
                       </td>
-                      <td style={{padding:"10px 8px",fontFamily:"'Space Mono',monospace",fontSize:9,color:"#6A7090"}}>{m.rango}</td>
+                      <td style={{padding:"10px 6px",fontFamily:"'Space Mono',monospace",fontSize:12,color:MUTED,whiteSpace:"nowrap"}}>{m.rango}</td>
                       <td style={{padding:"10px 8px"}}>
                         {etapasEnNivel.length===0
-                          ?<span style={{fontSize:12,color:"#C0BEB7",fontStyle:"italic"}}>—</span>
+                          ?<span style={{fontSize:14,color:MUTED,fontStyle:"italic"}}>—</span>
                           :<div style={{display:"flex",flexWrap:"wrap",gap:4}}>
                             {etapasEnNivel.map(e=>(
                               <span key={e.id} style={{display:"inline-flex",alignItems:"center",gap:3,background:m.color+"15",borderRadius:5,padding:"2px 7px"}}>
-                                <span style={{fontSize:11}}>{e.emoji}</span>
-                                <span style={{fontSize:11,color:m.color,fontWeight:500}}>{e.name} {e.score.toFixed(1)}</span>
+                                <span style={{fontSize:13}}>{e.emoji}</span>
+                                <span style={{fontSize:13,color:m.color,fontWeight:500}}>{e.name} {e.score.toFixed(1)}</span>
                               </span>
                             ))}
                           </div>
@@ -517,46 +528,47 @@ function Report({registroData,respuestas,envio}){
     const [open,setOpen]=useState(null);
     return(
       <div style={{padding:18}}>
-        <Mono color={EMERALD}>Diagnóstico detallado</Mono>
-        <div style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:NAVY,margin:"5px 0 6px"}}>Las 7 <em style={{color:EMERALD}}>etapas</em></div>
-        <p style={{fontSize:13,color:"#6A7090",marginBottom:14,lineHeight:1.6}}>Un cuello de botella en cualquier etapa afecta todo lo que viene después.</p>
+        <Mono color={EMERALD_TXT}>Diagnóstico detallado</Mono>
+        <div style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:NAVY,margin:"5px 0 6px"}}>Las 7 <em style={{color:EMERALD_TXT}}>etapas</em></div>
+        <p style={{fontSize:15,color:MUTED,marginBottom:14,lineHeight:1.6}}>Un cuello de botella en cualquier etapa afecta todo lo que viene después.</p>
         {etapaScores.map((e,i)=>{
           const isOpen=open===i;
           const fricc=FRICCIONES[e.id]||[];
           return(
             <div key={e.id} style={{background:WHITE,border:`1px solid ${isOpen?e.nivel.color+"66":"#E8E6DF"}`,borderRadius:12,marginBottom:10,overflow:"hidden"}}>
-              <div style={{display:"flex",alignItems:"center",gap:12,padding:"13px 16px",cursor:"pointer"}} onClick={()=>setOpen(isOpen?null:i)}>
+              <button type="button" aria-expanded={isOpen} aria-controls={`etapa-${e.id}`} onClick={()=>setOpen(isOpen?null:i)}
+                style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",cursor:"pointer",width:"100%",minHeight:TOUCH+16,background:"none",border:"none",textAlign:"left",fontFamily:"'DM Sans',sans-serif"}}>
                 <div style={{width:32,height:32,borderRadius:"50%",background:e.nivel.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>{e.emoji}</div>
                 <div style={{flex:1}}>
-                  <div style={{fontSize:14,fontWeight:500,color:NAVY}}>{e.name} <span style={{fontWeight:400,color:"#6A7090",fontStyle:"italic"}}>· {e.pregunta}</span></div>
+                  <div style={{fontSize:16,fontWeight:500,color:NAVY}}>{e.name} <span style={{fontWeight:400,color:MUTED,fontStyle:"italic"}}>· {e.pregunta}</span></div>
                   <div style={{display:"flex",alignItems:"center",gap:8,marginTop:2}}>
-                    <div style={{height:4,width:48,background:"#E8E6DF",borderRadius:2}}>
+                    <div style={{height:5,width:56,background:LINE,borderRadius:3}}>
                       <div style={{height:"100%",width:`${(e.score/5)*100}%`,background:e.nivel.color,borderRadius:2}}/>
                     </div>
-                    <Mono color={e.nivel.color} size={9}>{e.score.toFixed(1)} · {e.nivel.label}</Mono>
+                    <Mono color={e.nivel.color}>{e.score.toFixed(1)} · {e.nivel.label}</Mono>
                   </div>
                 </div>
-                <span style={{color:"#6A7090",transform:isOpen?"rotate(180deg)":"none",transition:"transform .2s"}}>▾</span>
-              </div>
+                <span aria-hidden="true" style={{color:MUTED,fontSize:18,transform:isOpen?"rotate(180deg)":"none",transition:"transform .2s"}}>▾</span>
+              </button>
               {isOpen&&(
-                <div style={{padding:"0 16px 16px",borderTop:`1px solid ${e.nivel.color}22`}}>
-                  <p style={{fontSize:13,color:"#3A4070",lineHeight:1.7,paddingTop:12,marginBottom:14}}>{e.resumen} {e.contexto}</p>
-                  <Mono color={SLATE} size={8}>Dónde se pierde valor</Mono>
+                <div id={`etapa-${e.id}`} style={{padding:"0 16px 16px",borderTop:`1px solid ${e.nivel.color}22`}}>
+                  <p style={{fontSize:15,color:"#3A4070",lineHeight:1.7,paddingTop:12,marginBottom:14}}>{e.resumen} {e.contexto}</p>
+                  <Mono color={SLATE_TXT}>Dónde se pierde valor</Mono>
                   <div style={{marginTop:10,display:"flex",flexDirection:"column",gap:8}}>
                     {fricc.map((f,fi)=>(
                       <div key={fi} style={{display:"flex",gap:10,padding:"10px 13px",background:CREAM,borderRadius:8}}>
                         <span style={{fontSize:16,flexShrink:0}}>{f.icon}</span>
-                        <p style={{fontSize:13,color:"#3A4070",lineHeight:1.55,margin:0}}>{f.texto}</p>
+                        <p style={{fontSize:15,color:"#3A4070",lineHeight:1.55,margin:0}}>{f.texto}</p>
                       </div>
                     ))}
                   </div>
                   <div style={{marginTop:14,padding:"10px 14px",background:e.nivel.bg,borderRadius:8,borderLeft:`3px solid ${e.nivel.color}`,display:"flex",justifyContent:"space-between",flexWrap:"wrap",gap:8}}>
                     <div>
-                      <Mono color={e.nivel.color} size={8}>Puntaje actual</Mono>
+                      <Mono color={e.nivel.color}>Puntaje actual</Mono>
                       <div style={{fontFamily:"'DM Serif Display',serif",fontSize:18,color:e.nivel.color,marginTop:2}}>{e.score.toFixed(1)}/5 · {e.nivel.label}</div>
                     </div>
                     <div style={{textAlign:"right"}}>
-                      <Mono color="#2E7D32" size={8}>Potencial alcanzable</Mono>
+                      <Mono color="#2E7D32">Potencial alcanzable</Mono>
                       <div style={{fontFamily:"'DM Serif Display',serif",fontSize:18,color:"#2E7D32",marginTop:2}}>{SCORE_POTENTIALS[e.id]}/5 · {getNivel(SCORE_POTENTIALS[e.id]).label}</div>
                     </div>
                   </div>
@@ -572,30 +584,30 @@ function Report({registroData,respuestas,envio}){
   // ── TAB: RECOMENDACIONES
   const TabRecs=()=>(
     <div style={{padding:18}}>
-      <Mono color={EMERALD}>Plan de acción</Mono>
-      <div style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:NAVY,margin:"5px 0 6px"}}>Para <em style={{color:EMERALD}}>subir de nivel</em></div>
-      <p style={{fontSize:13,color:"#6A7090",marginBottom:14,lineHeight:1.6}}>Marque las acciones que su equipo puede implementar y vea cómo sube el puntaje en tiempo real.</p>
+      <Mono color={EMERALD_TXT}>Plan de acción</Mono>
+      <div style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:NAVY,margin:"5px 0 6px"}}>Para <em style={{color:EMERALD_TXT}}>subir de nivel</em></div>
+      <p style={{fontSize:15,color:MUTED,marginBottom:14,lineHeight:1.6}}>Marque las acciones que su equipo puede implementar y vea cómo sube el puntaje en tiempo real.</p>
 
       <div style={{background:NAVY,borderRadius:14,padding:"16px 18px",marginBottom:16}}>
-        <Mono color={SLATE} size={8}>Puntaje proyectado</Mono>
+        <Mono color={SLATE}>Puntaje proyectado</Mono>
         <div style={{display:"flex",alignItems:"center",gap:10,marginTop:8,flexWrap:"wrap"}}>
-          <div style={{fontFamily:"'DM Serif Display',serif",fontSize:36,color:ORANGE,lineHeight:1}}>{globalScore.toFixed(1)}</div>
+          <div style={{fontFamily:"'DM Serif Display',serif",fontSize:36,color:nd(globalScore),lineHeight:1}}>{globalScore.toFixed(1)}</div>
           <span style={{color:SLATE,fontSize:18}}>→</span>
-          <div style={{fontFamily:"'DM Serif Display',serif",fontSize:36,color:projGlobal>globalScore?EMERALD:ORANGE,lineHeight:1}}>{projGlobal.toFixed(1)}</div>
+          <div style={{fontFamily:"'DM Serif Display',serif",fontSize:36,color:nd(projGlobal),lineHeight:1}}>{projGlobal.toFixed(1)}</div>
           <div>
             <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-              <span style={{fontFamily:"'Space Mono',monospace",fontSize:8,color:ORANGE,background:"rgba(232,131,58,.15)",padding:"2px 8px",borderRadius:8,letterSpacing:".07em",textTransform:"uppercase"}}>{globalNivel.label}</span>
+              <span style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:nd(globalScore),background:"rgba(255,255,255,.08)",padding:"2px 8px",borderRadius:8,letterSpacing:".07em",textTransform:"uppercase"}}>{globalNivel.label}</span>
               {projGlobal>globalScore&&<>
-                <span style={{color:SLATE,fontSize:10}}>→</span>
-                <span style={{fontFamily:"'Space Mono',monospace",fontSize:8,color:EMERALD,background:"rgba(0,200,150,.15)",padding:"2px 8px",borderRadius:8,letterSpacing:".07em",textTransform:"uppercase"}}>{getNivel(projGlobal).label}</span>
+                <span style={{color:SLATE,fontSize:12}}>→</span>
+                <span style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:nd(projGlobal),background:"rgba(255,255,255,.08)",padding:"2px 8px",borderRadius:8,letterSpacing:".07em",textTransform:"uppercase"}}>{getNivel(projGlobal).label}</span>
               </>}
             </div>
-            <Mono color={EMERALD} size={8}>{totalChecked} acción{totalChecked!==1?"es":""} seleccionada{totalChecked!==1?"s":""}{projGlobal>globalScore?` · +${(projGlobal-globalScore).toFixed(2)} pts`:""}</Mono>
+            <Mono color={EMERALD}>{totalChecked} acción{totalChecked!==1?"es":""} seleccionada{totalChecked!==1?"s":""}{projGlobal>globalScore?` · +${(projGlobal-globalScore).toFixed(2)} pts`:""}</Mono>
           </div>
         </div>
         <div style={{marginTop:12,height:7,background:"rgba(255,255,255,.1)",borderRadius:4,overflow:"hidden"}}>
           <div style={{height:"100%",display:"flex"}}>
-            <div style={{width:`${(globalScore/5)*100}%`,background:ORANGE}}/>
+            <div style={{width:`${(globalScore/5)*100}%`,background:nd(globalScore)}}/>
             {projGlobal>globalScore&&<div style={{width:`${((projGlobal-globalScore)/5)*100}%`,background:EMERALD}}/>}
           </div>
         </div>
@@ -610,11 +622,11 @@ function Report({registroData,respuestas,envio}){
             <div style={{padding:"12px 15px",borderBottom:"1px solid #F0EEEA",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8}}>
               <div style={{display:"flex",alignItems:"center",gap:8}}>
                 <span style={{fontSize:16}}>{e.emoji}</span>
-                <span style={{fontSize:14,fontWeight:500,color:NAVY}}>{e.name}</span>
+                <span style={{fontSize:16,fontWeight:500,color:NAVY}}>{e.name}</span>
               </div>
               <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
                 <NivelPill score={e.score}/>
-                {changed&&<><span style={{color:EMERALD,fontSize:12}}>→</span><NivelPill score={newScore}/><span style={{fontFamily:"'Space Mono',monospace",fontSize:8,color:EMERALD,background:"rgba(0,200,150,.1)",padding:"2px 6px",borderRadius:6}}>+{(newScore-e.score).toFixed(2)}</span></>}
+                {changed&&<><span style={{color:EMERALD_TXT,fontSize:14}}>→</span><NivelPill score={newScore}/><span style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:EMERALD_TXT,background:"rgba(0,200,150,.1)",padding:"2px 6px",borderRadius:6}}>+{(newScore-e.score).toFixed(2)}</span></>}
               </div>
             </div>
             <div style={{padding:"10px 15px",display:"flex",flexDirection:"column",gap:8}}>
@@ -622,16 +634,16 @@ function Report({registroData,respuestas,envio}){
                 const key=`${e.id}-${ri}`;
                 const isCh=checked[key];
                 return(
-                  <div key={ri} onClick={()=>setChecked(prev=>({...prev,[key]:!prev[key]}))}
-                    style={{display:"flex",gap:10,alignItems:"flex-start",padding:"10px 13px",background:isCh?"rgba(0,200,150,.08)":CREAM,borderRadius:8,cursor:"pointer",border:`1px solid ${isCh?EMERALD+"55":"transparent"}`,transition:"all .15s"}}>
-                    <div style={{width:20,height:20,borderRadius:5,border:`2px solid ${isCh?EMERALD:"#C0BEB7"}`,background:isCh?EMERALD:"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:1,transition:"all .15s"}}>
-                      {isCh&&<span style={{color:WHITE,fontSize:10}}>✓</span>}
-                    </div>
-                    <div style={{flex:1}}>
-                      <p style={{fontSize:13,color:"#3A4070",lineHeight:1.55,margin:0}}>{r.texto}</p>
-                      <p style={{fontSize:10,color:isCh?EMERALD:"#6A7090",fontFamily:"'Space Mono',monospace",margin:"4px 0 0"}}>+{r.impacto.toFixed(1)} pts · {r.accion}</p>
-                    </div>
-                  </div>
+                  <button key={ri} type="button" role="checkbox" aria-checked={!!isCh} onClick={()=>setChecked(prev=>({...prev,[key]:!prev[key]}))}
+                    style={{display:"flex",gap:12,alignItems:"flex-start",width:"100%",textAlign:"left",padding:"12px 14px",background:isCh?"rgba(0,200,150,.08)":CREAM,borderRadius:10,cursor:"pointer",border:`2px solid ${isCh?EMERALD:"transparent"}`,transition:"all .15s",fontFamily:"'DM Sans',sans-serif"}}>
+                    <span aria-hidden="true" style={{width:24,height:24,borderRadius:6,border:`2px solid ${isCh?EMERALD:"#8C8A93"}`,background:isCh?EMERALD:WHITE,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:1,transition:"all .15s"}}>
+                      {isCh&&<span style={{color:NAVY_DK,fontSize:14,fontWeight:700}}>✓</span>}
+                    </span>
+                    <span style={{flex:1}}>
+                      <span style={{display:"block",fontSize:15,color:TEXT,lineHeight:1.55}}>{r.texto}</span>
+                      <span style={{display:"block",fontSize:12,color:isCh?EMERALD_TXT:MUTED,fontFamily:"'Space Mono',monospace",marginTop:4}}>+{r.impacto.toFixed(1)} pts · {r.accion}</span>
+                    </span>
+                  </button>
                 );
               })}
             </div>
@@ -672,54 +684,54 @@ function Report({registroData,respuestas,envio}){
 
     return(
       <div style={{padding:18}}>
-        <Mono color={EMERALD}>Su diagnóstico</Mono>
-        <div style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:NAVY,margin:"5px 0 16px"}}>Descargue el <em style={{color:EMERALD}}>informe completo</em></div>
+        <Mono color={EMERALD_TXT}>Su diagnóstico</Mono>
+        <div style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:NAVY,margin:"5px 0 16px"}}>Descargue el <em style={{color:EMERALD_TXT}}>informe completo</em></div>
 
         <div style={{background:NAVY,borderRadius:14,padding:"20px 18px",marginBottom:14}}>
           <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",alignItems:"center",gap:8}}>
             <div style={{textAlign:"center"}}>
-              <Mono color={SLATE} size={8}>Hoy</Mono>
-              <div style={{fontFamily:"'DM Serif Display',serif",fontSize:40,color:ORANGE,lineHeight:1,marginTop:4}}>{globalScore.toFixed(1)}</div>
-              <Mono color={ORANGE} size={8}>{globalNivel.label}</Mono>
+              <Mono color={SLATE}>Hoy</Mono>
+              <div style={{fontFamily:"'DM Serif Display',serif",fontSize:40,color:nd(globalScore),lineHeight:1,marginTop:4}}>{globalScore.toFixed(1)}</div>
+              <Mono color={nd(globalScore)}>{globalNivel.label}</Mono>
             </div>
             <span style={{color:SLATE,fontSize:20}}>→</span>
             <div style={{textAlign:"center"}}>
-              <Mono color={EMERALD} size={8}>Potencial</Mono>
+              <Mono color={EMERALD}>Potencial</Mono>
               <div style={{fontFamily:"'DM Serif Display',serif",fontSize:40,color:EMERALD,lineHeight:1,marginTop:4}}>{globalPotential.toFixed(1)}</div>
-              <Mono color={EMERALD} size={8}>{getNivel(globalPotential).label}</Mono>
+              <Mono color={EMERALD}>{getNivel(globalPotential).label}</Mono>
             </div>
           </div>
-          <p style={{fontSize:13,color:"rgba(255,255,255,.55)",textAlign:"center",marginTop:12,lineHeight:1.6}}>
+          <p style={{fontSize:15,color:"rgba(255,255,255,.55)",textAlign:"center",marginTop:12,lineHeight:1.6}}>
             Implementando todas las recomendaciones se pueden sumar <span style={{color:EMERALD}}>+{(globalPotential-globalScore).toFixed(1)} puntos</span>.
           </p>
           <div style={{marginTop:10,height:6,background:"rgba(255,255,255,.1)",borderRadius:3,overflow:"hidden"}}>
             <div style={{height:"100%",display:"flex"}}>
-              <div style={{width:`${(globalScore/5)*100}%`,background:ORANGE}}/>
+              <div style={{width:`${(globalScore/5)*100}%`,background:nd(globalScore)}}/>
               <div style={{width:`${((globalPotential-globalScore)/5)*100}%`,background:"rgba(0,200,150,.5)"}}/>
             </div>
           </div>
         </div>
 
         <div style={{background:WHITE,border:"1px solid #E8E6DF",borderRadius:14,padding:"16px 18px",marginBottom:14}}>
-          <Mono color={SLATE} size={8}>Mejora proyectada por etapa</Mono>
+          <Mono color={SLATE_TXT}>Mejora proyectada por etapa</Mono>
           <div style={{marginTop:12,display:"flex",flexDirection:"column",gap:7}}>
             {[...etapaScores].sort((a,b)=>(SCORE_POTENTIALS[b.id]-b.score)-(SCORE_POTENTIALS[a.id]-a.score)).map(e=>{
               const gain=(SCORE_POTENTIALS[e.id]-e.score).toFixed(1);
               const n=getNivel(e.score);
               return(
                 <div key={e.id} style={{display:"flex",alignItems:"center",gap:8}}>
-                  <span style={{fontSize:14,flexShrink:0}}>{e.emoji}</span>
+                  <span style={{fontSize:16,flexShrink:0}}>{e.emoji}</span>
                   <div style={{flex:1}}>
                     <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
-                      <span style={{fontSize:12,color:NAVY}}>{e.name}</span>
-                      <span style={{fontFamily:"'Space Mono',monospace",fontSize:9,color:EMERALD}}>+{gain} pts</span>
+                      <span style={{fontSize:14,color:NAVY}}>{e.name}</span>
+                      <span style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:EMERALD_TXT}}>+{gain} pts</span>
                     </div>
                     <div style={{height:5,background:"#E8E6DF",borderRadius:3,position:"relative"}}>
                       <div style={{height:"100%",width:`${(e.score/5)*100}%`,background:n.color,borderRadius:3}}/>
                       <div style={{position:"absolute",top:0,left:`${(e.score/5)*100}%`,height:"100%",width:`${((SCORE_POTENTIALS[e.id]-e.score)/5)*100}%`,background:EMERALD+"99",borderRadius:"0 3px 3px 0"}}/>
                     </div>
                   </div>
-                  <span style={{fontFamily:"'Space Mono',monospace",fontSize:9,color:EMERALD,flexShrink:0,width:28}}>{SCORE_POTENTIALS[e.id]}</span>
+                  <span style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:EMERALD_TXT,flexShrink:0,width:28}}>{SCORE_POTENTIALS[e.id]}</span>
                 </div>
               );
             })}
@@ -727,9 +739,9 @@ function Report({registroData,respuestas,envio}){
         </div>
 
         <div style={{background:WHITE,border:"1px solid #E8E6DF",borderRadius:14,padding:"20px 18px",marginBottom:14}}>
-          <Mono color={SLATE} size={8}>Informe completo en PDF</Mono>
-          <p style={{fontSize:14,color:"#3A4070",marginTop:8,marginBottom:6,lineHeight:1.65}}>El PDF incluye el diagnóstico completo de cada etapa, las fricciones detectadas, el plan de acción y el puntaje potencial. Listo para imprimir o compartir con el equipo directivo.</p>
-          <div style={{fontSize:12,color:"#6A7090",marginBottom:18,display:"flex",gap:16,flexWrap:"wrap"}}>
+          <Mono color={SLATE_TXT}>Informe completo en PDF</Mono>
+          <p style={{fontSize:16,color:"#3A4070",marginTop:8,marginBottom:6,lineHeight:1.65}}>El PDF incluye el diagnóstico completo de cada etapa, las fricciones detectadas, el plan de acción y el puntaje potencial. Listo para imprimir o compartir con el equipo directivo.</p>
+          <div style={{fontSize:14,color:MUTED,marginBottom:18,display:"flex",gap:16,flexWrap:"wrap"}}>
             <span>📄 7 etapas analizadas</span>
             <span>🎯 Recomendaciones por etapa</span>
             <span>🖨 Listo para imprimir</span>
@@ -737,44 +749,46 @@ function Report({registroData,respuestas,envio}){
           {done?(
             <div style={{textAlign:"center",padding:"16px 0",background:"rgba(0,200,150,.06)",borderRadius:10,border:"1px solid rgba(0,200,150,.2)"}}>
               <div style={{fontSize:24,marginBottom:6}}>✅</div>
-              <div style={{fontSize:14,color:EMERALD,fontWeight:600,marginBottom:4}}>¡PDF generado!</div>
-              <p style={{fontSize:13,color:"#3A4070"}}>Se abrió en una nueva pestaña listo para imprimir o guardar.</p>
-              <button onClick={()=>setDone(false)} style={{marginTop:12,padding:"8px 18px",borderRadius:8,border:"1px solid #E8E6DF",background:WHITE,color:"#6A7090",cursor:"pointer",fontSize:12,fontFamily:"'DM Sans',sans-serif"}}>Generar de nuevo</button>
+              <div style={{fontSize:16,color:EMERALD_TXT,fontWeight:600,marginBottom:4}}>¡PDF generado!</div>
+              <p style={{fontSize:15,color:"#3A4070"}}>Se abrió en una nueva pestaña listo para imprimir o guardar.</p>
+              <button type="button" onClick={()=>setDone(false)} style={{marginTop:12,minHeight:TOUCH,padding:"0 18px",borderRadius:10,border:`1px solid ${LINE}`,background:WHITE,color:NAVY,cursor:"pointer",fontSize:15,fontFamily:"'DM Sans',sans-serif"}}>Generar de nuevo</button>
             </div>
           ):(
             <button onClick={generatePDF} disabled={generating}
-              style={{width:"100%",padding:"16px 0",borderRadius:10,border:"none",cursor:generating?"not-allowed":"pointer",background:generating?"#C0BEB7":NAVY,color:WHITE,fontSize:15,fontFamily:"'DM Sans',sans-serif",fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",gap:10}}>
+              style={{width:"100%",minHeight:TOUCH+4,borderRadius:10,border:"none",cursor:generating?"not-allowed":"pointer",...(generating?BTN_DISABLED:BTN_PRIMARY),fontSize:16,fontFamily:"'DM Sans',sans-serif",fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",gap:10}}>
               {generating?<><span>⏳</span> Generando PDF...</>:<><span>📥</span> Descargar informe en PDF</>}
             </button>
           )}
         </div>
 
         <div style={{background:CREAM,border:"1px solid #E8E6DF",borderRadius:10,padding:"14px 16px",textAlign:"center",marginBottom:14}}>
-          <Mono color={SLATE} size={8}>Benchmark regional — próximamente</Mono>
-          <p style={{fontSize:13,color:"#3A4070",lineHeight:1.65,marginTop:6}}>Cuando 10 o más universidades completen el diagnóstico, podrá ver cómo se compara su proceso con el de otras instituciones de LATAM.</p>
+          <Mono color={SLATE_TXT}>Benchmark regional — próximamente</Mono>
+          <p style={{fontSize:15,color:"#3A4070",lineHeight:1.65,marginTop:6}}>Cuando 10 o más universidades completen el diagnóstico, podrá ver cómo se compara su proceso con el de otras instituciones de LATAM.</p>
         </div>
-        <div style={{textAlign:"center",paddingTop:4}}><Mono color="#6A7090">CampusLatina × CIeLatam × Salesforce · v1.0</Mono></div>
+        <div style={{textAlign:"center",paddingTop:4}}><Mono color={MUTED}>CampusLatina × CIeLatam × Salesforce · v1.0</Mono></div>
       </div>
     );
   };
 
   const TAB_COMPONENTS=[TabResumen,TabRadar,TabEtapas,TabRecs,TabRecibir];
   const CurrentTab=TAB_COMPONENTS[tab];
+  const irATab=(i)=>{setTab(i);window.scrollTo(0,0);};
 
   return(
     <div style={{fontFamily:"'DM Sans',sans-serif",background:CREAM,minHeight:"100vh"}}>
-      <div style={{position:"sticky",top:0,zIndex:100,background:NAVY_DK,display:"flex",padding:"0 8px",overflowX:"auto"}}>
+      <div role="tablist" aria-label="Secciones del informe" style={{position:"sticky",top:0,zIndex:100,background:NAVY_DK,display:"flex",justifyContent:"center",padding:"0 4px"}}>
         {TABS.map((t,i)=>(
-          <button key={t} onClick={()=>setTab(i)} style={{fontFamily:"'Space Mono',monospace",fontSize:9,letterSpacing:".1em",textTransform:"uppercase",color:tab===i?EMERALD:"rgba(255,255,255,.38)",background:"none",border:"none",borderBottom:tab===i?`2px solid ${EMERALD}`:"2px solid transparent",cursor:"pointer",padding:"12px 10px",whiteSpace:"nowrap"}}>{t}</button>
+          <button key={t} type="button" role="tab" aria-selected={tab===i} onClick={()=>irATab(i)}
+            style={{flex:"1 1 0",maxWidth:130,minHeight:TOUCH,fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:tab===i?700:500,color:tab===i?EMERALD:"rgba(255,255,255,.75)",background:"none",border:"none",borderBottom:tab===i?`3px solid ${EMERALD}`:"3px solid transparent",cursor:"pointer",padding:"0 4px",whiteSpace:"nowrap"}}>{t}</button>
         ))}
       </div>
       <EnvioBanner email={registroData.email} estado={envio}/>
       <div style={{maxWidth:680,margin:"0 auto"}}><CurrentTab/></div>
       <ContactoCTA universidad={registroData.universidad}/>
       <div style={{maxWidth:680,margin:"0 auto",padding:"0 18px 44px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-        <button onClick={()=>setTab(Math.max(0,tab-1))} disabled={tab===0} style={{padding:"9px 16px",borderRadius:8,border:"1px solid #E8E6DF",background:WHITE,color:tab===0?"#ccc":NAVY,cursor:tab===0?"default":"pointer",fontSize:13,fontFamily:"'DM Sans',sans-serif"}}>← Anterior</button>
-        <Mono color="#6A7090">{tab+1} / {TABS.length}</Mono>
-        <button onClick={()=>setTab(Math.min(TABS.length-1,tab+1))} disabled={tab===TABS.length-1} style={{padding:"9px 16px",borderRadius:8,border:"none",background:tab===TABS.length-1?"#ccc":NAVY,color:WHITE,cursor:tab===TABS.length-1?"default":"pointer",fontSize:13,fontFamily:"'DM Sans',sans-serif"}}>Siguiente →</button>
+        {tab>0?<button type="button" onClick={()=>irATab(tab-1)} style={{minHeight:TOUCH,padding:"0 16px",borderRadius:10,border:`1px solid ${LINE}`,background:WHITE,color:NAVY,cursor:"pointer",fontSize:15,fontFamily:"'DM Sans',sans-serif"}}>← {TABS[tab-1]}</button>:<span/>}
+        <Mono color={MUTED}>{tab+1} / {TABS.length}</Mono>
+        {tab<TABS.length-1?<button type="button" onClick={()=>irATab(tab+1)} style={{minHeight:TOUCH,padding:"0 16px",borderRadius:10,border:`1.5px solid ${NAVY}`,background:WHITE,color:NAVY,cursor:"pointer",fontSize:15,fontWeight:600,fontFamily:"'DM Sans',sans-serif"}}>{TABS[tab+1]} →</button>:<span/>}
       </div>
     </div>
   );
@@ -788,6 +802,8 @@ export default function Diagnostico(){
   const [respuestas,setRespuestas]=useState({});
   const [quizPos,setQuizPos]=useState({etapa:0,pregunta:0,showIntro:true});
   const [etapasScores,setEtapasScores]=useState({});
+
+  useEffect(()=>{window.scrollTo(0,0);},[phase,quizPos.etapa,quizPos.pregunta,quizPos.showIntro]);
 
   const handleRegister=(data)=>{setRegistroData(data);setPhase("quiz");setQuizPos({etapa:0,pregunta:0,showIntro:true});};
 

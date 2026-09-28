@@ -15,6 +15,10 @@
       html, body { margin: 0; padding: 0; background: #F5F4F0; -webkit-text-size-adjust: 100%; }
       body { font-family: 'DM Sans', sans-serif; }
       button, input, select { font: inherit; }
+      /* Foco visible para teclado (4.8:1 sobre crema, 3.5:1 sobre azul) */
+      :focus-visible { outline: 3px solid #007A5C; outline-offset: 2px; border-radius: 6px; }
+      button:focus:not(:focus-visible) { outline: none; }
+      @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
     </style>
   </head>
   <body>

@@ -1,5 +1,5 @@
 // Templates HTML de los mails (tablas + estilos inline para compatibilidad con clientes de correo).
-import { NAVY, NAVY_DK, EMERALD, SLATE, CREAM, ORANGE } from "../../src/theme.js";
+import { NAVY, NAVY_DK, EMERALD, SLATE, CREAM, EMERALD_TXT, SLATE_TXT, MUTED, nivelDarkColor } from "../../src/theme.js";
 import { ETAPAS_DATA } from "../../src/data/etapas.js";
 import { getNivel, etapasCriticas, topRecomendaciones } from "../../src/lib/scoring.js";
 import { AUTORIDAD } from "../../src/data/textos.js";
@@ -20,7 +20,7 @@ function layout({ preheader, body }) {
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${CREAM};"><tr><td align="center" style="padding:24px 12px;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border-radius:14px;overflow:hidden;font-family:${SANS};color:${NAVY};">
 ${body}
-<tr><td class="px" style="padding:18px 36px;background:${CREAM};border-top:1px solid #E8E6DF;font-family:${MONO};font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#6A7090;text-align:center;">
+<tr><td class="px" style="padding:18px 36px;background:${CREAM};border-top:1px solid #E8E6DF;font-family:${MONO};font-size:12px;letter-spacing:1px;text-transform:uppercase;color:${MUTED};text-align:center;">
 Diagnóstico del proceso de inscripción universitaria · CampusLatina</td></tr>
 </table></td></tr></table></body></html>`;
 }
@@ -32,7 +32,7 @@ function filaEtapa(e) {
 <td style="padding:9px 0;border-bottom:1px solid #F0EEEA;width:180px;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
     <td style="width:90px;"><div style="height:6px;background:#E8E6DF;border-radius:3px;"><div style="height:6px;width:${Math.round((e.score / 5) * 100)}%;background:${n.color};border-radius:3px;"></div></div></td>
-    <td style="padding-left:10px;font-family:${MONO};font-size:11px;color:${n.color};white-space:nowrap;">${f1(e.score)} · ${n.label}</td>
+    <td style="padding-left:10px;font-family:${MONO};font-size:12px;color:${n.color};white-space:nowrap;">${f1(e.score)} · ${n.label}</td>
   </tr></table>
 </td></tr>`;
 }
@@ -51,7 +51,7 @@ export function mailInforme(d, { contactoEmail } = {}) {
 
   const body = `
 <tr><td class="px" style="background:${NAVY_DK};padding:32px 36px;">
-  <div style="font-family:${MONO};font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:${SLATE};">CampusLatina & CIeLatam</div>
+  <div style="font-family:${MONO};font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:${SLATE};">CampusLatina & CIeLatam</div>
   <div style="font-family:${SERIF};font-size:26px;line-height:1.2;color:#ffffff;margin:10px 0 18px;">Diagnóstico del <em style="color:${EMERALD};">proceso de inscripción</em></div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
     <td style="vertical-align:bottom;">
@@ -59,33 +59,33 @@ export function mailInforme(d, { contactoEmail } = {}) {
       <div style="font-size:12px;color:#9AA0C8;margin-top:2px;">${esc([d.nombre, d.cargo, d.pais].filter(Boolean).join(" · "))}</div>
     </td>
     <td align="right" style="vertical-align:bottom;white-space:nowrap;">
-      <div class="score" style="font-family:${SERIF};font-size:48px;line-height:1;color:${EMERALD};">${f1(d.score_global)}</div>
-      <div style="font-family:${MONO};font-size:10px;letter-spacing:1px;text-transform:uppercase;color:${EMERALD};">${nivel.label} · de 5</div>
+      <div class="score" style="font-family:${SERIF};font-size:48px;line-height:1;color:${nivelDarkColor(nivel.label)};">${f1(d.score_global)}</div>
+      <div style="font-family:${MONO};font-size:12px;letter-spacing:1px;text-transform:uppercase;color:${nivelDarkColor(nivel.label)};">${nivel.label} · de 5</div>
     </td>
   </tr></table>
 </td></tr>
 
 <tr><td class="px" style="padding:28px 36px 8px;">
   <p style="font-size:15px;line-height:1.65;margin:0 0 12px;">Hola ${esc(nombre)},</p>
-  <p style="font-size:15px;line-height:1.65;margin:0 0 12px;">Gracias por completar el diagnóstico. <strong>El momento donde más inscriptos se pierden es ${esc(critica.name)}</strong> <span style="color:#6A7090;">(${esc(critica.pregunta)})</span>.</p>
+  <p style="font-size:15px;line-height:1.65;margin:0 0 12px;">Gracias por completar el diagnóstico. <strong>El momento donde más inscriptos se pierden es ${esc(critica.name)}</strong> <span style="color:${MUTED};">(${esc(critica.pregunta)})</span>.</p>
   <p style="font-size:15px;line-height:1.65;margin:0 0 12px;">El puntaje global es <strong>${f1(d.score_global)} de 5</strong>, nivel <strong style="color:${nivel.color};">${nivel.label}</strong>. Abajo están las 3 acciones para empezar.</p>
   <p style="font-size:15px;line-height:1.65;margin:0;"><strong>El informe completo va adjunto en PDF</strong>, con el análisis de cada etapa y el plan de acción, listo para compartir con el equipo directivo.</p>
 </td></tr>
 
 <tr><td class="px" style="padding:20px 36px 4px;">
-  <div style="font-family:${MONO};font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:${SLATE};margin-bottom:6px;">Las 7 etapas del recorrido del aspirante</div>
+  <div style="font-family:${MONO};font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:${SLATE_TXT};margin-bottom:6px;">Las 7 etapas del recorrido del aspirante</div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${etapas.map(filaEtapa).join("")}</table>
 </td></tr>
 
 <tr><td class="px" style="padding:24px 36px 8px;">
-  <div style="font-family:${MONO};font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:${SLATE};margin-bottom:10px;">Las 3 acciones para empezar</div>
+  <div style="font-family:${MONO};font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:${SLATE_TXT};margin-bottom:10px;">Las 3 acciones para empezar</div>
   ${top.map(({ etapa, rec }, i) => `
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px;background:${CREAM};border-radius:10px;"><tr>
-    <td style="width:34px;vertical-align:top;padding:14px 0 14px 14px;font-family:${SERIF};font-size:22px;color:${EMERALD};line-height:1;">${i + 1}</td>
+    <td style="width:34px;vertical-align:top;padding:14px 0 14px 14px;font-family:${SERIF};font-size:22px;color:${EMERALD_TXT};line-height:1;">${i + 1}</td>
     <td style="padding:12px 14px;">
-      <div style="font-family:${MONO};font-size:10px;letter-spacing:1px;text-transform:uppercase;color:${ORANGE};">${esc(etapa.name)} · ${f1(etapa.score)}/5</div>
+      <div style="font-family:${MONO};font-size:12px;letter-spacing:1px;text-transform:uppercase;color:${getNivel(etapa.score).color};">${esc(etapa.name)} · ${f1(etapa.score)}/5</div>
       <div style="font-size:14px;line-height:1.55;color:${NAVY};margin-top:3px;">${esc(rec.texto)}</div>
-      <div style="font-family:${MONO};font-size:10px;color:#009E77;margin-top:4px;">+${f1(rec.impacto)} pts · ${esc(rec.accion)}</div>
+      <div style="font-family:${MONO};font-size:12px;color:${EMERALD_TXT};margin-top:4px;">+${f1(rec.impacto)} pts · ${esc(rec.accion)}</div>
     </td>
   </tr></table>`).join("")}
 </td></tr>
@@ -126,13 +126,13 @@ export function mailInterno(d, { adminUrl } = {}) {
   const criticas = etapasCriticas(d.scores || {}).slice(0, 2);
   const waNum = String(d.whatsapp || "").replace(/\D/g, "");
   const subject = `🎯 Nuevo diagnóstico — ${d.universidad} (${d.pais}) · ${f1(d.score_global)}/5`;
-  const row = (icon, label, value) => `<tr><td style="padding:6px 0;width:28px;font-size:16px;">${icon}</td><td style="padding:6px 0;width:110px;font-family:${MONO};font-size:10px;letter-spacing:1px;text-transform:uppercase;color:${SLATE};">${label}</td><td style="padding:6px 0;font-size:14px;color:${NAVY};">${value}</td></tr>`;
+  const row = (icon, label, value) => `<tr><td style="padding:6px 0;width:28px;font-size:16px;">${icon}</td><td style="padding:6px 0;width:110px;font-family:${MONO};font-size:12px;letter-spacing:1px;text-transform:uppercase;color:${SLATE_TXT};">${label}</td><td style="padding:6px 0;font-size:14px;color:${NAVY};">${value}</td></tr>`;
 
   const body = `
 <tr><td class="px" style="background:${NAVY_DK};padding:24px 36px;">
-  <div style="font-family:${MONO};font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:${EMERALD};">🎯 Nuevo diagnóstico completado</div>
+  <div style="font-family:${MONO};font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:${EMERALD};">🎯 Nuevo diagnóstico completado</div>
   <div style="font-family:${SERIF};font-size:24px;color:#ffffff;margin-top:8px;">${esc(d.universidad)}</div>
-  <div style="font-family:${SERIF};font-size:36px;color:${EMERALD};margin-top:6px;">${f1(d.score_global)}<span style="font-size:16px;color:#9AA0C8;">/5 · ${nivel.label}</span></div>
+  <div style="font-family:${SERIF};font-size:36px;color:${nivelDarkColor(nivel.label)};margin-top:6px;">${f1(d.score_global)}<span style="font-size:16px;color:#9AA0C8;">/5 · ${nivel.label}</span></div>
 </td></tr>
 <tr><td class="px" style="padding:24px 36px 8px;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
@@ -144,12 +144,12 @@ export function mailInterno(d, { adminUrl } = {}) {
   </table>
 </td></tr>
 <tr><td class="px" style="padding:12px 36px 8px;">
-  <div style="font-family:${MONO};font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:${SLATE};margin-bottom:6px;">Etapas críticas</div>
+  <div style="font-family:${MONO};font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:${SLATE_TXT};margin-bottom:6px;">Etapas críticas</div>
   ${criticas.map((e) => `<div style="font-size:14px;line-height:1.8;">• ${esc(e.name)}: <strong style="color:${getNivel(e.score).color};">${f1(e.score)}</strong></div>`).join("")}
 </td></tr>
 <tr><td class="px" style="padding:16px 36px 32px;">
   ${adminUrl ? `<a href="${esc(adminUrl)}" style="display:inline-block;background:${NAVY};color:#ffffff;font-weight:700;font-size:14px;text-decoration:none;padding:12px 22px;border-radius:10px;">Ver en el panel →</a>` : ""}
-  <div style="font-size:12px;color:#6A7090;margin-top:12px;">El informe PDF que recibió el directivo va adjunto.</div>
+  <div style="font-size:13px;color:${MUTED};margin-top:12px;">El informe PDF que recibió el directivo va adjunto.</div>
 </td></tr>`;
 
   const text = [

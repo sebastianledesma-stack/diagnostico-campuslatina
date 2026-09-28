@@ -5,7 +5,7 @@ import { AUTORIDAD } from "../data/textos.js";
 const CONTACT_EMAIL = import.meta.env.VITE_CONTACT_EMAIL || "";
 const CONTACT_WHATSAPP = (import.meta.env.VITE_CONTACT_WHATSAPP || "").replace(/\D/g, "");
 
-const monoStyle = {fontFamily:"'Space Mono',monospace",fontSize:8,letterSpacing:".12em",textTransform:"uppercase"};
+const monoStyle = {fontFamily:"'Space Mono',monospace",fontSize:11,letterSpacing:".12em",textTransform:"uppercase"};
 
 // Estado del envío del mail con el PDF: "pendiente" | "enviado" | "error"
 export function EnvioBanner({email,estado}){
@@ -20,7 +20,7 @@ export function EnvioBanner({email,estado}){
     <div role="status" style={{maxWidth:680,margin:"0 auto",padding:"12px 18px 0"}}>
       <div style={{display:"flex",gap:10,alignItems:"center",background:WHITE,border:`1px solid ${cfg.color}55`,borderLeft:`3px solid ${cfg.color}`,borderRadius:10,padding:"10px 14px"}}>
         <span style={{fontSize:16,flexShrink:0}} aria-hidden="true">{cfg.icon}</span>
-        <p style={{fontSize:13,color:NAVY,lineHeight:1.5,margin:0,fontFamily:"'DM Sans',sans-serif",wordBreak:"break-word"}}>{cfg.texto}</p>
+        <p style={{fontSize:15,color:NAVY,lineHeight:1.5,margin:0,fontFamily:"'DM Sans',sans-serif",wordBreak:"break-word"}}>{cfg.texto}</p>
       </div>
     </div>
   );
@@ -43,12 +43,12 @@ export function ContactoCTA({universidad}){
         <div style={{position:"relative"}}>
           <span style={{...monoStyle,color:EMERALD}}>CampusLatina</span>
           <div style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:WHITE,lineHeight:1.25,margin:"6px 0 8px"}}>¿Quiere inscribir <em style={{color:EMERALD}}>más estudiantes</em> el próximo ciclo?</div>
-          <p style={{fontSize:13,color:"rgba(255,255,255,.6)",lineHeight:1.65,margin:"0 0 16px",fontFamily:"'DM Sans',sans-serif"}}>
+          <p style={{fontSize:15,color:"rgba(255,255,255,.6)",lineHeight:1.65,margin:"0 0 16px",fontFamily:"'DM Sans',sans-serif"}}>
             {AUTORIDAD} Responda el mail con su informe o escríbanos, y lo revisamos juntos.
           </p>
           {href&&(
             <a href={href} target="_blank" rel="noopener noreferrer"
-              style={{display:"inline-flex",alignItems:"center",justifyContent:"center",minHeight:48,padding:"0 24px",borderRadius:10,background:EMERALD,color:NAVY_DK,fontSize:14,fontWeight:700,fontFamily:"'DM Sans',sans-serif",textDecoration:"none"}}>
+              style={{display:"inline-flex",alignItems:"center",justifyContent:"center",minHeight:48,padding:"0 24px",borderRadius:10,background:EMERALD,color:NAVY_DK,fontSize:16,fontWeight:700,fontFamily:"'DM Sans',sans-serif",textDecoration:"none"}}>
               {CONTACT_WHATSAPP?"Escríbanos por WhatsApp →":"Escríbanos →"}
             </a>
           )}

@@ -1,12 +1,12 @@
 // Lógica de scoring. getNivel y calcScore son copia literal de app_diagnostico_v3.jsx.
 // Este módulo no depende de React: lo usan el frontend y las Netlify Functions.
-import { ORANGE } from "../theme.js";
+import { ORANGE_TXT } from "../theme.js";
 import { ETAPAS_DATA } from "../data/etapas.js";
 import { RECS, SCORE_POTENTIALS } from "../data/recs.js";
 
 export function getNivel(score){
   if(score<=1.9) return {label:"Inicial",color:"#CC3333",bg:"#FFF0F0"};
-  if(score<=3.0) return {label:"En desarrollo",color:ORANGE,bg:"#FFF8F0"};
+  if(score<=3.0) return {label:"En desarrollo",color:ORANGE_TXT,bg:"#FFF3E8"};
   if(score<=4.0) return {label:"Consolidado",color:"#2E7D32",bg:"#F0FBF4"};
   return {label:"Avanzado",color:"#185FA5",bg:"#EEF2FF"};
 }
