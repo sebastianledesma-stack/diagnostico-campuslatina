@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { NAVY, NAVY_DK, EMERALD, SLATE, CREAM, WHITE, EMERALD_TXT, ORANGE_TXT, SLATE_TXT, MUTED, TEXT, LINE, BTN_PRIMARY, BTN_DISABLED, TOUCH, nivelDarkColor } from "../theme.js";
 import { PAISES_LATAM } from "../data/paises.js";
 import { ETAPAS_DATA } from "../data/etapas.js";
@@ -6,8 +6,10 @@ import { FRICCIONES } from "../data/fricciones.js";
 import { RECS, SCORE_POTENTIALS } from "../data/recs.js";
 import { getNivel, calcScore, calcEtapaProjected as projectEtapa } from "../lib/scoring.js";
 import { guardarDiagnostico } from "../lib/persist.js";
-import { EnvioBanner, ContactoCTA } from "../components/ReportExtras.jsx";
+import { EnvioNota, ContactoCTA } from "../components/ReportExtras.jsx";
 import { NIVEL_DESC, lecturaDiagnostico } from "../data/textos.js";
+import { PAIS_A_ISO } from "../lib/telefono.js";
+const PhoneField=lazy(()=>import("../components/PhoneField.jsx"));
 
 const nd=(score)=>nivelDarkColor(getNivel(score).label);
 function isValidEmail(e){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);}
@@ -52,20 +54,25 @@ function RadarChart({scores}){
 
 // ── WELCOME ──────────────────────────────────────────────
 function Welcome({onStart}){
+  // Precarga el selector de teléfono (pesado) mientras se lee la bienvenida.
+  useEffect(()=>{const t=setTimeout(()=>{import("../components/PhoneField.jsx");},1500);return()=>clearTimeout(t);},[]);
   return(
     <div style={{minHeight:"100vh",background:NAVY_DK,display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
       <div style={{position:"absolute",inset:0,backgroundImage:`linear-gradient(rgba(139,148,200,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(139,148,200,.06) 1px,transparent 1px)`,backgroundSize:"60px 60px"}}/>
       <div style={{position:"absolute",right:-80,top:"15%",width:400,height:400,borderRadius:"50%",background:"radial-gradient(circle, rgba(0,200,150,.08) 0%, transparent 70%)"}}/>
       <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"40px 20px 40px",position:"relative",maxWidth:680,margin:"0 auto",width:"100%"}}>
-        <Mono color={SLATE}>CampusLatina & CIeLatam · Diagnóstico gratuito</Mono>
+        <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
+          <Mono color={SLATE}>CampusLatina & CIeLatam</Mono>
+          <span style={{fontFamily:"'Space Mono',monospace",fontSize:11,letterSpacing:".1em",textTransform:"uppercase",color:NAVY_DK,background:EMERALD,borderRadius:999,padding:"3px 10px",fontWeight:700}}>Gratis</span>
+        </div>
         <h1 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(28px,5vw,48px)",color:WHITE,lineHeight:1.05,margin:"12px 0 16px"}}>
           ¿Por qué se inscriben<br/><em style={{color:EMERALD}}>menos estudiantes</em><br/>de los esperados?
         </h1>
         <p style={{fontSize:16,color:"rgba(255,255,255,.6)",lineHeight:1.7,marginBottom:28,maxWidth:480}}>
           En 10 minutos, descubra en qué momento su universidad pierde aspirantes — desde la primera búsqueda en Google hasta el primer día de clases — y qué resolver primero.
         </p>
-        <button onClick={onStart} style={{alignSelf:"flex-start",...BTN_PRIMARY,border:"none",borderRadius:10,minHeight:TOUCH,padding:"0 24px",fontSize:16,fontWeight:700,fontFamily:"'DM Sans',sans-serif",cursor:"pointer",marginBottom:32}}>
-          Descubrir dónde se pierden inscriptos →
+        <button type="button" onClick={onStart} style={{width:"100%",maxWidth:420,...BTN_PRIMARY,border:"none",borderRadius:12,minHeight:TOUCH+4,padding:"14px 20px",lineHeight:1.3,textAlign:"center",fontSize:16,fontWeight:700,fontFamily:"'DM Sans',sans-serif",cursor:"pointer",marginBottom:32}}>
+          Descubrir dónde se pierden inscriptos{"\u00A0"}→
         </button>
 
         {/* WHAT YOU'LL GET */}
@@ -108,8 +115,8 @@ function Welcome({onStart}){
             </div>
           ))}
         </div>
-        <button onClick={onStart} style={{alignSelf:"flex-start",...BTN_PRIMARY,border:"none",borderRadius:10,minHeight:TOUCH,padding:"0 24px",fontSize:16,fontWeight:700,fontFamily:"'DM Sans',sans-serif",cursor:"pointer"}}>
-          Empezar el diagnóstico →
+        <button type="button" onClick={onStart} style={{width:"100%",maxWidth:420,...BTN_PRIMARY,border:"none",borderRadius:12,minHeight:TOUCH+4,padding:"14px 20px",lineHeight:1.3,textAlign:"center",fontSize:16,fontWeight:700,fontFamily:"'DM Sans',sans-serif",cursor:"pointer"}}>
+          Empezar el diagnóstico{"\u00A0"}→
         </button>
       </div>
     </div>
@@ -120,15 +127,23 @@ function Welcome({onStart}){
 function Register({onNext}){
   const [form,setForm]=useState({universidad:"",pais:"",nombre:"",cargo:"",email:"",whatsapp:""});
   const [emailError,setEmailError]=useState(false);
-  const valid=form.universidad&&form.nombre&&form.email&&isValidEmail(form.email)&&form.pais&&form.whatsapp;
+  const [telError,setTelError]=useState(false);
+  // País sugerido para el teléfono: el elegido arriba, mientras el número siga vacío.
+  const [telPais,setTelPais]=useState(undefined);
+  const [telValido,setTelValido]=useState(false);
+  const valid=form.universidad&&form.nombre&&form.email&&isValidEmail(form.email)&&form.pais&&telValido;
 
   const handleEmailBlur=()=>setEmailError(form.email.length>0&&!isValidEmail(form.email));
-  const set=(k,v)=>{setForm(p=>({...p,[k]:v}));if(k==="email") setEmailError(false);};
+  const set=(k,v)=>{
+    setForm(p=>({...p,[k]:v}));
+    if(k==="email") setEmailError(false);
+    if(k==="whatsapp") setTelError(false);
+    if(k==="pais"&&!form.whatsapp) setTelPais(PAIS_A_ISO[v]);
+  };
 
   const LabelField=({label,required,htmlFor})=>(
-    <label htmlFor={htmlFor} style={{display:"flex",alignItems:"center",gap:5,marginBottom:6}}>
-      <span style={{fontFamily:"'Space Mono',monospace",fontSize:12,letterSpacing:".1em",textTransform:"uppercase",color:NAVY,fontWeight:700}}>{label}</span>
-      {required&&<span aria-hidden="true" style={{fontFamily:"'Space Mono',monospace",fontSize:12,color:EMERALD_TXT,fontWeight:700}}>*</span>}
+    <label htmlFor={htmlFor} style={{display:"block",marginBottom:6,fontFamily:"'Space Mono',monospace",fontSize:12,letterSpacing:".1em",textTransform:"uppercase",color:NAVY,fontWeight:700,lineHeight:1.4}}>
+      {label}{required&&<span aria-hidden="true" style={{color:EMERALD_TXT}}>{"\u00A0"}*</span>}
     </label>
   );
   const campo={display:"block",width:"100%",minHeight:TOUCH,padding:"11px 14px",border:"1.5px solid #8C8A93",borderRadius:8,fontSize:16,fontFamily:"'DM Sans',sans-serif",color:NAVY,background:CREAM};
@@ -190,9 +205,14 @@ function Register({onNext}){
             </div>
             <div>
               <LabelField label="WhatsApp" required htmlFor="f-whatsapp"/>
-              <input id="f-whatsapp" type="tel" required autoComplete="tel" inputMode="tel" value={form.whatsapp} onChange={e=>set("whatsapp",e.target.value)} placeholder="Ej: +54 9 11 1234-5678"
-                aria-describedby="f-whatsapp-ayuda" style={campo}/>
-              <p id="f-whatsapp-ayuda" style={{fontSize:14,color:MUTED,margin:"5px 0 0"}}>Incluya el código de país (ej: +54 para Argentina, +52 para México)</p>
+              <Suspense fallback={<div className="cl-phone" aria-hidden="true"/>}>
+              <PhoneField key={telPais||"sin-pais"} id="f-whatsapp" value={form.whatsapp} defaultCountry={telPais}
+                onChange={(v,ok)=>{set("whatsapp",v);setTelValido(ok);}} onBlur={()=>setTelError(!!form.whatsapp&&!telValido)}
+                invalid={telError} describedBy={telError?"f-whatsapp-error":"f-whatsapp-ayuda"}/>
+              </Suspense>
+              {telError
+                ?<p id="f-whatsapp-error" role="alert" style={{fontSize:14,color:"#CC3333",margin:"5px 0 0",fontWeight:500}}>El número parece incompleto. Revise la cantidad de dígitos para el país elegido.</p>
+                :<p id="f-whatsapp-ayuda" style={{fontSize:14,color:MUTED,margin:"5px 0 0"}}>Elija el país en la lista y escriba el número: el formato se completa solo.</p>}
             </div>
           </div>
         </div>
@@ -214,18 +234,17 @@ function Register({onNext}){
 
 // ── STAGE INTRO ───────────────────────────────────────────
 function StageIntro({etapa,onStart,etapasScores}){
-  const prev=ETAPAS_DATA.filter(e=>e.num<etapa.num);
   return(
     <div style={{minHeight:"100vh",background:CREAM,display:"flex",flexDirection:"column"}}>
       {/* Timeline header */}
-      <div style={{background:NAVY_DK,padding:"14px 16px 16px"}}>
-        <div style={{display:"flex",gap:4,justifyContent:"center",marginBottom:10}}>
+      <div style={{background:NAVY_DK,padding:"12px 16px 12px"}}>
+        <div aria-hidden="true" style={{display:"flex",gap:4,justifyContent:"center",marginBottom:8}}>
           {ETAPAS_DATA.map(e=>{
             const done=etapasScores&&etapasScores[e.id]>0;
             const current=e.num===etapa.num;
             return(
               <div key={e.id} style={{display:"flex",alignItems:"center",gap:4}}>
-                <div style={{width:28,height:28,borderRadius:"50%",background:current?EMERALD:done?"rgba(0,200,150,.3)":"rgba(255,255,255,.1)",border:`2px solid ${current?EMERALD:done?"rgba(0,200,150,.5)":"rgba(255,255,255,.15)"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontFamily:"'Space Mono',monospace",color:current?NAVY_DK:done?"rgba(0,200,150,.8)":"rgba(255,255,255,.3)",fontWeight:700,flexShrink:0}}>
+                <div style={{width:28,height:28,borderRadius:"50%",background:current?EMERALD:done?"rgba(0,200,150,.3)":"rgba(255,255,255,.1)",border:`2px solid ${current?EMERALD:done?"rgba(0,200,150,.5)":"rgba(255,255,255,.3)"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontFamily:"'Space Mono',monospace",color:current?NAVY_DK:done?EMERALD:"rgba(255,255,255,.7)",fontWeight:700,flexShrink:0}}>
                   {done&&!current?"✓":e.num}
                 </div>
                 {e.num<7&&<div style={{width:12,height:2,background:done?"rgba(0,200,150,.4)":"rgba(255,255,255,.08)",borderRadius:1}}/>}
@@ -236,19 +255,22 @@ function StageIntro({etapa,onStart,etapasScores}){
         <div style={{textAlign:"center"}}><Mono color={SLATE}>Etapa {etapa.num} de 7</Mono></div>
       </div>
 
-      <div style={{flex:1,maxWidth:580,margin:"0 auto",padding:"24px 20px 32px",width:"100%",display:"flex",flexDirection:"column",justifyContent:"center"}}>
-        <div aria-hidden="true" style={{fontSize:44,textAlign:"center",marginBottom:12}}>{etapa.emoji}</div>
-        <div style={{textAlign:"center",marginBottom:8}}><Mono color={EMERALD_TXT}>Etapa {etapa.num}</Mono></div>
-        <div style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(26px,5vw,36px)",color:NAVY,textAlign:"center",lineHeight:1.15,marginBottom:6}}>{etapa.name}</div>
-        <div style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:EMERALD_TXT,textAlign:"center",fontStyle:"italic",marginBottom:20}}>{etapa.pregunta}</div>
-        <div style={{background:WHITE,border:"1px solid #E8E6DF",borderRadius:14,padding:"20px 22px",marginBottom:24}}>
-          <p style={{fontSize:16,color:NAVY,lineHeight:1.7,margin:0,fontWeight:500}}>{etapa.resumen}</p>
-          <p style={{fontSize:16,color:MUTED,lineHeight:1.65,margin:"10px 0 0"}}>{etapa.contexto}</p>
+      <div style={{flex:1,maxWidth:580,margin:"0 auto",padding:"20px 16px 20px",width:"100%"}}>
+        <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:16}}>
+          <div aria-hidden="true" style={{width:56,height:56,borderRadius:16,background:WHITE,border:`1px solid ${LINE}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:30,flexShrink:0}}>{etapa.emoji}</div>
+          <div>
+            <h1 style={{fontFamily:"'DM Serif Display',serif",fontWeight:400,fontSize:30,color:NAVY,lineHeight:1.1,margin:0}}>{etapa.name}</h1>
+            <div style={{fontSize:17,color:EMERALD_TXT,fontWeight:600,marginTop:4}}>{etapa.pregunta}</div>
+          </div>
         </div>
-        <div style={{background:CREAM,border:"1px solid #E8E6DF",borderRadius:10,padding:"12px 16px",marginBottom:8,display:"flex",alignItems:"center",gap:10}}>
-          <span style={{fontFamily:"'Space Mono',monospace",fontSize:22,color:SLATE_TXT}}>4</span>
-          <p style={{fontSize:15,color:MUTED,margin:0,lineHeight:1.5}}>preguntas en esta etapa · cada una con 4 opciones — elija la que mejor describe cómo está su institución <em>hoy</em>, no cómo le gustaría que estuviera.</p>
+        <div style={{background:WHITE,border:`1px solid ${LINE}`,borderRadius:14,padding:"16px 18px",marginBottom:14}}>
+          <p style={{fontSize:16,color:NAVY,lineHeight:1.6,margin:0,fontWeight:500}}>{etapa.resumen}</p>
+          <p style={{fontSize:15,color:MUTED,lineHeight:1.6,margin:"10px 0 0"}}>{etapa.contexto}</p>
         </div>
+        <p style={{display:"flex",gap:10,alignItems:"flex-start",fontSize:15,color:TEXT,lineHeight:1.55,margin:0,padding:"0 2px"}}>
+          <span aria-hidden="true" style={{fontSize:18,lineHeight:1.3}}>📝</span>
+          <span><strong style={{color:NAVY}}>4 preguntas.</strong> Elija la opción que describe cómo está su institución <em>hoy</em>, no cómo le gustaría que estuviera.</span>
+        </p>
       </div>
       {/* Barra fija: el botón siempre visible */}
       <div style={{position:"sticky",bottom:0,zIndex:10,background:"rgba(245,244,240,.96)",backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)",borderTop:`1px solid ${LINE}`}}>
@@ -307,8 +329,10 @@ function Question({etapaIdx,preguntaIdx,etapa,pregunta,selected,onSelect,onNext,
 
       {/* Pregunta */}
       <div style={{flex:1,maxWidth:640,margin:"0 auto",padding:"22px 16px 24px",width:"100%"}}>
-        <h2 id={qid} style={{fontFamily:"'DM Serif Display',serif",fontWeight:400,fontSize:21,color:NAVY,lineHeight:1.35,margin:"0 0 20px"}}>{pregunta.texto}</h2>
-        <div role="radiogroup" aria-labelledby={qid} style={{display:"flex",flexDirection:"column",gap:10}}>
+        <h2 id={qid} style={{fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:21,color:NAVY,lineHeight:1.3,letterSpacing:"-.01em",margin:0}}>{pregunta.texto}</h2>
+        {pregunta.ayuda&&<p id={`${qid}-ayuda`} style={{fontSize:15,color:MUTED,lineHeight:1.55,margin:"8px 0 0"}}>{pregunta.ayuda}</p>}
+        <div style={{height:18}}/>
+        <div role="radiogroup" aria-labelledby={qid} aria-describedby={pregunta.ayuda?`${qid}-ayuda`:undefined} style={{display:"flex",flexDirection:"column",gap:10}}>
           {pregunta.opciones.map(op=>{
             const isSel=selected===op.letra;
             return(
@@ -389,7 +413,7 @@ function Report({registroData,respuestas,envio}){
             <div>
               <Mono color={SLATE}>{new Date().toLocaleDateString("es-AR",{month:"long",year:"numeric"})}</Mono>
               <div style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:WHITE,marginTop:5,lineHeight:1.2}}>{registroData.universidad||"Su institución"}</div>
-              <div style={{fontSize:13,color:"rgba(255,255,255,.4)",marginTop:2}}>{registroData.nombre}{registroData.cargo?` · ${registroData.cargo}`:""}{registroData.pais?` · ${registroData.pais}`:""}</div>
+              <div style={{fontSize:14,color:"rgba(255,255,255,.7)",marginTop:4}}>{registroData.nombre}{registroData.cargo?` · ${registroData.cargo}`:""}{registroData.pais?` · ${registroData.pais}`:""}</div>
             </div>
             <div style={{textAlign:"right",flexShrink:0}}>
               <div style={{fontFamily:"'DM Serif Display',serif",fontSize:40,color:nd(globalScore),lineHeight:1}}>{globalScore.toFixed(1)}</div>
@@ -432,7 +456,7 @@ function Report({registroData,respuestas,envio}){
                   <div style={{height:"100%",width:`${(e.score/5)*100}%`,background:e.nivel.color,borderRadius:3}}/>
                 </div>
               </div>
-              {i<etapaScores.length-1&&<span style={{color:SLATE_TXT,fontSize:12}}>↓</span>}
+              {i<etapaScores.length-1&&<span aria-hidden="true" style={{color:SLATE_TXT,fontSize:14}}>↓</span>}
             </div>
           ))}
         </div>
@@ -731,7 +755,7 @@ function Report({registroData,respuestas,envio}){
                       <div style={{position:"absolute",top:0,left:`${(e.score/5)*100}%`,height:"100%",width:`${((SCORE_POTENTIALS[e.id]-e.score)/5)*100}%`,background:EMERALD+"99",borderRadius:"0 3px 3px 0"}}/>
                     </div>
                   </div>
-                  <span style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:EMERALD_TXT,flexShrink:0,width:28}}>{SCORE_POTENTIALS[e.id]}</span>
+                  <span style={{fontFamily:"'Space Mono',monospace",fontSize:12,color:EMERALD_TXT,flexShrink:0,width:30,textAlign:"right"}}>{SCORE_POTENTIALS[e.id].toFixed(1)}</span>
                 </div>
               );
             })}
@@ -741,11 +765,11 @@ function Report({registroData,respuestas,envio}){
         <div style={{background:WHITE,border:"1px solid #E8E6DF",borderRadius:14,padding:"20px 18px",marginBottom:14}}>
           <Mono color={SLATE_TXT}>Informe completo en PDF</Mono>
           <p style={{fontSize:16,color:"#3A4070",marginTop:8,marginBottom:6,lineHeight:1.65}}>El PDF incluye el diagnóstico completo de cada etapa, las fricciones detectadas, el plan de acción y el puntaje potencial. Listo para imprimir o compartir con el equipo directivo.</p>
-          <div style={{fontSize:14,color:MUTED,marginBottom:18,display:"flex",gap:16,flexWrap:"wrap"}}>
-            <span>📄 7 etapas analizadas</span>
-            <span>🎯 Recomendaciones por etapa</span>
-            <span>🖨 Listo para imprimir</span>
-          </div>
+          <ul style={{listStyle:"none",padding:0,margin:"4px 0 18px",display:"flex",flexDirection:"column",gap:8}}>
+            {[["📄","Las 7 etapas analizadas"],["🎯","Recomendaciones para cada etapa"],["🖨","Listo para imprimir o compartir"]].map(([ic,t])=>(
+              <li key={t} style={{display:"flex",alignItems:"center",gap:10,fontSize:15,color:TEXT}}><span aria-hidden="true" style={{width:22,textAlign:"center"}}>{ic}</span>{t}</li>
+            ))}
+          </ul>
           {done?(
             <div style={{textAlign:"center",padding:"16px 0",background:"rgba(0,200,150,.06)",borderRadius:10,border:"1px solid rgba(0,200,150,.2)"}}>
               <div style={{fontSize:24,marginBottom:6}}>✅</div>
@@ -759,13 +783,13 @@ function Report({registroData,respuestas,envio}){
               {generating?<><span>⏳</span> Generando PDF...</>:<><span>📥</span> Descargar informe en PDF</>}
             </button>
           )}
+          <EnvioNota email={registroData.email} estado={envio}/>
         </div>
 
         <div style={{background:CREAM,border:"1px solid #E8E6DF",borderRadius:10,padding:"14px 16px",textAlign:"center",marginBottom:14}}>
           <Mono color={SLATE_TXT}>Benchmark regional — próximamente</Mono>
           <p style={{fontSize:15,color:"#3A4070",lineHeight:1.65,marginTop:6}}>Cuando 10 o más universidades completen el diagnóstico, podrá ver cómo se compara su proceso con el de otras instituciones de LATAM.</p>
         </div>
-        <div style={{textAlign:"center",paddingTop:4}}><Mono color={MUTED}>CampusLatina × CIeLatam × Salesforce · v1.0</Mono></div>
       </div>
     );
   };
@@ -782,14 +806,14 @@ function Report({registroData,respuestas,envio}){
             style={{flex:"1 1 0",maxWidth:130,minHeight:TOUCH,fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:tab===i?700:500,color:tab===i?EMERALD:"rgba(255,255,255,.75)",background:"none",border:"none",borderBottom:tab===i?`3px solid ${EMERALD}`:"3px solid transparent",cursor:"pointer",padding:"0 4px",whiteSpace:"nowrap"}}>{t}</button>
         ))}
       </div>
-      <EnvioBanner email={registroData.email} estado={envio}/>
       <div style={{maxWidth:680,margin:"0 auto"}}><CurrentTab/></div>
-      <ContactoCTA universidad={registroData.universidad}/>
-      <div style={{maxWidth:680,margin:"0 auto",padding:"0 18px 44px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-        {tab>0?<button type="button" onClick={()=>irATab(tab-1)} style={{minHeight:TOUCH,padding:"0 16px",borderRadius:10,border:`1px solid ${LINE}`,background:WHITE,color:NAVY,cursor:"pointer",fontSize:15,fontFamily:"'DM Sans',sans-serif"}}>← {TABS[tab-1]}</button>:<span/>}
+      {tab===TABS.length-1&&<ContactoCTA universidad={registroData.universidad}/>}
+      <div style={{maxWidth:680,margin:"0 auto",padding:"8px 16px 20px",display:"grid",gridTemplateColumns:"1fr auto 1fr",alignItems:"center",gap:8}}>
+        {tab>0?<button type="button" onClick={()=>irATab(tab-1)} style={{justifySelf:"start",minHeight:TOUCH,padding:"0 16px",borderRadius:10,border:`1px solid ${LINE}`,background:WHITE,color:NAVY,cursor:"pointer",fontSize:15,fontFamily:"'DM Sans',sans-serif"}}>← {TABS[tab-1]}</button>:<span/>}
         <Mono color={MUTED}>{tab+1} / {TABS.length}</Mono>
-        {tab<TABS.length-1?<button type="button" onClick={()=>irATab(tab+1)} style={{minHeight:TOUCH,padding:"0 16px",borderRadius:10,border:`1.5px solid ${NAVY}`,background:WHITE,color:NAVY,cursor:"pointer",fontSize:15,fontWeight:600,fontFamily:"'DM Sans',sans-serif"}}>{TABS[tab+1]} →</button>:<span/>}
+        {tab<TABS.length-1?<button type="button" onClick={()=>irATab(tab+1)} style={{justifySelf:"end",minHeight:TOUCH,padding:"0 16px",borderRadius:10,border:`1.5px solid ${NAVY}`,background:WHITE,color:NAVY,cursor:"pointer",fontSize:15,fontWeight:600,fontFamily:"'DM Sans',sans-serif"}}>{TABS[tab+1]} →</button>:<span/>}
       </div>
+      <p style={{textAlign:"center",margin:0,padding:"0 16px 32px"}}><Mono color={MUTED}>CampusLatina × CIeLatam × Salesforce</Mono></p>
     </div>
   );
 }

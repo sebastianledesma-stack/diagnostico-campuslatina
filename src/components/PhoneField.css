@@ -1,0 +1,30 @@
+/* Aspecto igual al resto de los campos del registro */
+.cl-phone {
+  --PhoneInputCountryFlag-height: 1.1em;
+  --PhoneInputCountrySelectArrow-color: #1A1F5E;
+  --PhoneInputCountrySelectArrow-opacity: 1;
+  --PhoneInputCountryFlag-borderColor: rgba(0,0,0,.15);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1.5px solid #8C8A93;
+  border-radius: 8px;
+  background: #F5F4F0;
+}
+.cl-phone--error { border-color: #CC3333; }
+.cl-phone:focus-within { outline: 3px solid #007A5C; outline-offset: 2px; }
+.cl-phone .PhoneInputCountry { padding-right: 8px; margin-right: 6px; border-right: 1px solid #D4D2CC; align-self: stretch; }
+.cl-phone .PhoneInputCountrySelect:focus + .PhoneInputCountryIcon { box-shadow: 0 0 0 2px #007A5C; }
+.cl-phone .PhoneInputInput {
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 16px;
+  color: #1A1F5E;
+  min-height: 44px;
+  outline: none; /* el foco se muestra en el contenedor (:focus-within) */
+  width: 100%;
+}
+.cl-phone .cl-flag-code { display: inline-flex; align-items: center; justify-content: center; height: 100%; width: 100%; font: 700 10px/1 'Space Mono', monospace; color: #1A1F5E; background: #fff; }

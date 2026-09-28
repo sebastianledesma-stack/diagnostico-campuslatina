@@ -1,5 +1,5 @@
 // Agregados al informe pedidos por la spec (secciones 2 y 4.1), con los tokens visuales del v3.
-import { NAVY, NAVY_DK, EMERALD, SLATE, ORANGE, WHITE } from "../theme.js";
+import { NAVY_DK, EMERALD, WHITE, MUTED, BTN_PRIMARY, TOUCH } from "../theme.js";
 import { AUTORIDAD } from "../data/textos.js";
 
 const CONTACT_EMAIL = import.meta.env.VITE_CONTACT_EMAIL || "";
@@ -7,23 +7,17 @@ const CONTACT_WHATSAPP = (import.meta.env.VITE_CONTACT_WHATSAPP || "").replace(/
 
 const monoStyle = {fontFamily:"'Space Mono',monospace",fontSize:11,letterSpacing:".12em",textTransform:"uppercase"};
 
-// Estado del envío del mail con el PDF: "pendiente" | "enviado" | "error"
-export function EnvioBanner({email,estado}){
+// Nota discreta (dentro de la pestaña PDF) sobre la copia enviada por mail.
+// Estado: "pendiente" | "enviado" | "error"
+export function EnvioNota({email,estado}){
   if(!email) return null;
-  const cfg={
-    pendiente:{color:SLATE,icon:"✉️",texto:<>Estamos enviando el informe en PDF a <strong>{email}</strong></>},
-    enviado:{color:EMERALD,icon:"✅",texto:<>Le enviamos el informe en PDF a <strong>{email}</strong></>},
-    error:{color:ORANGE,icon:"⚠️",texto:<>No pudimos enviar el mail a <strong>{email}</strong>. Puede descargar el PDF desde la solapa “Descargar PDF”.</>},
-  }[estado]||null;
-  if(!cfg) return null;
-  return(
-    <div role="status" style={{maxWidth:680,margin:"0 auto",padding:"12px 18px 0"}}>
-      <div style={{display:"flex",gap:10,alignItems:"center",background:WHITE,border:`1px solid ${cfg.color}55`,borderLeft:`3px solid ${cfg.color}`,borderRadius:10,padding:"10px 14px"}}>
-        <span style={{fontSize:16,flexShrink:0}} aria-hidden="true">{cfg.icon}</span>
-        <p style={{fontSize:15,color:NAVY,lineHeight:1.5,margin:0,fontFamily:"'DM Sans',sans-serif",wordBreak:"break-word"}}>{cfg.texto}</p>
-      </div>
-    </div>
-  );
+  const texto={
+    pendiente:<>También le estamos enviando una copia a <strong>{email}</strong>.</>,
+    enviado:<>También le enviamos una copia a <strong>{email}</strong>.</>,
+    error:<>No pudimos enviar la copia a <strong>{email}</strong>. Descárguela desde este botón.</>,
+  }[estado];
+  if(!texto) return null;
+  return <p role="status" style={{fontSize:14,color:estado==="error"?"#B3261E":MUTED,lineHeight:1.5,margin:"12px 0 0",textAlign:"center",wordBreak:"break-word"}}>{texto}</p>;
 }
 
 function contactoHref(universidad){
