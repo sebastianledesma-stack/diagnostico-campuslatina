@@ -4,7 +4,7 @@ import { PAISES_LATAM } from "../data/paises.js";
 import { ETAPAS_DATA } from "../data/etapas.js";
 import { FRICCIONES } from "../data/fricciones.js";
 import { RECS, SCORE_POTENTIALS } from "../data/recs.js";
-import { getNivel, calcScore, calcEtapaProjected as projectEtapa } from "../lib/scoring.js";
+import { getNivel, calcScore, calcEtapaProjected as projectEtapa, r1, fmt1, potencialEtapa, calcGlobalPotential } from "../lib/scoring.js";
 import { guardarDiagnostico } from "../lib/persist.js";
 import { EnvioNota, ContactoCTA } from "../components/ReportExtras.jsx";
 import { NIVEL_DESC, lecturaDiagnostico } from "../data/textos.js";
@@ -20,7 +20,7 @@ function Mono({children,color=SLATE_TXT,size=11}){
 function NivelPill({score}){
   const n=getNivel(score);
   return <span style={{display:"inline-flex",alignItems:"center",gap:4,background:n.bg,borderRadius:6,padding:"3px 9px"}}>
-    <span style={{fontFamily:"'DM Serif Display',serif",fontSize:16,color:n.color,lineHeight:1}}>{score.toFixed(1)}</span>
+    <span style={{fontFamily:"'DM Serif Display',serif",fontSize:16,color:n.color,lineHeight:1}}>{fmt1(score)}</span>
     <span style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:n.color,letterSpacing:".07em",textTransform:"uppercase"}}>{n.label}</span>
   </span>;
 }
@@ -48,7 +48,7 @@ function RadarChart({scores}){
     ctx.font="600 12px 'DM Sans', sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";
     labels.forEach((label,i)=>{const r=R+22,x=cx+r*Math.cos(angle(i)),y=cy+r*Math.sin(angle(i));ctx.fillStyle=TEXT;const words=label.split(" ");if(words.length>1){ctx.fillText(words[0],x,y-7);ctx.fillText(words.slice(1).join(" "),x,y+7);}else ctx.fillText(label,x,y);});
   },[scores]);
-  const desc="Radar de puntajes por etapa: "+ETAPAS_DATA.map(e=>`${e.name} ${(scores[e.id]||0).toFixed(1)} de 5`).join(", ")+".";
+  const desc="Radar de puntajes por etapa: "+ETAPAS_DATA.map(e=>`${e.name} ${fmt1(scores[e.id]||0)} de 5`).join(", ")+".";
   return <canvas ref={ref} role="img" aria-label={desc} style={{width:"100%",maxWidth:W,height:"auto",aspectRatio:`${W} / ${H}`}}/>;
 }
 
@@ -392,7 +392,10 @@ function Report({registroData,respuestas,envio}){
   const etapaScores=ETAPAS_DATA.map(e=>({...e,score:scores[e.id],nivel:getNivel(scores[e.id])}));
   const globalScore=parseFloat((Object.values(scores).reduce((a,b)=>a+b,0)/ETAPAS_DATA.length).toFixed(2));
   const globalNivel=getNivel(globalScore);
-  const globalPotential=parseFloat((ETAPAS_DATA.reduce((a,e)=>a+SCORE_POTENTIALS[e.id],0)/ETAPAS_DATA.length).toFixed(2));
+  // Potencial efectivo por etapa: la referencia o el puntaje actual si ya la supera.
+  const POT={}; ETAPAS_DATA.forEach(e=>{POT[e.id]=potencialEtapa(scores,e.id);});
+  const globalPotential=calcGlobalPotential(scores);
+  const hayMejora=r1(globalPotential)>r1(globalScore);
   const bottleneck=etapaScores.reduce((a,e)=>e.score<a.score?e:a);
   const best=etapaScores.reduce((a,e)=>e.score>a.score?e:a);
 
@@ -416,27 +419,27 @@ function Report({registroData,respuestas,envio}){
               <div style={{fontSize:14,color:"rgba(255,255,255,.7)",marginTop:4}}>{registroData.nombre}{registroData.cargo?` · ${registroData.cargo}`:""}{registroData.pais?` · ${registroData.pais}`:""}</div>
             </div>
             <div style={{textAlign:"right",flexShrink:0}}>
-              <div style={{fontFamily:"'DM Serif Display',serif",fontSize:40,color:nd(globalScore),lineHeight:1}}>{globalScore.toFixed(1)}</div>
+              <div style={{fontFamily:"'DM Serif Display',serif",fontSize:40,color:nd(globalScore),lineHeight:1}}>{fmt1(globalScore)}</div>
               <Mono color={SLATE}>de 5 · {globalNivel.label}</Mono>
             </div>
           </div>
           <div style={{background:"rgba(255,255,255,.06)",borderRadius:10,padding:"13px 16px",borderLeft:`3px solid ${EMERALD}`,marginBottom:14}}>
             <Mono color={EMERALD}>Qué dice su diagnóstico</Mono>
             <p style={{fontSize:15,color:"rgba(255,255,255,.7)",lineHeight:1.7,margin:"6px 0 0"}}>
-              <strong style={{color:WHITE,fontWeight:500}}>{globalScore.toFixed(1)} de 5 · {globalNivel.label}: {NIVEL_DESC[globalNivel.label]}.</strong> {lecturaDiagnostico(globalScore,bottleneck)}
+              <strong style={{color:WHITE,fontWeight:500}}>{fmt1(globalScore)} de 5 · {globalNivel.label}: {NIVEL_DESC[globalNivel.label]}.</strong> {lecturaDiagnostico(globalScore,bottleneck)}
             </p>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
             <div style={{background:"rgba(255,255,255,.05)",borderRadius:8,padding:"11px 13px"}}>
               <Mono color={SLATE}>Donde mejor funciona</Mono>
               <div style={{fontSize:15,color:WHITE,fontWeight:500,marginTop:4}}>{best.name}</div>
-              <div style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:nd(best.score)}}>{best.score.toFixed(1)}/5</div>
+              <div style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:nd(best.score)}}>{fmt1(best.score)}/5</div>
             </div>
             <div style={{background:"rgba(255,255,255,.05)",borderRadius:8,padding:"11px 13px",borderLeft:`3px solid ${nd(bottleneck.score)}`}}>
               <Mono color={SLATE}>Donde más inscriptos se pierden</Mono>
               <div style={{fontSize:15,color:WHITE,fontWeight:500,marginTop:4}}>{bottleneck.name}</div>
               <div style={{fontSize:13,color:"rgba(255,255,255,.5)",fontStyle:"italic"}}>{bottleneck.pregunta}</div>
-              <div style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:nd(bottleneck.score)}}>{bottleneck.score.toFixed(1)}/5</div>
+              <div style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:nd(bottleneck.score)}}>{fmt1(bottleneck.score)}/5</div>
             </div>
           </div>
         </div>
@@ -450,7 +453,7 @@ function Report({registroData,respuestas,envio}){
               <div style={{flex:1}}>
                 <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
                   <span style={{fontSize:14,color:NAVY,fontWeight:500}}>{e.name}</span>
-                  <span style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:e.nivel.color}}>{e.score.toFixed(1)} · {e.nivel.label}</span>
+                  <span style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:e.nivel.color}}>{fmt1(e.score)} · {e.nivel.label}</span>
                 </div>
                 <div style={{height:5,background:"#E8E6DF",borderRadius:3}}>
                   <div style={{height:"100%",width:`${(e.score/5)*100}%`,background:e.nivel.color,borderRadius:3}}/>
@@ -467,7 +470,7 @@ function Report({registroData,respuestas,envio}){
               <p style={{fontSize:14,color:"#3A4070",marginTop:3}}>Si se implementan todas las recomendaciones</p>
             </div>
             <div style={{textAlign:"right"}}>
-              <div style={{fontFamily:"'DM Serif Display',serif",fontSize:24,color:"#2E7D32"}}>{globalPotential.toFixed(1)}</div>
+              <div style={{fontFamily:"'DM Serif Display',serif",fontSize:24,color:"#2E7D32"}}>{fmt1(globalPotential)}</div>
               <Mono color="#2E7D32">{getNivel(globalPotential).label}</Mono>
             </div>
           </div>
@@ -476,8 +479,8 @@ function Report({registroData,respuestas,envio}){
             <div style={{position:"absolute",top:0,left:0,height:"100%",width:`${(globalPotential/5)*100}%`,background:"rgba(0,200,150,.3)",borderRadius:3,border:`1px dashed ${EMERALD}`}}/>
           </div>
           <div style={{display:"flex",justifyContent:"space-between",marginTop:3}}>
-            <span style={{fontSize:13,color:getNivel(globalScore).color}}>Hoy: {globalScore.toFixed(1)}</span>
-            <span style={{fontSize:13,color:EMERALD_TXT}}>Potencial: {globalPotential.toFixed(1)} (+{(globalPotential-globalScore).toFixed(1)} pts)</span>
+            <span style={{fontSize:13,color:getNivel(globalScore).color}}>Hoy: {fmt1(globalScore)}</span>
+            <span style={{fontSize:13,color:EMERALD_TXT}}>{hayMejora?<>Potencial: {fmt1(globalPotential)} (+{fmt1(globalPotential-globalScore)} pts)</>:"Ya está en el máximo de referencia"}</span>
           </div>
         </div>
       </div>
@@ -530,7 +533,7 @@ function Report({registroData,respuestas,envio}){
                             {etapasEnNivel.map(e=>(
                               <span key={e.id} style={{display:"inline-flex",alignItems:"center",gap:3,background:m.color+"15",borderRadius:5,padding:"2px 7px"}}>
                                 <span style={{fontSize:13}}>{e.emoji}</span>
-                                <span style={{fontSize:13,color:m.color,fontWeight:500}}>{e.name} {e.score.toFixed(1)}</span>
+                                <span style={{fontSize:13,color:m.color,fontWeight:500}}>{e.name} {fmt1(e.score)}</span>
                               </span>
                             ))}
                           </div>
@@ -569,7 +572,7 @@ function Report({registroData,respuestas,envio}){
                     <div style={{height:5,width:56,background:LINE,borderRadius:3}}>
                       <div style={{height:"100%",width:`${(e.score/5)*100}%`,background:e.nivel.color,borderRadius:2}}/>
                     </div>
-                    <Mono color={e.nivel.color}>{e.score.toFixed(1)} · {e.nivel.label}</Mono>
+                    <Mono color={e.nivel.color}>{fmt1(e.score)} · {e.nivel.label}</Mono>
                   </div>
                 </div>
                 <span aria-hidden="true" style={{color:MUTED,fontSize:18,transform:isOpen?"rotate(180deg)":"none",transition:"transform .2s"}}>▾</span>
@@ -589,11 +592,11 @@ function Report({registroData,respuestas,envio}){
                   <div style={{marginTop:14,padding:"10px 14px",background:e.nivel.bg,borderRadius:8,borderLeft:`3px solid ${e.nivel.color}`,display:"flex",justifyContent:"space-between",flexWrap:"wrap",gap:8}}>
                     <div>
                       <Mono color={e.nivel.color}>Puntaje actual</Mono>
-                      <div style={{fontFamily:"'DM Serif Display',serif",fontSize:18,color:e.nivel.color,marginTop:2}}>{e.score.toFixed(1)}/5 · {e.nivel.label}</div>
+                      <div style={{fontFamily:"'DM Serif Display',serif",fontSize:18,color:e.nivel.color,marginTop:2}}>{fmt1(e.score)}/5 · {e.nivel.label}</div>
                     </div>
                     <div style={{textAlign:"right"}}>
                       <Mono color="#2E7D32">Potencial alcanzable</Mono>
-                      <div style={{fontFamily:"'DM Serif Display',serif",fontSize:18,color:"#2E7D32",marginTop:2}}>{SCORE_POTENTIALS[e.id]}/5 · {getNivel(SCORE_POTENTIALS[e.id]).label}</div>
+                      <div style={{fontFamily:"'DM Serif Display',serif",fontSize:18,color:"#2E7D32",marginTop:2}}>{fmt1(POT[e.id])}/5 · {getNivel(POT[e.id]).label}</div>
                     </div>
                   </div>
                 </div>
@@ -615,24 +618,24 @@ function Report({registroData,respuestas,envio}){
       <div style={{background:NAVY,borderRadius:14,padding:"16px 18px",marginBottom:16}}>
         <Mono color={SLATE}>Puntaje proyectado</Mono>
         <div style={{display:"flex",alignItems:"center",gap:10,marginTop:8,flexWrap:"wrap"}}>
-          <div style={{fontFamily:"'DM Serif Display',serif",fontSize:36,color:nd(globalScore),lineHeight:1}}>{globalScore.toFixed(1)}</div>
+          <div style={{fontFamily:"'DM Serif Display',serif",fontSize:36,color:nd(globalScore),lineHeight:1}}>{fmt1(globalScore)}</div>
           <span style={{color:SLATE,fontSize:18}}>→</span>
-          <div style={{fontFamily:"'DM Serif Display',serif",fontSize:36,color:nd(projGlobal),lineHeight:1}}>{projGlobal.toFixed(1)}</div>
+          <div style={{fontFamily:"'DM Serif Display',serif",fontSize:36,color:nd(projGlobal),lineHeight:1}}>{fmt1(projGlobal)}</div>
           <div>
             <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
               <span style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:nd(globalScore),background:"rgba(255,255,255,.08)",padding:"2px 8px",borderRadius:8,letterSpacing:".07em",textTransform:"uppercase"}}>{globalNivel.label}</span>
-              {projGlobal>globalScore&&<>
+              {r1(projGlobal)>r1(globalScore)&&<>
                 <span style={{color:SLATE,fontSize:12}}>→</span>
                 <span style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:nd(projGlobal),background:"rgba(255,255,255,.08)",padding:"2px 8px",borderRadius:8,letterSpacing:".07em",textTransform:"uppercase"}}>{getNivel(projGlobal).label}</span>
               </>}
             </div>
-            <Mono color={EMERALD}>{totalChecked} acción{totalChecked!==1?"es":""} seleccionada{totalChecked!==1?"s":""}{projGlobal>globalScore?` · +${(projGlobal-globalScore).toFixed(2)} pts`:""}</Mono>
+            <Mono color={EMERALD}>{totalChecked} acción{totalChecked!==1?"es":""} seleccionada{totalChecked!==1?"s":""}{r1(projGlobal)>r1(globalScore)?` · +${fmt1(projGlobal-globalScore)} pts`:""}</Mono>
           </div>
         </div>
         <div style={{marginTop:12,height:7,background:"rgba(255,255,255,.1)",borderRadius:4,overflow:"hidden"}}>
           <div style={{height:"100%",display:"flex"}}>
             <div style={{width:`${(globalScore/5)*100}%`,background:nd(globalScore)}}/>
-            {projGlobal>globalScore&&<div style={{width:`${((projGlobal-globalScore)/5)*100}%`,background:EMERALD}}/>}
+            {r1(projGlobal)>r1(globalScore)&&<div style={{width:`${((projGlobal-globalScore)/5)*100}%`,background:EMERALD}}/>}
           </div>
         </div>
       </div>
@@ -640,7 +643,7 @@ function Report({registroData,respuestas,envio}){
       {etapaScores.map((e,ei)=>{
         const recs=RECS[e.id]||[];
         const newScore=calcEtapaProjected(e.id);
-        const changed=newScore>e.score;
+        const changed=r1(newScore)>r1(e.score);
         return(
           <div key={e.id} style={{background:WHITE,border:"1px solid #E8E6DF",borderRadius:12,marginBottom:12}}>
             <div style={{padding:"12px 15px",borderBottom:"1px solid #F0EEEA",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8}}>
@@ -650,7 +653,7 @@ function Report({registroData,respuestas,envio}){
               </div>
               <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
                 <NivelPill score={e.score}/>
-                {changed&&<><span style={{color:EMERALD_TXT,fontSize:14}}>→</span><NivelPill score={newScore}/><span style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:EMERALD_TXT,background:"rgba(0,200,150,.1)",padding:"2px 6px",borderRadius:6}}>+{(newScore-e.score).toFixed(2)}</span></>}
+                {changed&&<><span style={{color:EMERALD_TXT,fontSize:14}}>→</span><NivelPill score={newScore}/><span style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:EMERALD_TXT,background:"rgba(0,200,150,.1)",padding:"2px 6px",borderRadius:6}}>+{fmt1(newScore-e.score)}</span></>}
               </div>
             </div>
             <div style={{padding:"10px 15px",display:"flex",flexDirection:"column",gap:8}}>
@@ -665,7 +668,7 @@ function Report({registroData,respuestas,envio}){
                     </span>
                     <span style={{flex:1}}>
                       <span style={{display:"block",fontSize:15,color:TEXT,lineHeight:1.55}}>{r.texto}</span>
-                      <span style={{display:"block",fontSize:12,color:isCh?EMERALD_TXT:MUTED,fontFamily:"'Space Mono',monospace",marginTop:4}}>+{r.impacto.toFixed(1)} pts · {r.accion}</span>
+                      <span style={{display:"block",fontSize:12,color:isCh?EMERALD_TXT:MUTED,fontFamily:"'Space Mono',monospace",marginTop:4}}>+{fmt1(r.impacto)} pts · {r.accion}</span>
                     </span>
                   </button>
                 );
@@ -689,18 +692,18 @@ function Report({registroData,respuestas,envio}){
       const etapasRows=etapaScores.map(e=>`
         <tr>
           <td style="padding:10px 12px;border-bottom:1px solid #E8E6DF;font-size:13px;color:#1A1F5E;font-weight:500;">${e.emoji} ${e.name}</td>
-          <td style="padding:10px 12px;border-bottom:1px solid #E8E6DF;font-size:13px;color:${nivelColor(e.score)};font-weight:700;text-align:center;">${e.score.toFixed(1)}/5</td>
+          <td style="padding:10px 12px;border-bottom:1px solid #E8E6DF;font-size:13px;color:${nivelColor(e.score)};font-weight:700;text-align:center;">${fmt1(e.score)}/5</td>
           <td style="padding:10px 12px;border-bottom:1px solid #E8E6DF;font-size:12px;color:${nivelColor(e.score)};">${nivelLabel(e.score)}</td>
-          <td style="padding:10px 12px;border-bottom:1px solid #E8E6DF;font-size:12px;color:#2E7D32;">${SCORE_POTENTIALS[e.id]}/5</td>
+          <td style="padding:10px 12px;border-bottom:1px solid #E8E6DF;font-size:12px;color:#2E7D32;">${fmt1(POT[e.id])}/5</td>
         </tr>
       `).join("");
       const etapasDetalle=etapaScores.map(e=>{
         const fricc=(FRICCIONES[e.id]||[]).map(f=>`<li style="margin-bottom:6px;color:#3A4070;font-size:13px;">${f.icon} ${f.texto}</li>`).join("");
-        const recs=(RECS[e.id]||[]).map((r,i)=>`<li style="margin-bottom:8px;color:#3A4070;font-size:13px;"><strong>${i+1}.</strong> ${r.texto} <span style="color:#00C896;">(+${r.impacto.toFixed(1)} pts)</span></li>`).join("");
-        return`<div style="margin-bottom:28px;page-break-inside:avoid;"><div style="border-left:4px solid ${nivelColor(e.score)};padding-left:14px;margin-bottom:10px;"><div style="font-size:16px;font-weight:bold;color:#1A1F5E;">${e.emoji} ${e.num}. ${e.name}</div><div style="font-size:12px;color:${nivelColor(e.score)};margin-top:2px;">${e.score.toFixed(1)}/5 · ${nivelLabel(e.score)} → Potencial: ${SCORE_POTENTIALS[e.id]}/5 · ${nivelLabel(SCORE_POTENTIALS[e.id])}</div></div><p style="font-size:13px;color:#3A4070;line-height:1.65;margin-bottom:10px;">${e.resumen}</p><div style="margin-bottom:10px;"><div style="font-size:10px;font-weight:700;color:#8B94C8;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px;">Dónde se pierde valor</div><ul style="margin:0;padding-left:16px;">${fricc}</ul></div><div><div style="font-size:10px;font-weight:700;color:#8B94C8;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px;">Recomendaciones</div><ul style="margin:0;padding-left:16px;">${recs}</ul></div></div>`;
+        const recs=(RECS[e.id]||[]).map((r,i)=>`<li style="margin-bottom:8px;color:#3A4070;font-size:13px;"><strong>${i+1}.</strong> ${r.texto} <span style="color:#00C896;">(+${fmt1(r.impacto)} pts)</span></li>`).join("");
+        return`<div style="margin-bottom:28px;page-break-inside:avoid;"><div style="border-left:4px solid ${nivelColor(e.score)};padding-left:14px;margin-bottom:10px;"><div style="font-size:16px;font-weight:bold;color:#1A1F5E;">${e.emoji} ${e.num}. ${e.name}</div><div style="font-size:12px;color:${nivelColor(e.score)};margin-top:2px;">${fmt1(e.score)}/5 · ${nivelLabel(e.score)} → Potencial: ${fmt1(POT[e.id])}/5 · ${nivelLabel(POT[e.id])}</div></div><p style="font-size:13px;color:#3A4070;line-height:1.65;margin-bottom:10px;">${e.resumen}</p><div style="margin-bottom:10px;"><div style="font-size:10px;font-weight:700;color:#8B94C8;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px;">Dónde se pierde valor</div><ul style="margin:0;padding-left:16px;">${fricc}</ul></div><div><div style="font-size:10px;font-weight:700;color:#8B94C8;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px;">Recomendaciones</div><ul style="margin:0;padding-left:16px;">${recs}</ul></div></div>`;
       }).join("");
       const fechaStr=new Date().toLocaleDateString("es-AR",{month:"long",year:"numeric"});
-      const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Diagnóstico del proceso de inscripción — ${registroData.universidad||"Su institución"}</title><style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Arial,Helvetica,sans-serif;color:#1A1F5E;background:white;font-size:14px;line-height:1.6;}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}.header{background:#0E1240;color:white;padding:28px 44px;}.content{padding:32px 44px;}table{width:100%;border-collapse:collapse;}th{background:#1A1F5E;color:white;padding:9px 12px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;text-align:left;}.section-title{font-size:20px;font-weight:bold;color:#1A1F5E;margin:28px 0 14px;padding-bottom:6px;border-bottom:2px solid #00C896;}.footer{background:#F5F4F0;padding:16px 44px;font-size:11px;color:#6A7090;text-align:center;border-top:1px solid #E8E6DF;margin-top:32px;}</style></head><body><div class="header"><div style="display:flex;justify-content:space-between;align-items:flex-start;"><div><div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#8B94C8;margin-bottom:8px;">CampusLatina & CIeLatam & Salesforce · ${fechaStr}</div><div style="font-size:24px;font-weight:bold;color:white;line-height:1.1;margin-bottom:6px;">Diagnóstico del proceso<br/>de inscripción universitaria</div><div style="font-size:12px;color:rgba(255,255,255,.5);">${registroData.universidad||"Mi institución"}${registroData.nombre?" · "+registroData.nombre:""}${registroData.cargo?" · "+registroData.cargo:""}${registroData.pais?" · "+registroData.pais:""}</div></div><div style="text-align:right;"><div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8B94C8;margin-bottom:4px;">Puntaje global</div><div style="font-size:48px;color:#00C896;line-height:1;font-weight:bold;">${globalScore.toFixed(1)}</div><div style="font-size:11px;color:#00C896;text-transform:uppercase;">${globalNivel.label} · de 5</div></div></div></div><div class="content"><div style="background:#F0FBF7;border-left:4px solid #00C896;padding:14px 18px;border-radius:0 8px 8px 0;margin-bottom:28px;"><div style="font-size:10px;font-weight:700;color:#00C896;letter-spacing:.12em;text-transform:uppercase;margin-bottom:5px;">Qué dice su diagnóstico</div><p style="font-size:13px;color:#1A1F5E;line-height:1.7;"><strong>${globalScore.toFixed(1)} de 5 · ${globalNivel.label}: ${NIVEL_DESC[globalNivel.label]}.</strong> ${lecturaDiagnostico(globalScore,bottleneck)}</p></div><div class="section-title">Resumen por etapa</div><table><thead><tr><th>Etapa</th><th style="text-align:center;">Puntaje actual</th><th>Nivel actual</th><th>Potencial</th></tr></thead><tbody>${etapasRows}</tbody></table><div style="margin-top:10px;font-size:12px;color:#6A7090;">Puntaje global hoy: <strong style="color:#E8833A;">${globalScore.toFixed(1)}/5</strong> &nbsp;·&nbsp; Potencial: <strong style="color:#2E7D32;">${globalPotential.toFixed(1)}/5 (+${(globalPotential-globalScore).toFixed(1)} pts)</strong></div><div class="section-title">Análisis detallado por etapa</div>${etapasDetalle}</div><div class="footer">Diagnóstico del proceso de inscripción universitaria · CampusLatina & CIeLatam & Salesforce · v1.0</div><script>window.onload=function(){setTimeout(function(){window.print();},400);}<\/script></body></html>`;
+      const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Diagnóstico del proceso de inscripción — ${registroData.universidad||"Su institución"}</title><style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Arial,Helvetica,sans-serif;color:#1A1F5E;background:white;font-size:14px;line-height:1.6;}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}.header{background:#0E1240;color:white;padding:28px 44px;}.content{padding:32px 44px;}table{width:100%;border-collapse:collapse;}th{background:#1A1F5E;color:white;padding:9px 12px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;text-align:left;}.section-title{font-size:20px;font-weight:bold;color:#1A1F5E;margin:28px 0 14px;padding-bottom:6px;border-bottom:2px solid #00C896;}.footer{background:#F5F4F0;padding:16px 44px;font-size:11px;color:#6A7090;text-align:center;border-top:1px solid #E8E6DF;margin-top:32px;}</style></head><body><div class="header"><div style="display:flex;justify-content:space-between;align-items:flex-start;"><div><div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#8B94C8;margin-bottom:8px;">CampusLatina & CIeLatam & Salesforce · ${fechaStr}</div><div style="font-size:24px;font-weight:bold;color:white;line-height:1.1;margin-bottom:6px;">Diagnóstico del proceso<br/>de inscripción universitaria</div><div style="font-size:12px;color:rgba(255,255,255,.5);">${registroData.universidad||"Mi institución"}${registroData.nombre?" · "+registroData.nombre:""}${registroData.cargo?" · "+registroData.cargo:""}${registroData.pais?" · "+registroData.pais:""}</div></div><div style="text-align:right;"><div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8B94C8;margin-bottom:4px;">Puntaje global</div><div style="font-size:48px;color:#00C896;line-height:1;font-weight:bold;">${fmt1(globalScore)}</div><div style="font-size:11px;color:#00C896;text-transform:uppercase;">${globalNivel.label} · de 5</div></div></div></div><div class="content"><div style="background:#F0FBF7;border-left:4px solid #00C896;padding:14px 18px;border-radius:0 8px 8px 0;margin-bottom:28px;"><div style="font-size:10px;font-weight:700;color:#00C896;letter-spacing:.12em;text-transform:uppercase;margin-bottom:5px;">Qué dice su diagnóstico</div><p style="font-size:13px;color:#1A1F5E;line-height:1.7;"><strong>${fmt1(globalScore)} de 5 · ${globalNivel.label}: ${NIVEL_DESC[globalNivel.label]}.</strong> ${lecturaDiagnostico(globalScore,bottleneck)}</p></div><div class="section-title">Resumen por etapa</div><table><thead><tr><th>Etapa</th><th style="text-align:center;">Puntaje actual</th><th>Nivel actual</th><th>Potencial</th></tr></thead><tbody>${etapasRows}</tbody></table><div style="margin-top:10px;font-size:12px;color:#6A7090;">Puntaje global hoy: <strong style="color:#E8833A;">${fmt1(globalScore)}/5</strong> &nbsp;·&nbsp; Potencial: <strong style="color:#2E7D32;">${hayMejora?`${fmt1(globalPotential)}/5 (+${fmt1(globalPotential-globalScore)} pts)`:"ya en el máximo de referencia"}</strong></div><div class="section-title">Análisis detallado por etapa</div>${etapasDetalle}</div><div class="footer">Diagnóstico del proceso de inscripción universitaria · CampusLatina & CIeLatam & Salesforce · v1.0</div><script>window.onload=function(){setTimeout(function(){window.print();},400);}<\/script></body></html>`;
       const win=window.open("","_blank");
       if(win){win.document.write(html);win.document.close();}
       setTimeout(()=>{setGenerating(false);setDone(true);},800);
@@ -715,18 +718,20 @@ function Report({registroData,respuestas,envio}){
           <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",alignItems:"center",gap:8}}>
             <div style={{textAlign:"center"}}>
               <Mono color={SLATE}>Hoy</Mono>
-              <div style={{fontFamily:"'DM Serif Display',serif",fontSize:40,color:nd(globalScore),lineHeight:1,marginTop:4}}>{globalScore.toFixed(1)}</div>
+              <div style={{fontFamily:"'DM Serif Display',serif",fontSize:40,color:nd(globalScore),lineHeight:1,marginTop:4}}>{fmt1(globalScore)}</div>
               <Mono color={nd(globalScore)}>{globalNivel.label}</Mono>
             </div>
             <span style={{color:SLATE,fontSize:20}}>→</span>
             <div style={{textAlign:"center"}}>
               <Mono color={EMERALD}>Potencial</Mono>
-              <div style={{fontFamily:"'DM Serif Display',serif",fontSize:40,color:EMERALD,lineHeight:1,marginTop:4}}>{globalPotential.toFixed(1)}</div>
+              <div style={{fontFamily:"'DM Serif Display',serif",fontSize:40,color:EMERALD,lineHeight:1,marginTop:4}}>{fmt1(globalPotential)}</div>
               <Mono color={EMERALD}>{getNivel(globalPotential).label}</Mono>
             </div>
           </div>
           <p style={{fontSize:15,color:"rgba(255,255,255,.55)",textAlign:"center",marginTop:12,lineHeight:1.6}}>
-            Implementando todas las recomendaciones se pueden sumar <span style={{color:EMERALD}}>+{(globalPotential-globalScore).toFixed(1)} puntos</span>.
+            {hayMejora
+              ?<>Implementando todas las recomendaciones se pueden sumar <span style={{color:EMERALD}}>+{fmt1(globalPotential-globalScore)} puntos</span>.</>
+              :<>Su proceso ya está en el máximo de referencia de este diagnóstico. Las recomendaciones ayudan a sostenerlo.</>}
           </p>
           <div style={{marginTop:10,height:6,background:"rgba(255,255,255,.1)",borderRadius:3,overflow:"hidden"}}>
             <div style={{height:"100%",display:"flex"}}>
@@ -739,8 +744,8 @@ function Report({registroData,respuestas,envio}){
         <div style={{background:WHITE,border:"1px solid #E8E6DF",borderRadius:14,padding:"16px 18px",marginBottom:14}}>
           <Mono color={SLATE_TXT}>Mejora proyectada por etapa</Mono>
           <div style={{marginTop:12,display:"flex",flexDirection:"column",gap:7}}>
-            {[...etapaScores].sort((a,b)=>(SCORE_POTENTIALS[b.id]-b.score)-(SCORE_POTENTIALS[a.id]-a.score)).map(e=>{
-              const gain=(SCORE_POTENTIALS[e.id]-e.score).toFixed(1);
+            {[...etapaScores].sort((a,b)=>(POT[b.id]-b.score)-(POT[a.id]-a.score)).map(e=>{
+              const gainN=r1(POT[e.id])-r1(e.score); const gain=fmt1(gainN);
               const n=getNivel(e.score);
               return(
                 <div key={e.id} style={{display:"flex",alignItems:"center",gap:8}}>
@@ -748,14 +753,14 @@ function Report({registroData,respuestas,envio}){
                   <div style={{flex:1}}>
                     <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
                       <span style={{fontSize:14,color:NAVY}}>{e.name}</span>
-                      <span style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:EMERALD_TXT}}>+{gain} pts</span>
+                      <span style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:EMERALD_TXT}}>{gainN>0?`+${gain} pts`:"✓ al máximo"}</span>
                     </div>
                     <div style={{height:5,background:"#E8E6DF",borderRadius:3,position:"relative"}}>
                       <div style={{height:"100%",width:`${(e.score/5)*100}%`,background:n.color,borderRadius:3}}/>
-                      <div style={{position:"absolute",top:0,left:`${(e.score/5)*100}%`,height:"100%",width:`${((SCORE_POTENTIALS[e.id]-e.score)/5)*100}%`,background:EMERALD+"99",borderRadius:"0 3px 3px 0"}}/>
+                      <div style={{position:"absolute",top:0,left:`${(e.score/5)*100}%`,height:"100%",width:`${((POT[e.id]-e.score)/5)*100}%`,background:EMERALD+"99",borderRadius:"0 3px 3px 0"}}/>
                     </div>
                   </div>
-                  <span style={{fontFamily:"'Space Mono',monospace",fontSize:12,color:EMERALD_TXT,flexShrink:0,width:30,textAlign:"right"}}>{SCORE_POTENTIALS[e.id].toFixed(1)}</span>
+                  <span style={{fontFamily:"'Space Mono',monospace",fontSize:12,color:EMERALD_TXT,flexShrink:0,width:30,textAlign:"right"}}>{fmt1(POT[e.id])}</span>
                 </div>
               );
             })}

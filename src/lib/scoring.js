@@ -4,7 +4,13 @@ import { ORANGE_TXT } from "../theme.js";
 import { ETAPAS_DATA } from "../data/etapas.js";
 import { RECS, SCORE_POTENTIALS } from "../data/recs.js";
 
+// Un solo redondeo para todo el producto: los puntajes se muestran con 1 decimal
+// y el nivel se asigna sobre ese mismo valor, así lo que se lee coincide con la etiqueta.
+export const r1=(n)=>Math.round((Number(n)||0)*10)/10;
+export const fmt1=(n)=>r1(n).toFixed(1);
+
 export function getNivel(score){
+  score=r1(score);
   if(score<=1.9) return {label:"Inicial",color:"#CC3333",bg:"#FFF0F0"};
   if(score<=3.0) return {label:"En desarrollo",color:ORANGE_TXT,bg:"#FFF3E8"};
   if(score<=4.0) return {label:"Consolidado",color:"#2E7D32",bg:"#F0FBF4"};
@@ -24,8 +30,12 @@ export function calcGlobal(scores){
   return parseFloat((ETAPAS_DATA.reduce((a,e)=>a+(scores[e.id]||0),0)/ETAPAS_DATA.length).toFixed(2));
 }
 
-export function calcGlobalPotential(){
-  return parseFloat((ETAPAS_DATA.reduce((a,e)=>a+SCORE_POTENTIALS[e.id],0)/ETAPAS_DATA.length).toFixed(2));
+// Potencial de una etapa: la referencia, o el puntaje actual si ya la supera (nunca promete bajar).
+export function potencialEtapa(scores,eid){
+  return Math.max(scores?.[eid]||0,SCORE_POTENTIALS[eid]);
+}
+export function calcGlobalPotential(scores){
+  return parseFloat((ETAPAS_DATA.reduce((a,e)=>a+(scores?potencialEtapa(scores,e.id):SCORE_POTENTIALS[e.id]),0)/ETAPAS_DATA.length).toFixed(2));
 }
 
 // Puntaje proyectado de una etapa según las recomendaciones marcadas.

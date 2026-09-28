@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { NAVY, NAVY_DK, EMERALD, SLATE, CREAM, WHITE } from "../theme.js";
 import { ETAPAS_DATA } from "../data/etapas.js";
-import { getNivel } from "../lib/scoring.js";
+import { getNivel, fmt1 } from "../lib/scoring.js";
 import { supabase, authRedirectError, isRecoveryLink } from "../lib/supabase.js";
 
 const NIVELES = ["Inicial", "En desarrollo", "Consolidado", "Avanzado"];
@@ -208,13 +208,13 @@ function Metricas({ rows }) {
       </div>
       <div style={card}>
         <span style={mono(8)}>Promedio global</span>
-        <div style={{ ...big, color: m.total ? getNivel(m.promedio).color : NAVY }}>{m.total ? m.promedio.toFixed(2) : "—"}</div>
+        <div style={{ ...big, color: m.total ? getNivel(m.promedio).color : NAVY }}>{m.total ? fmt1(m.promedio) : "—"}</div>
         <div style={{ fontSize: 12, color: MUTED }}>{m.total ? getNivel(m.promedio).label : "Sin datos"}</div>
       </div>
       <div style={card}>
         <span style={mono(8)}>Etapa más crítica</span>
         <div style={{ ...big, fontSize: 22 }}>{m.critica ? `${m.critica.emoji} ${m.critica.name}` : "—"}</div>
-        <div style={{ fontSize: 12, color: m.critica ? getNivel(m.critica.avg).color : MUTED }}>{m.critica ? `Promedio ${m.critica.avg.toFixed(2)}/5` : "Sin datos"}</div>
+        <div style={{ fontSize: 12, color: m.critica ? getNivel(m.critica.avg).color : MUTED }}>{m.critica ? `Promedio ${fmt1(m.critica.avg)}/5` : "Sin datos"}</div>
       </div>
       <div style={card}>
         <span style={mono(8)}>Por nivel</span>
@@ -259,8 +259,8 @@ function exportarCSV(rows) {
   };
   const lines = rows.map((r) => [
     r.id, fmtFechaHora(r.created_at), r.universidad, r.pais, r.nombre, r.cargo, r.email, r.whatsapp,
-    Number(r.score_global).toFixed(2), r.nivel,
-    ...ETAPAS_DATA.map((e) => Number(r.scores?.[e.id] || 0).toFixed(2)),
+    fmt1(r.score_global), r.nivel,
+    ...ETAPAS_DATA.map((e) => fmt1(r.scores?.[e.id] || 0)),
     r.mail_enviado ? "sí" : "no", r.notif_enviada ? "sí" : "no",
     ...preguntas.map((k) => r.respuestas?.[k] || ""),
   ].map(cell).join(";"));
@@ -284,7 +284,7 @@ function Detalle({ d, onClose }) {
   const nivel = getNivel(Number(d.score_global));
   const waNum = String(d.whatsapp || "").replace(/\D/g, "");
   const nombre = String(d.nombre || "").split(/\s+/)[0];
-  const waMsg = `Hola ${nombre}! Soy de CampusLatina. Vi que completaste el diagnóstico de madurez de ${d.universidad} (puntaje ${Number(d.score_global).toFixed(1)}/5). ¿Te parece si conversamos sobre los resultados?`;
+  const waMsg = `¡Hola, ${nombre}! Soy de CampusLatina. Vi que completó el diagnóstico del proceso de inscripción de ${d.universidad} (puntaje ${fmt1(d.score_global)} de 5). ¿Le parece si conversamos sobre los resultados?`;
 
   return (
     <div role="dialog" aria-modal="true" aria-label={`Diagnóstico de ${d.universidad}`} onClick={onClose}
@@ -299,7 +299,7 @@ function Detalle({ d, onClose }) {
             </div>
             <div style={{ textAlign: "right", flexShrink: 0 }}>
               <button onClick={onClose} aria-label="Cerrar" style={{ background: "none", border: "none", color: WHITE, fontSize: 22, cursor: "pointer", minHeight: 44, minWidth: 44 }}>✕</button>
-              <div style={{ fontFamily: "'DM Serif Display',serif", fontSize: 36, color: EMERALD, lineHeight: 1 }}>{Number(d.score_global).toFixed(1)}</div>
+              <div style={{ fontFamily: "'DM Serif Display',serif", fontSize: 36, color: EMERALD, lineHeight: 1 }}>{fmt1(d.score_global)}</div>
               <span style={mono(8, EMERALD)}>{nivel.label}</span>
             </div>
           </div>
@@ -316,7 +316,7 @@ function Detalle({ d, onClose }) {
             </div>
             <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
               {waNum && <a href={`https://wa.me/${waNum}?text=${encodeURIComponent(waMsg)}`} target="_blank" rel="noopener noreferrer" style={{ ...btn(true), background: EMERALD, color: NAVY_DK, display: "inline-flex", alignItems: "center", textDecoration: "none" }}>Contactar por WhatsApp →</a>}
-              <a href={`mailto:${d.email}?subject=${encodeURIComponent(`Tu diagnóstico de madurez — ${d.universidad}`)}`} style={{ ...btn(false), display: "inline-flex", alignItems: "center", textDecoration: "none" }}>Escribir mail</a>
+              <a href={`mailto:${d.email}?subject=${encodeURIComponent(`Su diagnóstico del proceso de inscripción — ${d.universidad}`)}`} style={{ ...btn(false), display: "inline-flex", alignItems: "center", textDecoration: "none" }}>Escribir mail</a>
             </div>
             <div style={{ fontSize: 12, color: MUTED, marginTop: 10 }}>
               Informe por mail: {d.mail_enviado ? "✅ enviado" : "⚠️ no enviado"} · Aviso interno: {d.notif_enviada ? "✅" : "⚠️"}
@@ -333,7 +333,7 @@ function Detalle({ d, onClose }) {
                   <div key={e.id}>
                     <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 3 }}>
                       <span>{e.emoji} {e.name}</span>
-                      <span style={mono(9, n.color)}>{s.toFixed(2)} · {n.label}</span>
+                      <span style={mono(9, n.color)}>{fmt1(s)} · {n.label}</span>
                     </div>
                     <div style={{ height: 6, background: LINE, borderRadius: 3 }}><div style={{ height: "100%", width: `${(s / 5) * 100}%`, background: n.color, borderRadius: 3 }} /></div>
                   </div>
@@ -518,7 +518,7 @@ function Panel({ session }) {
                   <td style={{ padding: "10px 12px" }}>{r.pais}</td>
                   <td style={{ padding: "10px 12px" }}>{r.nombre}</td>
                   <td style={{ padding: "10px 12px", color: MUTED }}>{r.cargo || "—"}</td>
-                  <td style={{ padding: "10px 12px", fontFamily: "'DM Serif Display',serif", fontSize: 17, color: n.color }}>{Number(r.score_global).toFixed(1)}</td>
+                  <td style={{ padding: "10px 12px", fontFamily: "'DM Serif Display',serif", fontSize: 17, color: n.color }}>{fmt1(r.score_global)}</td>
                   <td style={{ padding: "10px 12px" }}><span style={{ background: n.bg, color: n.color, borderRadius: 6, padding: "3px 8px", fontSize: 11, whiteSpace: "nowrap" }}>{r.nivel}</span></td>
                   <td style={{ padding: "10px 12px" }} title={r.mail_enviado ? "Informe enviado" : "Informe no enviado"}>{r.mail_enviado ? "✅" : "⚠️"}</td>
                   <td style={{ padding: "6px 12px" }}>

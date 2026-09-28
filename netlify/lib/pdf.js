@@ -6,8 +6,8 @@ import { Document, Page, Text, View, StyleSheet, Font, renderToBuffer } from "@r
 import { NAVY, NAVY_DK, EMERALD, SLATE, CREAM, WHITE, EMERALD_TXT, ORANGE_TXT, SLATE_TXT, MUTED, nivelDarkColor } from "../../src/theme.js";
 import { ETAPAS_DATA } from "../../src/data/etapas.js";
 import { FRICCIONES } from "../../src/data/fricciones.js";
-import { RECS, SCORE_POTENTIALS } from "../../src/data/recs.js";
-import { getNivel, calcGlobalPotential, etapasCriticas } from "../../src/lib/scoring.js";
+import { RECS } from "../../src/data/recs.js";
+import { getNivel, calcGlobalPotential, etapasCriticas, fmt1, r1, potencialEtapa } from "../../src/lib/scoring.js";
 import * as FONTS from "./fonts.generated.js";
 import { NIVEL_DESC, lecturaDiagnostico, AUTORIDAD } from "../../src/data/textos.js";
 
@@ -57,7 +57,8 @@ function InformePDF({ d, contacto }) {
   const etapas = ETAPAS_DATA.map((e) => ({ ...e, score: scores[e.id] || 0, nivel: getNivel(scores[e.id] || 0) }));
   const globalScore = Number(d.score_global);
   const globalNivel = getNivel(globalScore);
-  const globalPotential = calcGlobalPotential();
+  const globalPotential = calcGlobalPotential(scores);
+  const POT = Object.fromEntries(ETAPAS_DATA.map((e) => [e.id, potencialEtapa(scores, e.id)]));
   const bottleneck = etapasCriticas(scores)[0];
   const fecha = new Date(d.created_at || Date.now()).toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" });
   const sub = [d.nombre, d.cargo, d.pais].filter(Boolean).join(" · ");
@@ -74,7 +75,7 @@ function InformePDF({ d, contacto }) {
         ),
         h(View, { style: { alignItems: "flex-end" } },
           h(Text, { style: [s.mono, { color: SLATE }] }, "Puntaje global"),
-          h(Text, { style: { fontFamily: "DM Serif Display", fontSize: 44, color: nivelDarkColor(globalNivel.label), lineHeight: 1.1 } }, globalScore.toFixed(1)),
+          h(Text, { style: { fontFamily: "DM Serif Display", fontSize: 44, color: nivelDarkColor(globalNivel.label), lineHeight: 1.1 } }, fmt1(globalScore)),
           h(Text, { style: [s.mono, { color: nivelDarkColor(globalNivel.label) }] }, `${globalNivel.label} · de 5`),
         ),
       ),
@@ -83,7 +84,7 @@ function InformePDF({ d, contacto }) {
         // Lectura
         h(View, { style: { backgroundColor: "#F0FBF7", borderLeftWidth: 3, borderLeftColor: EMERALD, padding: 12 } },
           h(Text, { style: [s.mono, { color: EMERALD_TXT, fontWeight: 700 }] }, "Qué dice su diagnóstico"),
-          h(Text, { style: { fontSize: 10, color: NAVY, lineHeight: 1.6, marginTop: 5 } }, `${globalScore.toFixed(1)} de 5 · ${globalNivel.label}: ${NIVEL_DESC[globalNivel.label]}. ${lecturaDiagnostico(globalScore, bottleneck)}`),
+          h(Text, { style: { fontSize: 10, color: NAVY, lineHeight: 1.6, marginTop: 5 } }, `${fmt1(globalScore)} de 5 · ${globalNivel.label}: ${NIVEL_DESC[globalNivel.label]}. ${lecturaDiagnostico(globalScore, bottleneck)}`),
         ),
 
         // Tabla resumen
@@ -93,15 +94,15 @@ function InformePDF({ d, contacto }) {
         ),
         etapas.map((e, i) => h(View, { key: e.id, wrap: false, style: { flexDirection: "row", borderBottomWidth: 1, borderBottomColor: LINE, backgroundColor: i % 2 ? CREAM : WHITE } },
           h(Text, { style: [s.td, COLS[0], { fontWeight: 500 }] }, `${e.num}. ${e.name}`),
-          h(Text, { style: [s.td, COLS[1], { color: e.nivel.color, fontWeight: 700 }] }, `${e.score.toFixed(1)}/5`),
+          h(Text, { style: [s.td, COLS[1], { color: e.nivel.color, fontWeight: 700 }] }, `${fmt1(e.score)}/5`),
           h(Text, { style: [s.td, COLS[2], { color: e.nivel.color }] }, e.nivel.label),
-          h(Text, { style: [s.td, COLS[3], { color: GREEN }] }, `${SCORE_POTENTIALS[e.id]}/5`),
+          h(Text, { style: [s.td, COLS[3], { color: GREEN }] }, `${fmt1(POT[e.id])}/5`),
         )),
         h(Text, { style: { marginTop: 8, fontSize: 10.5, color: MUTED } },
           "Puntaje global hoy: ",
-          h(Text, { style: { color: globalNivel.color, fontWeight: 700 } }, `${globalScore.toFixed(1)}/5`),
+          h(Text, { style: { color: globalNivel.color, fontWeight: 700 } }, `${fmt1(globalScore)}/5`),
           "   ·   Potencial: ",
-          h(Text, { style: { color: GREEN, fontWeight: 700 } }, `${globalPotential.toFixed(1)}/5 (+${(globalPotential - globalScore).toFixed(1)} pts)`),
+          h(Text, { style: { color: GREEN, fontWeight: 700 } }, r1(globalPotential) > r1(globalScore) ? `${fmt1(globalPotential)}/5 (+${fmt1(globalPotential - globalScore)} pts)` : "ya en el máximo de referencia"),
         ),
 
         // Detalle por etapa
@@ -110,8 +111,8 @@ function InformePDF({ d, contacto }) {
           h(View, { style: { borderLeftWidth: 3, borderLeftColor: e.nivel.color, paddingLeft: 10, marginBottom: 6 } },
             h(Text, { style: { fontSize: 12.5, fontWeight: 700, color: NAVY } }, `${e.num}. ${e.name}`, h(Text, { style: { fontWeight: 400, color: MUTED } }, `  ·  ${e.pregunta}`)),
             h(Text, { style: { fontSize: 10, color: e.nivel.color, marginTop: 1 } },
-              `${e.score.toFixed(1)}/5 · ${e.nivel.label}   —   Potencial: ${SCORE_POTENTIALS[e.id]}/5 · ${getNivel(SCORE_POTENTIALS[e.id]).label}`),
-            h(Bar, { score: e.score, potential: SCORE_POTENTIALS[e.id], color: e.nivel.color }),
+              `${fmt1(e.score)}/5 · ${e.nivel.label}   —   Potencial: ${fmt1(POT[e.id])}/5 · ${getNivel(POT[e.id]).label}`),
+            h(Bar, { score: e.score, potential: POT[e.id], color: e.nivel.color }),
           ),
           h(Text, { style: { fontSize: 10.5, color: TEXT, lineHeight: 1.55, marginBottom: 6 } }, e.resumen),
           h(Text, { style: [s.mono, { color: SLATE_TXT, fontWeight: 700, marginBottom: 3 }] }, "Dónde se pierde valor"),
@@ -123,7 +124,7 @@ function InformePDF({ d, contacto }) {
           (RECS[e.id] || []).map((r, ri) => h(View, { key: ri, style: { flexDirection: "row", marginBottom: 2 } },
             h(Text, { style: { width: 12, fontSize: 10.5, fontWeight: 700, color: NAVY } }, `${ri + 1}.`),
             h(Text, { style: { flex: 1, fontSize: 10.5, color: TEXT, lineHeight: 1.45 } },
-              r.texto, " ", h(Text, { style: { color: EMERALD_TXT } }, `(+${r.impacto.toFixed(1)}\u00A0pts)`)),
+              r.texto, " ", h(Text, { style: { color: EMERALD_TXT } }, `(+${fmt1(r.impacto)}\u00A0pts)`)),
           )),
         )),
 

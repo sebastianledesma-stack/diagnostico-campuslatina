@@ -1,11 +1,11 @@
 // Templates HTML de los mails (tablas + estilos inline para compatibilidad con clientes de correo).
 import { NAVY, NAVY_DK, EMERALD, SLATE, CREAM, EMERALD_TXT, SLATE_TXT, MUTED, nivelDarkColor } from "../../src/theme.js";
 import { ETAPAS_DATA } from "../../src/data/etapas.js";
-import { getNivel, etapasCriticas, topRecomendaciones } from "../../src/lib/scoring.js";
+import { getNivel, etapasCriticas, topRecomendaciones, fmt1 } from "../../src/lib/scoring.js";
 import { AUTORIDAD } from "../../src/data/textos.js";
 
 const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const f1 = (n) => Number(n || 0).toFixed(1);
+const f1 = fmt1;
 const SANS = "'DM Sans',Arial,Helvetica,sans-serif";
 const SERIF = "'DM Serif Display',Georgia,serif";
 const MONO = "'Space Mono',Consolas,monospace";
