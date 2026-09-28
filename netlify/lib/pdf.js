@@ -9,6 +9,7 @@ import { FRICCIONES } from "../../src/data/fricciones.js";
 import { RECS, SCORE_POTENTIALS } from "../../src/data/recs.js";
 import { getNivel, calcGlobalPotential, etapasCriticas } from "../../src/lib/scoring.js";
 import * as FONTS from "./fonts.generated.js";
+import { NIVEL_DESC, lecturaDiagnostico, AUTORIDAD } from "../../src/data/textos.js";
 
 const h = React.createElement;
 
@@ -45,12 +46,6 @@ const s = StyleSheet.create({
 
 const COLS = [{ flex: 3 }, { flex: 1.3, textAlign: "center" }, { flex: 1.8 }, { flex: 1.2, textAlign: "center" }];
 
-function lectura(globalScore, bottleneck) {
-  if (globalScore <= 2) return `El sistema de atracción funciona de forma reactiva y depende más de personas que de procesos. La mayor oportunidad de mejora está en ${bottleneck.name}, que es el cuello de botella principal del journey.`;
-  if (globalScore <= 3) return `Hay estructura básica pero con brechas importantes. El journey pierde valor especialmente en ${bottleneck.name}. Con procesos más sistemáticos, el puntaje puede crecer significativamente.`;
-  return `Tenés una base sólida. El foco de mejora está en ${bottleneck.name} y en automatizar lo que hoy depende de iniciativa individual.`;
-}
-
 function Bar({ score, potential, color }) {
   return h(View, { style: { height: 5, backgroundColor: LINE, borderRadius: 3, marginTop: 5, position: "relative" } },
     potential != null && h(View, { style: { position: "absolute", left: 0, top: 0, height: 5, width: `${(potential / 5) * 100}%`, backgroundColor: "#BFEFE0", borderRadius: 3 } }),
@@ -68,13 +63,13 @@ function InformePDF({ d, contacto }) {
   const fecha = new Date(d.created_at || Date.now()).toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" });
   const sub = [d.nombre, d.cargo, d.pais].filter(Boolean).join(" · ");
 
-  return h(Document, { title: `Diagnóstico de madurez — ${d.universidad}`, author: "CampusLatina", language: "es" },
+  return h(Document, { title: `Diagnóstico del proceso de inscripción — ${d.universidad}`, author: "CampusLatina", language: "es" },
     h(Page, { size: "A4", style: s.page },
       // Header
       h(View, { style: s.header },
         h(View, { style: { flex: 1, paddingRight: 20 } },
           h(Text, { style: [s.mono, { color: SLATE }] }, `CampusLatina & CIeLatam · ${fecha}`),
-          h(Text, { style: { fontFamily: "DM Serif Display", fontSize: 20, color: WHITE, marginTop: 8, lineHeight: 1.15 } }, "Diagnóstico de Madurez del Proceso de Atracción Universitaria"),
+          h(Text, { style: { fontFamily: "DM Serif Display", fontSize: 20, color: WHITE, marginTop: 8, lineHeight: 1.15 } }, "Diagnóstico del proceso de inscripción universitaria"),
           h(Text, { style: { fontSize: 12, color: WHITE, marginTop: 10, fontWeight: 500 } }, d.universidad),
           sub && h(Text, { style: { fontSize: 9, color: "#9AA0C8", marginTop: 2 } }, sub),
         ),
@@ -88,8 +83,8 @@ function InformePDF({ d, contacto }) {
       h(View, { style: s.content },
         // Lectura
         h(View, { style: { backgroundColor: "#F0FBF7", borderLeftWidth: 3, borderLeftColor: EMERALD, padding: 12 } },
-          h(Text, { style: [s.mono, { color: EMERALD, fontWeight: 700 }] }, "Lectura del diagnóstico"),
-          h(Text, { style: { fontSize: 10, color: NAVY, lineHeight: 1.6, marginTop: 5 } }, lectura(globalScore, bottleneck)),
+          h(Text, { style: [s.mono, { color: EMERALD, fontWeight: 700 }] }, "Qué dice su diagnóstico"),
+          h(Text, { style: { fontSize: 10, color: NAVY, lineHeight: 1.6, marginTop: 5 } }, `${globalScore.toFixed(1)} de 5 · ${globalNivel.label}: ${NIVEL_DESC[globalNivel.label]}. ${lecturaDiagnostico(globalScore, bottleneck)}`),
         ),
 
         // Tabla resumen
@@ -114,7 +109,7 @@ function InformePDF({ d, contacto }) {
         h(Text, { style: [s.sectionTitle, { marginTop: 0 }], break: true }, "Análisis detallado por etapa"),
         etapas.map((e) => h(View, { key: e.id, wrap: false, style: { marginBottom: 16 } },
           h(View, { style: { borderLeftWidth: 3, borderLeftColor: e.nivel.color, paddingLeft: 10, marginBottom: 6 } },
-            h(Text, { style: { fontSize: 12.5, fontWeight: 700, color: NAVY } }, `${e.num}. ${e.name}`),
+            h(Text, { style: { fontSize: 12.5, fontWeight: 700, color: NAVY } }, `${e.num}. ${e.name}`, h(Text, { style: { fontWeight: 400, color: MUTED } }, `  ·  ${e.pregunta}`)),
             h(Text, { style: { fontSize: 9, color: e.nivel.color, marginTop: 1 } },
               `${e.score.toFixed(1)}/5 · ${e.nivel.label}   —   Potencial: ${SCORE_POTENTIALS[e.id]}/5 · ${getNivel(SCORE_POTENTIALS[e.id]).label}`),
             h(Bar, { score: e.score, potential: SCORE_POTENTIALS[e.id], color: e.nivel.color }),
@@ -136,15 +131,15 @@ function InformePDF({ d, contacto }) {
         // CTA
         h(View, { wrap: false, style: { backgroundColor: NAVY_DK, borderRadius: 8, padding: 18, marginTop: 6 } },
           h(Text, { style: [s.mono, { color: EMERALD }] }, "CampusLatina"),
-          h(Text, { style: { fontFamily: "DM Serif Display", fontSize: 16, color: WHITE, marginTop: 5 } }, "¿Querés ayuda para implementar estas mejoras?"),
+          h(Text, { style: { fontFamily: "DM Serif Display", fontSize: 16, color: WHITE, marginTop: 5 } }, "¿Quiere inscribir más estudiantes el próximo ciclo?"),
           h(Text, { style: { fontSize: 9.5, color: "#B8BCD8", lineHeight: 1.55, marginTop: 5 } },
-            "CampusLatina trabaja con universidades de LATAM para optimizar cada etapa del proceso de atracción — desde el primer clic hasta el primer día de clases. Si querés profundizar en estos resultados, hablemos."),
+            `${AUTORIDAD} Responda el mail con este informe y lo revisamos juntos.`),
           contacto && h(Text, { style: { fontSize: 10, color: EMERALD, marginTop: 8, fontWeight: 700 } }, contacto),
         ),
       ),
 
       h(View, { fixed: true, style: s.footer },
-        h(Text, { style: [s.mono, { color: MUTED }] }, "Framework de Madurez del Proceso de Atracción Universitaria · CampusLatina · v1.0"),
+        h(Text, { style: [s.mono, { color: MUTED }] }, "Diagnóstico del proceso de inscripción universitaria · CampusLatina"),
         h(Text, { style: [s.mono, { color: MUTED }], render: ({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}` }),
       ),
     ),
@@ -159,5 +154,5 @@ export async function renderInformePDF(d, { contacto } = {}) {
 export function nombreArchivoPDF(d) {
   const slug = String(d.universidad || "institucion").normalize("NFD").replace(/[̀-ͯ]/g, "")
     .replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60) || "institucion";
-  return `Diagnostico-Madurez-${slug}.pdf`;
+  return `Diagnostico-Inscripcion-${slug}.pdf`;
 }

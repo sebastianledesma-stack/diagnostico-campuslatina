@@ -7,6 +7,7 @@ import { RECS, SCORE_POTENTIALS } from "../data/recs.js";
 import { getNivel, calcScore, calcEtapaProjected as projectEtapa } from "../lib/scoring.js";
 import { guardarDiagnostico } from "../lib/persist.js";
 import { EnvioBanner, ContactoCTA } from "../components/ReportExtras.jsx";
+import { NIVEL_DESC, lecturaDiagnostico } from "../data/textos.js";
 
 function isValidEmail(e){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);}
 
@@ -49,23 +50,23 @@ function Welcome({onStart}){
       <div style={{position:"absolute",inset:0,backgroundImage:`linear-gradient(rgba(139,148,200,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(139,148,200,.06) 1px,transparent 1px)`,backgroundSize:"60px 60px"}}/>
       <div style={{position:"absolute",right:-80,top:"15%",width:400,height:400,borderRadius:"50%",background:"radial-gradient(circle, rgba(0,200,150,.08) 0%, transparent 70%)"}}/>
       <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"60px 28px 40px",position:"relative",maxWidth:680,margin:"0 auto",width:"100%"}}>
-        <Mono color={SLATE}>CampusLatina & CIeLatam · 2025</Mono>
+        <Mono color={SLATE}>CampusLatina & CIeLatam · Diagnóstico gratuito</Mono>
         <h1 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(28px,5vw,48px)",color:WHITE,lineHeight:1.05,margin:"12px 0 16px"}}>
-          Diagnóstico de Madurez del<br/><em style={{color:EMERALD}}>Proceso de Atracción</em><br/>Universitaria
+          ¿Por qué se inscriben<br/><em style={{color:EMERALD}}>menos estudiantes</em><br/>de los esperados?
         </h1>
         <p style={{fontSize:15,color:"rgba(255,255,255,.6)",lineHeight:1.7,marginBottom:28,maxWidth:480}}>
-          Un autodiagnóstico que evalúa las 7 etapas del recorrido de un aspirante — desde que te descubre hasta que llega al primer día de clases.
+          En 10 minutos, descubra en qué momento su universidad pierde aspirantes — desde la primera búsqueda en Google hasta el primer día de clases — y qué resolver primero.
         </p>
 
         {/* WHAT YOU'LL GET */}
         <div style={{background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.08)",borderRadius:12,padding:"20px 20px",marginBottom:24}}>
-          <Mono color={EMERALD} size={8}>Qué vas a recibir al finalizar</Mono>
+          <Mono color={EMERALD} size={8}>Lo que va a saber al terminar</Mono>
           <div style={{marginTop:12,display:"flex",flexDirection:"column",gap:10}}>
             {[
-              ["🗺","Mapa visual de tu proceso de atracción","Un radar que muestra de un vistazo dónde estás fuerte y dónde perdés aspirantes."],
-              ["🔬","Diagnóstico etapa por etapa","Las fricciones concretas que frenan a los aspirantes en cada momento del recorrido."],
-              ["📈","Calculadora de impacto","Elegís las acciones que estás dispuesto a implementar y ves en tiempo real cuánto sube tu puntaje."],
-              ["🎯","Plan de acción priorizado","Las 3 mejoras más importantes por etapa, ordenadas por impacto potencial."],
+              ["🗺","Dónde se van los aspirantes","Los 7 momentos del recorrido, de un vistazo: dónde el proceso es fuerte y dónde se pierden inscriptos."],
+              ["🔬","Por qué se van","Las trabas concretas que frenan a los aspirantes en cada momento."],
+              ["🎯","Qué resolver primero","3 acciones por etapa, ordenadas por el impacto que tienen en la inscripción."],
+              ["📈","Cuánto se puede mejorar","Elija las acciones que su equipo puede implementar y vea en tiempo real cuánto sube el puntaje."],
             ].map(([icon,title,desc])=>(
               <div key={title} style={{display:"flex",gap:12,alignItems:"flex-start"}}>
                 <span style={{fontSize:18,flexShrink:0}}>{icon}</span>
@@ -80,9 +81,12 @@ function Welcome({onStart}){
 
         {/* METHODOLOGY NOTE */}
         <div style={{background:"rgba(0,200,150,.08)",border:"1px solid rgba(0,200,150,.2)",borderRadius:10,padding:"14px 16px",marginBottom:28}}>
-          <Mono color={EMERALD} size={8}>Metodología de análisis</Mono>
+          <Mono color={EMERALD} size={8}>Más publicidad no alcanza</Mono>
           <p style={{fontSize:13,color:"rgba(255,255,255,.65)",lineHeight:1.65,margin:"6px 0 0"}}>
-            Este diagnóstico analiza cada etapa del journey a través de tres dimensiones: qué tan motivado está el aspirante, qué tan fácil es para él avanzar, y si tu universidad le da el estímulo correcto en el momento justo. Es el mismo modelo que usan empresas como Instagram, Duolingo y Airbnb para diseñar sus procesos de conversión.
+            Si el proceso pierde aspirantes en el camino, invertir en campañas es llenar un balde agujereado. Este diagnóstico muestra dónde está el agujero.
+          </p>
+          <p style={{fontSize:13,color:"rgba(255,255,255,.65)",lineHeight:1.65,margin:"8px 0 0"}}>
+            Lo creamos en CampusLatina: ayudamos a inscribir a más de 180.000 estudiantes en Argentina, y ahora llevamos esa experiencia al resto de Latinoamérica.
           </p>
         </div>
 
@@ -95,7 +99,7 @@ function Welcome({onStart}){
           ))}
         </div>
         <button onClick={onStart} style={{alignSelf:"flex-start",background:EMERALD,color:NAVY_DK,border:"none",borderRadius:10,padding:"15px 32px",fontSize:15,fontWeight:700,fontFamily:"'DM Sans',sans-serif",cursor:"pointer"}}>
-          Comenzar diagnóstico →
+          Descubrir dónde se pierden inscriptos →
         </button>
       </div>
     </div>
@@ -124,8 +128,8 @@ function Register({onNext}){
         <span style={{fontFamily:"'Space Mono',monospace",fontSize:10,letterSpacing:".12em",textTransform:"uppercase",color:"rgba(255,255,255,.5)"}}>Paso 1 de 2 — Datos institucionales</span>
       </div>
       <div style={{flex:1,maxWidth:540,margin:"0 auto",padding:"36px 20px",width:"100%"}}>
-        <div style={{fontFamily:"'DM Serif Display',serif",fontSize:24,color:NAVY,marginBottom:6}}>Antes de empezar,<br/><em style={{color:EMERALD}}>contanos sobre tu institución</em></div>
-        <p style={{fontSize:14,color:"#3A4070",marginBottom:28,lineHeight:1.65}}>Esta información personaliza el informe y permite el benchmark regional cuando más universidades completen el diagnóstico.</p>
+        <div style={{fontFamily:"'DM Serif Display',serif",fontSize:24,color:NAVY,marginBottom:6}}>Antes de empezar,<br/><em style={{color:EMERALD}}>cuéntenos sobre su institución</em></div>
+        <p style={{fontSize:14,color:"#3A4070",marginBottom:28,lineHeight:1.65}}>Con estos datos armamos su informe personalizado y se lo enviamos en PDF por mail, para compartirlo con su equipo.</p>
 
         <div style={{background:WHITE,border:"1px solid #D4D2CC",borderRadius:14,padding:"22px 20px",marginBottom:14}}>
           <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16,paddingBottom:12,borderBottom:"1px solid #E8E6DF"}}>
@@ -143,7 +147,7 @@ function Register({onNext}){
               <div style={{position:"relative"}}>
                 <select value={form.pais} onChange={e=>set("pais",e.target.value)}
                   style={{display:"block",width:"100%",padding:"11px 14px",border:"1.5px solid #D4D2CC",borderRadius:8,fontSize:14,fontFamily:"'DM Sans',sans-serif",color:form.pais?NAVY:"#999",background:CREAM,appearance:"none",cursor:"pointer"}}>
-                  <option value="">Seleccioná tu país</option>
+                  <option value="">Seleccione el país</option>
                   {PAISES_LATAM.map(p=><option key={p} value={p} disabled={p.startsWith("—")}>{p}</option>)}
                 </select>
                 <span style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",color:NAVY,pointerEvents:"none",fontSize:12}}>▾</span>
@@ -172,13 +176,13 @@ function Register({onNext}){
               <LabelField label="Correo electrónico" required/>
               <input type="email" value={form.email} onChange={e=>set("email",e.target.value)} onBlur={handleEmailBlur} placeholder="Ej: maria@universidad.edu"
                 style={{display:"block",width:"100%",padding:"11px 14px",border:`1.5px solid ${emailError?"#CC3333":"#D4D2CC"}`,borderRadius:8,fontSize:14,fontFamily:"'DM Sans',sans-serif",color:NAVY,background:CREAM,outline:"none"}}/>
-              {emailError&&<p style={{fontSize:12,color:"#CC3333",margin:"5px 0 0",fontWeight:500}}>Ingresá un correo electrónico válido (ej: nombre@universidad.edu)</p>}
+              {emailError&&<p style={{fontSize:12,color:"#CC3333",margin:"5px 0 0",fontWeight:500}}>Ingrese un correo electrónico válido (ej: nombre@universidad.edu)</p>}
             </div>
             <div>
               <LabelField label="WhatsApp" required/>
               <input type="tel" value={form.whatsapp} onChange={e=>set("whatsapp",e.target.value)} placeholder="Ej: +54 9 11 1234-5678"
                 style={{display:"block",width:"100%",padding:"11px 14px",border:"1.5px solid #D4D2CC",borderRadius:8,fontSize:14,fontFamily:"'DM Sans',sans-serif",color:NAVY,background:CREAM,outline:"none"}}/>
-              <p style={{fontSize:12,color:"#6A7090",margin:"5px 0 0"}}>Incluí el código de país (ej: +54 para Argentina, +52 para México)</p>
+              <p style={{fontSize:12,color:"#6A7090",margin:"5px 0 0"}}>Incluya el código de país (ej: +54 para Argentina, +52 para México)</p>
             </div>
           </div>
         </div>
@@ -193,7 +197,7 @@ function Register({onNext}){
           }}>
           Empezar el diagnóstico →
         </button>
-        {!valid&&<p style={{textAlign:"center",fontSize:12,color:"#3A4070",marginTop:10,fontWeight:500}}>Completá los campos obligatorios (*) para continuar</p>}
+        {!valid&&<p style={{textAlign:"center",fontSize:12,color:"#3A4070",marginTop:10,fontWeight:500}}>Complete los campos obligatorios (*) para continuar</p>}
       </div>
     </div>
   );
@@ -226,14 +230,15 @@ function StageIntro({etapa,onStart,etapasScores}){
       <div style={{flex:1,maxWidth:580,margin:"0 auto",padding:"40px 24px",width:"100%",display:"flex",flexDirection:"column",justifyContent:"center"}}>
         <div style={{fontSize:48,textAlign:"center",marginBottom:16}}>{etapa.emoji}</div>
         <div style={{textAlign:"center",marginBottom:8}}><Mono color={EMERALD} size={8}>Etapa {etapa.num}</Mono></div>
-        <div style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(26px,5vw,36px)",color:NAVY,textAlign:"center",lineHeight:1.15,marginBottom:20}}>{etapa.name}</div>
+        <div style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(26px,5vw,36px)",color:NAVY,textAlign:"center",lineHeight:1.15,marginBottom:6}}>{etapa.name}</div>
+        <div style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:EMERALD,textAlign:"center",fontStyle:"italic",marginBottom:20}}>{etapa.pregunta}</div>
         <div style={{background:WHITE,border:"1px solid #E8E6DF",borderRadius:14,padding:"20px 22px",marginBottom:24}}>
           <p style={{fontSize:15,color:NAVY,lineHeight:1.7,margin:0,fontWeight:500}}>{etapa.resumen}</p>
           <p style={{fontSize:14,color:"#6A7090",lineHeight:1.65,margin:"10px 0 0"}}>{etapa.contexto}</p>
         </div>
         <div style={{background:CREAM,border:"1px solid #E8E6DF",borderRadius:10,padding:"12px 16px",marginBottom:28,display:"flex",alignItems:"center",gap:10}}>
           <span style={{fontFamily:"'Space Mono',monospace",fontSize:22,color:SLATE}}>4</span>
-          <p style={{fontSize:13,color:"#6A7090",margin:0,lineHeight:1.5}}>preguntas en esta etapa · cada una con 4 opciones — elegí la que mejor describe cómo está tu institución <em>hoy</em>, no cómo te gustaría que estuviera.</p>
+          <p style={{fontSize:13,color:"#6A7090",margin:0,lineHeight:1.5}}>preguntas en esta etapa · cada una con 4 opciones — elija la que mejor describe cómo está su institución <em>hoy</em>, no cómo le gustaría que estuviera.</p>
         </div>
         <button onClick={onStart} style={{width:"100%",padding:"15px 0",borderRadius:10,border:"none",background:EMERALD,color:NAVY_DK,fontSize:15,fontFamily:"'DM Sans',sans-serif",fontWeight:700,cursor:"pointer"}}>
           Empezar etapa {etapa.num} →
@@ -325,7 +330,7 @@ function Question({etapaIdx,preguntaIdx,etapa,pregunta,selected,onSelect,onNext,
 // ── PROCESSING ────────────────────────────────────────────
 function Processing(){
   const [step,setStep]=useState(0);
-  const steps=["Analizando las 7 etapas del journey...","Calculando niveles de madurez...","Identificando fricciones en cada etapa...","Generando recomendaciones personalizadas...","Preparando tu informe..."];
+  const steps=["Analizando las 7 etapas del journey...","Calculando puntajes por etapa...","Identificando fricciones en cada etapa...","Generando recomendaciones personalizadas...","Preparando su informe..."];
   useEffect(()=>{if(step<steps.length-1){const t=setTimeout(()=>setStep(s=>s+1),750);return()=>clearTimeout(t);}},[step]);
   const pct=Math.round(((step+1)/steps.length)*100);
   return(
@@ -372,7 +377,7 @@ function Report({registroData,respuestas,envio}){
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12,marginBottom:16}}>
             <div>
               <Mono color={SLATE}>{new Date().toLocaleDateString("es-AR",{month:"long",year:"numeric"})}</Mono>
-              <div style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:WHITE,marginTop:5,lineHeight:1.2}}>{registroData.universidad||"Tu institución"}</div>
+              <div style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:WHITE,marginTop:5,lineHeight:1.2}}>{registroData.universidad||"Su institución"}</div>
               <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:2}}>{registroData.nombre}{registroData.cargo?` · ${registroData.cargo}`:""}{registroData.pais?` · ${registroData.pais}`:""}</div>
             </div>
             <div style={{textAlign:"right",flexShrink:0}}>
@@ -381,29 +386,28 @@ function Report({registroData,respuestas,envio}){
             </div>
           </div>
           <div style={{background:"rgba(255,255,255,.06)",borderRadius:10,padding:"13px 16px",borderLeft:`3px solid ${EMERALD}`,marginBottom:14}}>
-            <Mono color={EMERALD} size={8}>Lectura del diagnóstico</Mono>
+            <Mono color={EMERALD} size={8}>Qué dice su diagnóstico</Mono>
             <p style={{fontSize:13,color:"rgba(255,255,255,.7)",lineHeight:1.7,margin:"6px 0 0"}}>
-              {globalScore<=2?`El sistema de atracción funciona de forma reactiva y depende más de personas que de procesos. La mayor oportunidad de mejora está en ${bottleneck.name}, que es el cuello de botella principal del journey.`
-               :globalScore<=3?`Hay estructura básica pero con brechas importantes. El journey pierde valor especialmente en ${bottleneck.name}. Con procesos más sistemáticos, el puntaje puede crecer significativamente.`
-               :`Tenés una base sólida. El foco de mejora está en ${bottleneck.name} y en automatizar lo que hoy depende de iniciativa individual.`}
+              <strong style={{color:WHITE,fontWeight:500}}>{globalScore.toFixed(1)} de 5 · {globalNivel.label}: {NIVEL_DESC[globalNivel.label]}.</strong> {lecturaDiagnostico(globalScore,bottleneck)}
             </p>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
             <div style={{background:"rgba(255,255,255,.05)",borderRadius:8,padding:"11px 13px"}}>
-              <Mono color={SLATE} size={8}>Punto más fuerte</Mono>
+              <Mono color={SLATE} size={8}>Donde mejor funciona</Mono>
               <div style={{fontSize:13,color:WHITE,fontWeight:500,marginTop:4}}>{best.name}</div>
               <div style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:EMERALD}}>{best.score.toFixed(1)}/5</div>
             </div>
             <div style={{background:"rgba(255,255,255,.05)",borderRadius:8,padding:"11px 13px",borderLeft:`3px solid ${ORANGE}`}}>
-              <Mono color={SLATE} size={8}>Punto más débil</Mono>
+              <Mono color={SLATE} size={8}>Donde más inscriptos se pierden</Mono>
               <div style={{fontSize:13,color:WHITE,fontWeight:500,marginTop:4}}>{bottleneck.name}</div>
+              <div style={{fontSize:11,color:"rgba(255,255,255,.5)",fontStyle:"italic"}}>{bottleneck.pregunta}</div>
               <div style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:ORANGE}}>{bottleneck.score.toFixed(1)}/5</div>
             </div>
           </div>
         </div>
       </div>
       <div style={{padding:"16px 18px"}}>
-        <Mono color={SLATE}>Journey secuencial — 7 etapas</Mono>
+        <Mono color={SLATE}>El recorrido del aspirante — 7 etapas</Mono>
         <div style={{marginTop:12,display:"flex",flexDirection:"column",gap:7}}>
           {etapaScores.map((e,i)=>(
             <div key={e.id} style={{display:"flex",alignItems:"center",gap:10}}>
@@ -424,8 +428,8 @@ function Report({registroData,respuestas,envio}){
         <div style={{marginTop:16,background:CREAM,border:"1px solid #E8E6DF",borderRadius:10,padding:"13px 16px"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             <div>
-              <Mono color={SLATE} size={8}>Puntaje potencial con todas las mejoras</Mono>
-              <p style={{fontSize:12,color:"#3A4070",marginTop:3}}>Si implementás todas las recomendaciones</p>
+              <Mono color={SLATE} size={8}>Puntaje posible con todas las mejoras</Mono>
+              <p style={{fontSize:12,color:"#3A4070",marginTop:3}}>Si se implementan todas las recomendaciones</p>
             </div>
             <div style={{textAlign:"right"}}>
               <div style={{fontFamily:"'DM Serif Display',serif",fontSize:24,color:"#2E7D32"}}>{globalPotential.toFixed(1)}</div>
@@ -456,7 +460,7 @@ function Report({registroData,respuestas,envio}){
     return(
       <div style={{padding:18}}>
         <Mono color={EMERALD}>Visualización</Mono>
-        <div style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:NAVY,margin:"5px 0 16px"}}>Perfil de <em style={{color:EMERALD}}>madurez</em></div>
+        <div style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:NAVY,margin:"5px 0 16px"}}>Dónde está <em style={{color:EMERALD}}>cada etapa</em></div>
         <div style={{background:WHITE,border:"1px solid #E8E6DF",borderRadius:14,padding:18,marginBottom:14,display:"flex",flexDirection:"column",alignItems:"center"}}>
           <RadarChart scores={scores}/>
         </div>
@@ -524,7 +528,7 @@ function Report({registroData,respuestas,envio}){
               <div style={{display:"flex",alignItems:"center",gap:12,padding:"13px 16px",cursor:"pointer"}} onClick={()=>setOpen(isOpen?null:i)}>
                 <div style={{width:32,height:32,borderRadius:"50%",background:e.nivel.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>{e.emoji}</div>
                 <div style={{flex:1}}>
-                  <div style={{fontSize:14,fontWeight:500,color:NAVY}}>{e.name}</div>
+                  <div style={{fontSize:14,fontWeight:500,color:NAVY}}>{e.name} <span style={{fontWeight:400,color:"#6A7090",fontStyle:"italic"}}>· {e.pregunta}</span></div>
                   <div style={{display:"flex",alignItems:"center",gap:8,marginTop:2}}>
                     <div style={{height:4,width:48,background:"#E8E6DF",borderRadius:2}}>
                       <div style={{height:"100%",width:`${(e.score/5)*100}%`,background:e.nivel.color,borderRadius:2}}/>
@@ -570,10 +574,10 @@ function Report({registroData,respuestas,envio}){
     <div style={{padding:18}}>
       <Mono color={EMERALD}>Plan de acción</Mono>
       <div style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:NAVY,margin:"5px 0 6px"}}>Para <em style={{color:EMERALD}}>subir de nivel</em></div>
-      <p style={{fontSize:13,color:"#6A7090",marginBottom:14,lineHeight:1.6}}>Marcá las acciones que estás dispuesto a implementar y mirá cómo sube tu puntaje en tiempo real.</p>
+      <p style={{fontSize:13,color:"#6A7090",marginBottom:14,lineHeight:1.6}}>Marque las acciones que su equipo puede implementar y vea cómo sube el puntaje en tiempo real.</p>
 
       <div style={{background:NAVY,borderRadius:14,padding:"16px 18px",marginBottom:16}}>
-        <Mono color={SLATE} size={8}>Tu puntaje proyectado</Mono>
+        <Mono color={SLATE} size={8}>Puntaje proyectado</Mono>
         <div style={{display:"flex",alignItems:"center",gap:10,marginTop:8,flexWrap:"wrap"}}>
           <div style={{fontFamily:"'DM Serif Display',serif",fontSize:36,color:ORANGE,lineHeight:1}}>{globalScore.toFixed(1)}</div>
           <span style={{color:SLATE,fontSize:18}}>→</span>
@@ -660,7 +664,7 @@ function Report({registroData,respuestas,envio}){
         return`<div style="margin-bottom:28px;page-break-inside:avoid;"><div style="border-left:4px solid ${nivelColor(e.score)};padding-left:14px;margin-bottom:10px;"><div style="font-size:16px;font-weight:bold;color:#1A1F5E;">${e.emoji} ${e.num}. ${e.name}</div><div style="font-size:12px;color:${nivelColor(e.score)};margin-top:2px;">${e.score.toFixed(1)}/5 · ${nivelLabel(e.score)} → Potencial: ${SCORE_POTENTIALS[e.id]}/5 · ${nivelLabel(SCORE_POTENTIALS[e.id])}</div></div><p style="font-size:13px;color:#3A4070;line-height:1.65;margin-bottom:10px;">${e.resumen}</p><div style="margin-bottom:10px;"><div style="font-size:10px;font-weight:700;color:#8B94C8;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px;">Dónde se pierde valor</div><ul style="margin:0;padding-left:16px;">${fricc}</ul></div><div><div style="font-size:10px;font-weight:700;color:#8B94C8;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px;">Recomendaciones</div><ul style="margin:0;padding-left:16px;">${recs}</ul></div></div>`;
       }).join("");
       const fechaStr=new Date().toLocaleDateString("es-AR",{month:"long",year:"numeric"});
-      const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Diagnóstico — ${registroData.universidad||"Mi institución"}</title><style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Arial,Helvetica,sans-serif;color:#1A1F5E;background:white;font-size:14px;line-height:1.6;}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}.header{background:#0E1240;color:white;padding:28px 44px;}.content{padding:32px 44px;}table{width:100%;border-collapse:collapse;}th{background:#1A1F5E;color:white;padding:9px 12px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;text-align:left;}.section-title{font-size:20px;font-weight:bold;color:#1A1F5E;margin:28px 0 14px;padding-bottom:6px;border-bottom:2px solid #00C896;}.footer{background:#F5F4F0;padding:16px 44px;font-size:11px;color:#6A7090;text-align:center;border-top:1px solid #E8E6DF;margin-top:32px;}</style></head><body><div class="header"><div style="display:flex;justify-content:space-between;align-items:flex-start;"><div><div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#8B94C8;margin-bottom:8px;">CampusLatina & CIeLatam & Salesforce · ${fechaStr}</div><div style="font-size:24px;font-weight:bold;color:white;line-height:1.1;margin-bottom:6px;">Diagnóstico de Madurez del<br/>Proceso de Atracción Universitaria</div><div style="font-size:12px;color:rgba(255,255,255,.5);">${registroData.universidad||"Mi institución"}${registroData.nombre?" · "+registroData.nombre:""}${registroData.cargo?" · "+registroData.cargo:""}${registroData.pais?" · "+registroData.pais:""}</div></div><div style="text-align:right;"><div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8B94C8;margin-bottom:4px;">Puntaje global</div><div style="font-size:48px;color:#00C896;line-height:1;font-weight:bold;">${globalScore.toFixed(1)}</div><div style="font-size:11px;color:#00C896;text-transform:uppercase;">${globalNivel.label} · de 5</div></div></div></div><div class="content"><div style="background:#F0FBF7;border-left:4px solid #00C896;padding:14px 18px;border-radius:0 8px 8px 0;margin-bottom:28px;"><div style="font-size:10px;font-weight:700;color:#00C896;letter-spacing:.12em;text-transform:uppercase;margin-bottom:5px;">Lectura del diagnóstico</div><p style="font-size:13px;color:#1A1F5E;line-height:1.7;">${globalScore<=2?"El sistema de atracción funciona de forma reactiva y depende más de personas que de procesos. La mayor oportunidad de mejora está en "+bottleneck.name+".":globalScore<=3?"Hay estructura básica pero con brechas importantes. El journey pierde valor especialmente en "+bottleneck.name+".":"Tenés una base sólida. El foco de mejora está en "+bottleneck.name+" y en automatizar lo que hoy depende de iniciativa individual."}</p></div><div class="section-title">Resumen por etapa</div><table><thead><tr><th>Etapa</th><th style="text-align:center;">Puntaje actual</th><th>Nivel actual</th><th>Potencial</th></tr></thead><tbody>${etapasRows}</tbody></table><div style="margin-top:10px;font-size:12px;color:#6A7090;">Puntaje global hoy: <strong style="color:#E8833A;">${globalScore.toFixed(1)}/5</strong> &nbsp;·&nbsp; Potencial: <strong style="color:#2E7D32;">${globalPotential.toFixed(1)}/5 (+${(globalPotential-globalScore).toFixed(1)} pts)</strong></div><div class="section-title">Análisis detallado por etapa</div>${etapasDetalle}</div><div class="footer">Framework de Madurez del Proceso de Atracción Universitaria · CampusLatina & CIeLatam & Salesforce · v1.0</div><script>window.onload=function(){setTimeout(function(){window.print();},400);}<\/script></body></html>`;
+      const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Diagnóstico del proceso de inscripción — ${registroData.universidad||"Su institución"}</title><style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Arial,Helvetica,sans-serif;color:#1A1F5E;background:white;font-size:14px;line-height:1.6;}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}.header{background:#0E1240;color:white;padding:28px 44px;}.content{padding:32px 44px;}table{width:100%;border-collapse:collapse;}th{background:#1A1F5E;color:white;padding:9px 12px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;text-align:left;}.section-title{font-size:20px;font-weight:bold;color:#1A1F5E;margin:28px 0 14px;padding-bottom:6px;border-bottom:2px solid #00C896;}.footer{background:#F5F4F0;padding:16px 44px;font-size:11px;color:#6A7090;text-align:center;border-top:1px solid #E8E6DF;margin-top:32px;}</style></head><body><div class="header"><div style="display:flex;justify-content:space-between;align-items:flex-start;"><div><div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#8B94C8;margin-bottom:8px;">CampusLatina & CIeLatam & Salesforce · ${fechaStr}</div><div style="font-size:24px;font-weight:bold;color:white;line-height:1.1;margin-bottom:6px;">Diagnóstico del proceso<br/>de inscripción universitaria</div><div style="font-size:12px;color:rgba(255,255,255,.5);">${registroData.universidad||"Mi institución"}${registroData.nombre?" · "+registroData.nombre:""}${registroData.cargo?" · "+registroData.cargo:""}${registroData.pais?" · "+registroData.pais:""}</div></div><div style="text-align:right;"><div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8B94C8;margin-bottom:4px;">Puntaje global</div><div style="font-size:48px;color:#00C896;line-height:1;font-weight:bold;">${globalScore.toFixed(1)}</div><div style="font-size:11px;color:#00C896;text-transform:uppercase;">${globalNivel.label} · de 5</div></div></div></div><div class="content"><div style="background:#F0FBF7;border-left:4px solid #00C896;padding:14px 18px;border-radius:0 8px 8px 0;margin-bottom:28px;"><div style="font-size:10px;font-weight:700;color:#00C896;letter-spacing:.12em;text-transform:uppercase;margin-bottom:5px;">Qué dice su diagnóstico</div><p style="font-size:13px;color:#1A1F5E;line-height:1.7;"><strong>${globalScore.toFixed(1)} de 5 · ${globalNivel.label}: ${NIVEL_DESC[globalNivel.label]}.</strong> ${lecturaDiagnostico(globalScore,bottleneck)}</p></div><div class="section-title">Resumen por etapa</div><table><thead><tr><th>Etapa</th><th style="text-align:center;">Puntaje actual</th><th>Nivel actual</th><th>Potencial</th></tr></thead><tbody>${etapasRows}</tbody></table><div style="margin-top:10px;font-size:12px;color:#6A7090;">Puntaje global hoy: <strong style="color:#E8833A;">${globalScore.toFixed(1)}/5</strong> &nbsp;·&nbsp; Potencial: <strong style="color:#2E7D32;">${globalPotential.toFixed(1)}/5 (+${(globalPotential-globalScore).toFixed(1)} pts)</strong></div><div class="section-title">Análisis detallado por etapa</div>${etapasDetalle}</div><div class="footer">Diagnóstico del proceso de inscripción universitaria · CampusLatina & CIeLatam & Salesforce · v1.0</div><script>window.onload=function(){setTimeout(function(){window.print();},400);}<\/script></body></html>`;
       const win=window.open("","_blank");
       if(win){win.document.write(html);win.document.close();}
       setTimeout(()=>{setGenerating(false);setDone(true);},800);
@@ -668,8 +672,8 @@ function Report({registroData,respuestas,envio}){
 
     return(
       <div style={{padding:18}}>
-        <Mono color={EMERALD}>Tu diagnóstico</Mono>
-        <div style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:NAVY,margin:"5px 0 16px"}}>Descargá el <em style={{color:EMERALD}}>informe completo</em></div>
+        <Mono color={EMERALD}>Su diagnóstico</Mono>
+        <div style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:NAVY,margin:"5px 0 16px"}}>Descargue el <em style={{color:EMERALD}}>informe completo</em></div>
 
         <div style={{background:NAVY,borderRadius:14,padding:"20px 18px",marginBottom:14}}>
           <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",alignItems:"center",gap:8}}>
@@ -686,7 +690,7 @@ function Report({registroData,respuestas,envio}){
             </div>
           </div>
           <p style={{fontSize:13,color:"rgba(255,255,255,.55)",textAlign:"center",marginTop:12,lineHeight:1.6}}>
-            Implementando todas las recomendaciones podés sumar <span style={{color:EMERALD}}>+{(globalPotential-globalScore).toFixed(1)} puntos</span>.
+            Implementando todas las recomendaciones se pueden sumar <span style={{color:EMERALD}}>+{(globalPotential-globalScore).toFixed(1)} puntos</span>.
           </p>
           <div style={{marginTop:10,height:6,background:"rgba(255,255,255,.1)",borderRadius:3,overflow:"hidden"}}>
             <div style={{height:"100%",display:"flex"}}>
@@ -724,7 +728,7 @@ function Report({registroData,respuestas,envio}){
 
         <div style={{background:WHITE,border:"1px solid #E8E6DF",borderRadius:14,padding:"20px 18px",marginBottom:14}}>
           <Mono color={SLATE} size={8}>Informe completo en PDF</Mono>
-          <p style={{fontSize:14,color:"#3A4070",marginTop:8,marginBottom:6,lineHeight:1.65}}>El PDF incluye el diagnóstico completo de cada etapa, las fricciones detectadas, el plan de acción y el puntaje potencial. Listo para imprimir o compartir con tu equipo directivo.</p>
+          <p style={{fontSize:14,color:"#3A4070",marginTop:8,marginBottom:6,lineHeight:1.65}}>El PDF incluye el diagnóstico completo de cada etapa, las fricciones detectadas, el plan de acción y el puntaje potencial. Listo para imprimir o compartir con el equipo directivo.</p>
           <div style={{fontSize:12,color:"#6A7090",marginBottom:18,display:"flex",gap:16,flexWrap:"wrap"}}>
             <span>📄 7 etapas analizadas</span>
             <span>🎯 Recomendaciones por etapa</span>
@@ -747,7 +751,7 @@ function Report({registroData,respuestas,envio}){
 
         <div style={{background:CREAM,border:"1px solid #E8E6DF",borderRadius:10,padding:"14px 16px",textAlign:"center",marginBottom:14}}>
           <Mono color={SLATE} size={8}>Benchmark regional — próximamente</Mono>
-          <p style={{fontSize:13,color:"#3A4070",lineHeight:1.65,marginTop:6}}>Cuando 10 o más universidades completen el diagnóstico, podrás ver cómo estás parado frente a otras instituciones de LATAM.</p>
+          <p style={{fontSize:13,color:"#3A4070",lineHeight:1.65,marginTop:6}}>Cuando 10 o más universidades completen el diagnóstico, podrá ver cómo se compara su proceso con el de otras instituciones de LATAM.</p>
         </div>
         <div style={{textAlign:"center",paddingTop:4}}><Mono color="#6A7090">CampusLatina × CIeLatam × Salesforce · v1.0</Mono></div>
       </div>

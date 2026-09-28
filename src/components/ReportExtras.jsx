@@ -1,5 +1,6 @@
 // Agregados al informe pedidos por la spec (secciones 2 y 4.1), con los tokens visuales del v3.
 import { NAVY, NAVY_DK, EMERALD, SLATE, ORANGE, WHITE } from "../theme.js";
+import { AUTORIDAD } from "../data/textos.js";
 
 const CONTACT_EMAIL = import.meta.env.VITE_CONTACT_EMAIL || "";
 const CONTACT_WHATSAPP = (import.meta.env.VITE_CONTACT_WHATSAPP || "").replace(/\D/g, "");
@@ -10,9 +11,9 @@ const monoStyle = {fontFamily:"'Space Mono',monospace",fontSize:8,letterSpacing:
 export function EnvioBanner({email,estado}){
   if(!email) return null;
   const cfg={
-    pendiente:{color:SLATE,icon:"✉️",texto:<>Te estamos enviando el informe en PDF a <strong>{email}</strong></>},
-    enviado:{color:EMERALD,icon:"✅",texto:<>Te enviamos el informe en PDF a <strong>{email}</strong></>},
-    error:{color:ORANGE,icon:"⚠️",texto:<>No pudimos enviar el mail a <strong>{email}</strong>. Podés descargar el PDF desde la solapa “Descargar PDF”.</>},
+    pendiente:{color:SLATE,icon:"✉️",texto:<>Estamos enviando el informe en PDF a <strong>{email}</strong></>},
+    enviado:{color:EMERALD,icon:"✅",texto:<>Le enviamos el informe en PDF a <strong>{email}</strong></>},
+    error:{color:ORANGE,icon:"⚠️",texto:<>No pudimos enviar el mail a <strong>{email}</strong>. Puede descargar el PDF desde la solapa “Descargar PDF”.</>},
   }[estado]||null;
   if(!cfg) return null;
   return(
@@ -26,9 +27,9 @@ export function EnvioBanner({email,estado}){
 }
 
 function contactoHref(universidad){
-  const msg=`Hola! Acabo de completar el diagnóstico de madurez en diagnostico.campuslatina.com. Mi universidad es ${universidad||"—"} y quiero saber más.`;
+  const msg=`Hola, acabo de completar el diagnóstico del proceso de inscripción en diagnostico.campuslatina.com. Mi universidad es ${universidad||"—"} y me gustaría revisar los resultados con ustedes.`;
   if(CONTACT_WHATSAPP) return `https://wa.me/${CONTACT_WHATSAPP}?text=${encodeURIComponent(msg)}`;
-  if(CONTACT_EMAIL) return `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`Diagnóstico de madurez — ${universidad||""}`)}&body=${encodeURIComponent(msg)}`;
+  if(CONTACT_EMAIL) return `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`Diagnóstico del proceso de inscripción — ${universidad||""}`)}&body=${encodeURIComponent(msg)}`;
   return null;
 }
 
@@ -41,14 +42,14 @@ export function ContactoCTA({universidad}){
         <div style={{position:"absolute",right:-60,top:-60,width:200,height:200,borderRadius:"50%",background:"radial-gradient(circle, rgba(0,200,150,.12) 0%, transparent 70%)"}}/>
         <div style={{position:"relative"}}>
           <span style={{...monoStyle,color:EMERALD}}>CampusLatina</span>
-          <div style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:WHITE,lineHeight:1.25,margin:"6px 0 8px"}}>¿Querés ayuda para implementar <em style={{color:EMERALD}}>estas mejoras</em>?</div>
+          <div style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:WHITE,lineHeight:1.25,margin:"6px 0 8px"}}>¿Quiere inscribir <em style={{color:EMERALD}}>más estudiantes</em> el próximo ciclo?</div>
           <p style={{fontSize:13,color:"rgba(255,255,255,.6)",lineHeight:1.65,margin:"0 0 16px",fontFamily:"'DM Sans',sans-serif"}}>
-            CampusLatina trabaja con universidades de LATAM para optimizar cada etapa del proceso de atracción — desde el primer clic hasta el primer día de clases. Si querés profundizar en estos resultados, hablemos.
+            {AUTORIDAD} Responda el mail con su informe o escríbanos, y lo revisamos juntos.
           </p>
           {href&&(
             <a href={href} target="_blank" rel="noopener noreferrer"
               style={{display:"inline-flex",alignItems:"center",justifyContent:"center",minHeight:48,padding:"0 24px",borderRadius:10,background:EMERALD,color:NAVY_DK,fontSize:14,fontWeight:700,fontFamily:"'DM Sans',sans-serif",textDecoration:"none"}}>
-              {CONTACT_WHATSAPP?"Escribinos por WhatsApp →":"Escribinos →"}
+              {CONTACT_WHATSAPP?"Escríbanos por WhatsApp →":"Escríbanos →"}
             </a>
           )}
         </div>

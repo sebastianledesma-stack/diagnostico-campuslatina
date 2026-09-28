@@ -34,7 +34,7 @@ function Shell({ children, email, onLogout }) {
       <div style={{ background: NAVY_DK, padding: "14px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
         <div>
           <span style={mono(9, EMERALD)}>CampusLatina · Panel</span>
-          <div style={{ fontFamily: "'DM Serif Display',serif", fontSize: 20, color: WHITE }}>Diagnósticos de madurez</div>
+          <div style={{ fontFamily: "'DM Serif Display',serif", fontSize: 20, color: WHITE }}>Diagnósticos de inscripción</div>
         </div>
         {email && (
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>

@@ -1,12 +1,12 @@
 // 7 etapas × 4 preguntas. Contenido original de app_diagnostico_v3.jsx — no editar valores.
 export const ETAPAS_DATA = [
   {
-    id:"descubrimiento", name:"Descubrimiento", num:1, emoji:"🔭",
-    resumen:"El aspirante todavía no te conoce. Está buscando opciones en Google, redes sociales o le pregunta a alguien de confianza.",
-    contexto:"Evaluamos si tu universidad aparece en ese momento, si lo que ve le genera ganas de saber más, y si hay un paso siguiente claro para avanzar.",
+    id:"descubrimiento", name:"Descubrimiento", num:1, emoji:"🔭", pregunta:"¿Lo encuentran?",
+    resumen:"El aspirante todavía no conoce su universidad. Está buscando opciones en Google, redes sociales o le pregunta a alguien de confianza.",
+    contexto:"Evaluamos si su universidad aparece en ese momento, si lo que ve le genera ganas de saber más, y si hay un paso siguiente claro para avanzar.",
     preguntas:[
       {
-        texto:"¿Cómo llega la mayoría de tus aspirantes a conocer tu universidad, y qué tan activa es tu presencia en los canales donde están buscando — tanto los que ya conocés como los que todavía no aprovechás (publicidad digital, embajadores, alianzas con colegios o empresas)?",
+        texto:"¿Cómo llega la mayoría de sus aspirantes a conocer su universidad, y qué tan activa es su presencia en los canales donde están buscando — tanto los que ya conoce como los que todavía no aprovecha (publicidad digital, embajadores, alianzas con colegios o empresas)?",
         opciones:[
           {letra:"A",texto:"Nos llegan principalmente por recomendación espontánea o ferias. No invertimos en publicidad digital ni tenemos alianzas o embajadores activos. No sabemos bien de dónde viene cada aspirante.",valor:1},
           {letra:"B",texto:"Hacemos algo de publicidad digital en temporada, tenemos alguna alianza con colegios y algunos estudiantes recomiendan, pero cada acción funciona por separado y sin coordinación ni medición.",valor:2},
@@ -15,7 +15,7 @@ export const ETAPAS_DATA = [
         ]
       },
       {
-        texto:"¿Tu universidad trabaja activamente para aparecer cuando alguien busca opciones educativas en Google, YouTube, o le pregunta a una inteligencia artificial como ChatGPT o Gemini?",
+        texto:"¿Su universidad trabaja activamente para aparecer cuando alguien busca opciones educativas en Google, YouTube, o le pregunta a una inteligencia artificial como ChatGPT o Gemini?",
         opciones:[
           {letra:"A",texto:"Tenemos un sitio web, pero nadie trabaja el posicionamiento en buscadores ni nos preocupa cómo aparecemos en respuestas de IA.",valor:1},
           {letra:"B",texto:"Hacemos algo de SEO básico, pero no hay estrategia definida ni medimos si estamos apareciendo donde nuestros aspirantes realmente buscan.",valor:2},
@@ -24,7 +24,7 @@ export const ETAPAS_DATA = [
         ]
       },
       {
-        texto:"¿Tu universidad sabe con precisión de dónde viene cada aspirante que llega a consultar o inscribirse, y usa esa información para mejorar sus canales?",
+        texto:"¿Su universidad sabe con precisión de dónde viene cada aspirante que llega a consultar o inscribirse, y usa esa información para mejorar sus canales?",
         opciones:[
           {letra:"A",texto:"No tenemos esa información de forma sistemática. A veces preguntamos pero no lo registramos ni lo analizamos.",valor:1},
           {letra:"B",texto:"Tenemos una pregunta de '¿cómo nos conociste?' en algún formulario, pero los datos quedan dispersos y nadie los usa para tomar decisiones.",valor:2},
@@ -33,7 +33,7 @@ export const ETAPAS_DATA = [
         ]
       },
       {
-        texto:"Cuando un aspirante te encuentra en redes, buscadores o cualquier canal, ¿hay un paso siguiente claro, fácil y específico que lo invite a avanzar?",
+        texto:"Cuando un aspirante encuentra a su universidad en redes, buscadores o cualquier canal, ¿hay un paso siguiente claro, fácil y específico que lo invite a avanzar?",
         opciones:[
           {letra:"A",texto:"No hay una llamada a la acción clara. El aspirante llega a un perfil o página y tiene que descubrir por su cuenta qué hacer después.",valor:1},
           {letra:"B",texto:"Hay botones genéricos ('conocé más', 'contactanos'), pero no están diseñados según el canal ni el perfil del aspirante, y no medimos cuántos hacen clic.",valor:2},
@@ -44,12 +44,12 @@ export const ETAPAS_DATA = [
     ]
   },
   {
-    id:"exploracion", name:"Exploración", num:2, emoji:"🔎",
-    resumen:"El aspirante ya sabe que existís y empieza a investigarte. Entra a tu web, mira tus redes, busca opiniones, compara con otras opciones.",
+    id:"exploracion", name:"Exploración", num:2, emoji:"🔎", pregunta:"¿Entienden qué ofrece?",
+    resumen:"El aspirante ya sabe que su universidad existe y empieza a investigarla. Entra a su web, mira sus redes, busca opiniones, compara con otras opciones.",
     contexto:"Evaluamos si lo que encuentra le ayuda a decidir, si puede compararte con otras opciones, y si hay algo que lo oriente activamente hacia el siguiente paso.",
     preguntas:[
       {
-        texto:"¿Qué tan fácil es para un aspirante entender qué programas ofrecés, a quién están dirigidos, qué los diferencia de otras instituciones, y comparar opciones dentro de tu propia oferta?",
+        texto:"¿Qué tan fácil es para un aspirante entender qué programas ofrece, a quién están dirigidos, qué los diferencia de otras instituciones, y comparar opciones dentro de su propia oferta?",
         opciones:[
           {letra:"A",texto:"La información existe pero está dispersa o es técnica. No hay forma de comparar programas y el diferencial institucional no está claro.",valor:1},
           {letra:"B",texto:"Tenemos descripciones de cada programa, pero son similares entre sí y no explican con claridad por qué elegir uno u otro ni por qué elegirnos a nosotros.",valor:2},
@@ -58,7 +58,7 @@ export const ETAPAS_DATA = [
         ]
       },
       {
-        texto:"Cuando un aspirante llega a tu sitio web o redes para investigarte, ¿qué tan buena es la experiencia — incluyendo cómo estás presente en los lugares donde los aspirantes comparan opciones, como Google, portales educativos o foros?",
+        texto:"Cuando un aspirante llega a su sitio web o redes para investigar, ¿qué tan buena es la experiencia — incluyendo cómo está presente en los lugares donde los aspirantes comparan opciones, como Google, portales educativos o foros?",
         opciones:[
           {letra:"A",texto:"El sitio tiene mucha información pero es difícil de navegar. No monitoreamos reseñas ni estamos presentes en espacios de comparación.",valor:1},
           {letra:"B",texto:"Tenemos un sitio funcional y algo de presencia en portales, pero no hay landings específicas por programa ni gestionamos activamente lo que dicen de nosotros en espacios externos.",valor:2},
@@ -67,7 +67,7 @@ export const ETAPAS_DATA = [
         ]
       },
       {
-        texto:"¿Tu universidad muestra evidencia concreta — testimonios reales, datos de inserción laboral, rankings, casos de egresados — que ayude al aspirante a confiar en que es una buena decisión estudiar ahí?",
+        texto:"¿Su universidad muestra evidencia concreta — testimonios reales, datos de inserción laboral, rankings, casos de egresados — que ayude al aspirante a confiar en que es una buena decisión estudiar ahí?",
         opciones:[
           {letra:"A",texto:"No contamos con testimonios actualizados ni datos de empleabilidad. La credibilidad descansa en la trayectoria o el nombre de la institución.",valor:1},
           {letra:"B",texto:"Tenemos algunos testimonios, pero son genéricos o están desactualizados, y no están ubicados donde el aspirante toma decisiones.",valor:2},
@@ -76,7 +76,7 @@ export const ETAPAS_DATA = [
         ]
       },
       {
-        texto:"Mientras un aspirante navega tu sitio, redes o materiales, ¿hay algo que lo oriente activamente hacia dar el próximo paso, o lo dejás explorar solo?",
+        texto:"Mientras un aspirante navega su sitio, redes o materiales, ¿hay algo que lo oriente activamente hacia dar el próximo paso, o lo deja explorar solo?",
         opciones:[
           {letra:"A",texto:"No hay ninguna guía activa. El aspirante navega solo y si no encuentra lo que busca, se va sin dejar rastro.",valor:1},
           {letra:"B",texto:"Hay elementos de navegación básicos, pero no están diseñados para guiar al aspirante hacia una acción concreta ni para capturar su interés.",valor:2},
@@ -87,12 +87,12 @@ export const ETAPAS_DATA = [
     ]
   },
   {
-    id:"activacion", name:"Activación", num:3, emoji:"⚡",
-    resumen:"El aspirante da el primer paso: escribe, llama, completa un formulario. Este es el momento más crítico de todo el proceso.",
-    contexto:"Si no hay respuesta rápida, relevante y que genere motivación, el interés se enfría en minutos y el aspirante elige otra opción. Evaluamos si tu universidad está lista para ese momento.",
+    id:"activacion", name:"Activación", num:3, emoji:"⚡", pregunta:"¿Responde a tiempo?",
+    resumen:"El aspirante da el primer paso: escribe, llama, completa un formulario. Es el momento en el que más rápido se enfría el interés.",
+    contexto:"Si no hay respuesta rápida, relevante y que genere motivación, el interés se enfría en minutos y el aspirante elige otra opción. Evaluamos si su universidad está lista para ese momento.",
     preguntas:[
       {
-        texto:"¿Qué tan fácil es para un aspirante contactarte — desde cualquier dispositivo y por el canal que él prefiera — y cuántos canales activos y gestionados tenés disponibles?",
+        texto:"¿Qué tan fácil es para un aspirante contactarte — desde cualquier dispositivo y por el canal que él prefiera — y cuántos canales activos y gestionados tiene disponibles?",
         opciones:[
           {letra:"A",texto:"Solo tenemos formulario web y teléfono, no siempre activos fuera del horario de oficina. El proceso no está pensado para quien llega desde el celular.",valor:1},
           {letra:"B",texto:"Tenemos formulario, correo y algún canal adicional, pero no todos están activos de forma consistente ni son fáciles de encontrar desde redes sociales.",valor:2},
@@ -101,7 +101,7 @@ export const ETAPAS_DATA = [
         ]
       },
       {
-        texto:"Cuando un aspirante hace una consulta o deja sus datos, ¿cuánto tarda tu universidad en responderle, y esa respuesta llega por el canal que él usó?",
+        texto:"Cuando un aspirante hace una consulta o deja sus datos, ¿cuánto tarda su universidad en responderle, y esa respuesta llega por el canal que él usó?",
         opciones:[
           {letra:"A",texto:"La respuesta puede tardar horas o días, depende de quién esté disponible. No hay protocolo de tiempos ni seguimiento de consultas sin respuesta.",valor:1},
           {letra:"B",texto:"Intentamos responder el mismo día, pero los tiempos varían según el canal, la carga del equipo o el horario en que llegó la consulta.",valor:2},
@@ -110,7 +110,7 @@ export const ETAPAS_DATA = [
         ]
       },
       {
-        texto:"Cuando tu universidad responde el primer contacto, ¿qué tan relevante, personalizada y motivadora es esa respuesta — en relación al programa consultado y al perfil del aspirante?",
+        texto:"Cuando su universidad responde el primer contacto, ¿qué tan relevante, personalizada y motivadora es esa respuesta — en relación al programa consultado y al perfil del aspirante?",
         opciones:[
           {letra:"A",texto:"La respuesta es un mensaje genérico o un PDF con toda la oferta, sin importar qué preguntó el aspirante ni qué programa consultó.",valor:1},
           {letra:"B",texto:"La respuesta intenta ser relevante, pero depende del criterio de quien responde. No hay guía ni plantilla por programa ni componente que genere entusiasmo.",valor:2},
@@ -130,12 +130,12 @@ export const ETAPAS_DATA = [
     ]
   },
   {
-    id:"acompanamiento", name:"Acompañamiento", num:4, emoji:"🧭",
+    id:"acompanamiento", name:"Acompañamiento", num:4, emoji:"🧭", pregunta:"¿Los acompaña mientras deciden?",
     resumen:"Entre el primer contacto y la decisión puede pasar mucho tiempo. El aspirante sigue comparando, duda, consulta con su familia.",
-    contexto:"Evaluamos si tu universidad lo sostiene durante ese proceso con contenido relevante y personalizado, o lo deja solo hasta que decide — o se va.",
+    contexto:"Evaluamos si su universidad lo sostiene durante ese proceso con contenido relevante y personalizado, o lo deja solo hasta que decide — o se va.",
     preguntas:[
       {
-        texto:"Después del primer contacto, ¿tu universidad tiene una secuencia de seguimiento definida — con cadencia, contenido y canales planificados — o el seguimiento depende de la iniciativa de cada asesor?",
+        texto:"Después del primer contacto, ¿su universidad tiene una secuencia de seguimiento definida — con cadencia, contenido y canales planificados — o el seguimiento depende de la iniciativa de cada asesor?",
         opciones:[
           {letra:"A",texto:"No hay proceso definido. Si el aspirante no vuelve a escribir, no se lo contacta. El seguimiento depende de que el asesor se acuerde.",valor:1},
           {letra:"B",texto:"Hay una práctica general de hacer uno o dos contactos adicionales, pero sin secuencia, sin contenido planificado y sin criterio de cuándo insistir o dejar de contactar.",valor:2},
@@ -173,9 +173,9 @@ export const ETAPAS_DATA = [
     ]
   },
   {
-    id:"decision", name:"Decisión", num:5, emoji:"⚖️",
+    id:"decision", name:"Decisión", num:5, emoji:"⚖️", pregunta:"¿Les resuelve las dudas finales?",
     resumen:"El aspirante está listo para decidir, o casi. Aparecen las dudas finales: ¿puedo pagarlo?, ¿y si me arrepiento?, ¿es mejor que la otra opción?",
-    contexto:"Evaluamos si tu universidad ayuda a resolver esas dudas con información clara, argumentos de cierre y mecanismos que reduzcan el miedo a equivocarse.",
+    contexto:"Evaluamos si su universidad ayuda a resolver esas dudas con información clara, argumentos de cierre y mecanismos que reduzcan el miedo a equivocarse.",
     preguntas:[
       {
         texto:"¿El aspirante puede conocer con claridad el costo del programa, las formas de pago, las opciones de becas y los diferenciales frente a otras instituciones — sin tener que preguntar y esperar?",
@@ -187,7 +187,7 @@ export const ETAPAS_DATA = [
         ]
       },
       {
-        texto:"¿Tu universidad ofrece algún mecanismo concreto que reduzca el miedo del aspirante a equivocarse en su decisión — como garantías, pruebas gratuitas, opciones de cambio o testimonios de perfiles similares?",
+        texto:"¿Su universidad ofrece algún mecanismo concreto que reduzca el miedo del aspirante a equivocarse en su decisión — como garantías, pruebas gratuitas, opciones de cambio o testimonios de perfiles similares?",
         opciones:[
           {letra:"A",texto:"No hay ningún mecanismo formal. El aspirante decide asumiendo toda la incertidumbre y el riesgo por su cuenta.",valor:1},
           {letra:"B",texto:"Se mencionan informalmente algunas flexibilidades o garantías, pero no están comunicadas de forma clara ni forman parte del proceso de cierre.",valor:2},
@@ -205,7 +205,7 @@ export const ETAPAS_DATA = [
         ]
       },
       {
-        texto:"¿Tu universidad tiene un proceso diferenciado para el aspirante que está listo para inscribirse hoy y para el que necesita más tiempo o quiere hacerlo en el próximo ciclo?",
+        texto:"¿Su universidad tiene un proceso diferenciado para el aspirante que está listo para inscribirse hoy y para el que necesita más tiempo o quiere hacerlo en el próximo ciclo?",
         opciones:[
           {letra:"A",texto:"Si el aspirante no se inscribe en el momento, se lo da por perdido. No hay proceso para mantener el vínculo con quienes difieren su decisión.",valor:1},
           {letra:"B",texto:"Algunos asesores hacen seguimiento esporádico de aspirantes que no se inscribieron, pero sin proceso sistematizado ni criterio de cuándo y cómo retomarlos.",valor:2},
@@ -216,7 +216,7 @@ export const ETAPAS_DATA = [
     ]
   },
   {
-    id:"inscripcion", name:"Inscripción", num:6, emoji:"📝",
+    id:"inscripcion", name:"Inscripción", num:6, emoji:"📝", pregunta:"¿Es fácil inscribirse?",
     resumen:"El aspirante ya decidió. Ahora tiene que completar el trámite. Este es el momento más paradójico: la decisión está tomada, pero la burocracia puede tirar todo abajo.",
     contexto:"Evaluamos si el proceso está diseñado para ser fácil y claro, o si las fricciones administrativas hacen caer una decisión que ya estaba tomada.",
     preguntas:[
@@ -248,7 +248,7 @@ export const ETAPAS_DATA = [
         ]
       },
       {
-        texto:"Durante el proceso de inscripción, ¿tu universidad hace algo para que el aspirante sienta que está tomando la mejor decisión de su vida, o el trámite es puramente administrativo y burocrático?",
+        texto:"Durante el proceso de inscripción, ¿su universidad hace algo para que el aspirante sienta que está tomando la mejor decisión de su vida, o el trámite es puramente administrativo y burocrático?",
         opciones:[
           {letra:"A",texto:"El proceso es 100% administrativo. No hay ningún mensaje, gesto ni contenido que refuerce la decisión o genere anticipación positiva por lo que viene.",valor:1},
           {letra:"B",texto:"Hay algún mensaje de bienvenida al inicio, pero desaparece rápido y el resto es puro trámite sin elementos que sostengan el entusiasmo.",valor:2},
@@ -259,12 +259,12 @@ export const ETAPAS_DATA = [
     ]
   },
   {
-    id:"retencion", name:"Retención temprana", num:7, emoji:"🌱",
+    id:"retencion", name:"Retención temprana", num:7, emoji:"🌱", pregunta:"¿Llegan al primer día?",
     resumen:"El estudiante ya se inscribió pero aún no empezó. Entre la inscripción y el primer día, muchos se arrepienten o simplemente no aparecen.",
-    contexto:"Es la etapa más crítica y la menos atendida. Evaluamos si tu universidad acompaña ese período con intención o desaparece después de recibir el pago.",
+    contexto:"Es la etapa menos atendida de todo el proceso. Evaluamos si su universidad acompaña ese período con intención o desaparece después de recibir el pago.",
     preguntas:[
       {
-        texto:"¿Qué hace tu universidad en las horas y días inmediatos después de confirmar una inscripción — y esa respuesta incluye algo que celebre la decisión y genere anticipación por lo que viene?",
+        texto:"¿Qué hace su universidad en las horas y días inmediatos después de confirmar una inscripción — y esa respuesta incluye algo que celebre la decisión y genere anticipación por lo que viene?",
         opciones:[
           {letra:"A",texto:"Después de confirmar la inscripción hay silencio. El estudiante recibe quizás un correo de confirmación técnico y nada más hasta que empieza el ciclo.",valor:1},
           {letra:"B",texto:"Enviamos un correo de bienvenida genérico, pero no hay secuencia planificada ni ningún gesto que refuerce que tomaron la mejor decisión.",valor:2},
@@ -282,7 +282,7 @@ export const ETAPAS_DATA = [
         ]
       },
       {
-        texto:"¿Tu universidad tiene algún mecanismo para detectar a los estudiantes inscriptos que se están enfriando antes de que empiece el ciclo, y actuar antes de que desaparezcan?",
+        texto:"¿Su universidad tiene algún mecanismo para detectar a los estudiantes inscriptos que se están enfriando antes de que empiece el ciclo, y actuar antes de que desaparezcan?",
         opciones:[
           {letra:"A",texto:"No. Solo nos enteramos de que alguien no va a empezar cuando no aparece el primer día. No hay sistema de alerta ni seguimiento pre-inicio.",valor:1},
           {letra:"B",texto:"Algunos asesores notan cuando un inscripto no responde, pero no hay un proceso sistemático para identificar señales de riesgo ni un protocolo de acción.",valor:2},
@@ -291,7 +291,7 @@ export const ETAPAS_DATA = [
         ]
       },
       {
-        texto:"¿Tu universidad le da al estudiante inscripto todo lo que necesita — de forma práctica, clara y personalizada — para llegar al primer día sin sorpresas, sin confusión y con ganas de empezar?",
+        texto:"¿Su universidad le da al estudiante inscripto todo lo que necesita — de forma práctica, clara y personalizada — para llegar al primer día sin sorpresas, sin confusión y con ganas de empezar?",
         opciones:[
           {letra:"A",texto:"El estudiante tiene que descubrir por su cuenta cómo llegar, dónde ir, cómo acceder a los sistemas y qué traer. No hay preparación práctica previa al inicio.",valor:1},
           {letra:"B",texto:"Se comparte alguna información antes del inicio (horarios, link o aula), pero de forma parcial y sin anticipar las dudas más frecuentes del primer día.",valor:2},

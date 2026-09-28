@@ -2,6 +2,7 @@
 import { NAVY, NAVY_DK, EMERALD, SLATE, CREAM, ORANGE } from "../../src/theme.js";
 import { ETAPAS_DATA } from "../../src/data/etapas.js";
 import { getNivel, etapasCriticas, topRecomendaciones } from "../../src/lib/scoring.js";
+import { AUTORIDAD } from "../../src/data/textos.js";
 
 const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const f1 = (n) => Number(n || 0).toFixed(1);
@@ -20,7 +21,7 @@ function layout({ preheader, body }) {
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border-radius:14px;overflow:hidden;font-family:${SANS};color:${NAVY};">
 ${body}
 <tr><td class="px" style="padding:18px 36px;background:${CREAM};border-top:1px solid #E8E6DF;font-family:${MONO};font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#6A7090;text-align:center;">
-Framework de Madurez del Proceso de Atracción Universitaria · CampusLatina · v1.0</td></tr>
+Diagnóstico del proceso de inscripción universitaria · CampusLatina</td></tr>
 </table></td></tr></table></body></html>`;
 }
 
@@ -42,15 +43,16 @@ export function mailInforme(d, { contactoEmail } = {}) {
   const etapas = ETAPAS_DATA.map((e) => ({ ...e, score: d.scores?.[e.id] || 0 }));
   const top = topRecomendaciones(d.scores || {});
   const nombre = String(d.nombre || "").trim().split(/\s+/)[0];
-  const subject = `Tu diagnóstico de madurez — ${d.universidad} · Puntaje: ${f1(d.score_global)}/5`;
+  const critica = etapasCriticas(d.scores || {})[0];
+  const subject = `${d.universidad}: dónde se están perdiendo inscriptos`;
   const hablemosHref = contactoEmail
-    ? `mailto:${contactoEmail}?subject=${encodeURIComponent(`Diagnóstico de madurez — ${d.universidad}`)}`
+    ? `mailto:${contactoEmail}?subject=${encodeURIComponent(`Diagnóstico del proceso de inscripción — ${d.universidad}`)}`
     : null;
 
   const body = `
 <tr><td class="px" style="background:${NAVY_DK};padding:32px 36px;">
   <div style="font-family:${MONO};font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:${SLATE};">CampusLatina & CIeLatam</div>
-  <div style="font-family:${SERIF};font-size:26px;line-height:1.2;color:#ffffff;margin:10px 0 18px;">Diagnóstico de Madurez del <em style="color:${EMERALD};">Proceso de Atracción</em></div>
+  <div style="font-family:${SERIF};font-size:26px;line-height:1.2;color:#ffffff;margin:10px 0 18px;">Diagnóstico del <em style="color:${EMERALD};">proceso de inscripción</em></div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
     <td style="vertical-align:bottom;">
       <div style="font-size:16px;color:#ffffff;font-weight:500;">${esc(d.universidad)}</div>
@@ -65,17 +67,18 @@ export function mailInforme(d, { contactoEmail } = {}) {
 
 <tr><td class="px" style="padding:28px 36px 8px;">
   <p style="font-size:15px;line-height:1.65;margin:0 0 12px;">Hola ${esc(nombre)},</p>
-  <p style="font-size:15px;line-height:1.65;margin:0 0 12px;">Gracias por completar el diagnóstico. Tu proceso de atracción obtuvo un puntaje global de <strong>${f1(d.score_global)}/5</strong>, que corresponde al nivel <strong style="color:${nivel.color};">${nivel.label}</strong>.</p>
-  <p style="font-size:15px;line-height:1.65;margin:0;"><strong>Adjuntamos el informe completo en PDF</strong>, con el análisis de cada etapa, las fricciones detectadas y el plan de acción. Podés compartirlo con tu equipo directivo.</p>
+  <p style="font-size:15px;line-height:1.65;margin:0 0 12px;">Gracias por completar el diagnóstico. <strong>El momento donde más inscriptos se pierden es ${esc(critica.name)}</strong> <span style="color:#6A7090;">(${esc(critica.pregunta)})</span>.</p>
+  <p style="font-size:15px;line-height:1.65;margin:0 0 12px;">El puntaje global es <strong>${f1(d.score_global)} de 5</strong>, nivel <strong style="color:${nivel.color};">${nivel.label}</strong>. Abajo están las 3 acciones para empezar.</p>
+  <p style="font-size:15px;line-height:1.65;margin:0;"><strong>El informe completo va adjunto en PDF</strong>, con el análisis de cada etapa y el plan de acción, listo para compartir con el equipo directivo.</p>
 </td></tr>
 
 <tr><td class="px" style="padding:20px 36px 4px;">
-  <div style="font-family:${MONO};font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:${SLATE};margin-bottom:6px;">Resumen de las 7 etapas</div>
+  <div style="font-family:${MONO};font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:${SLATE};margin-bottom:6px;">Las 7 etapas del recorrido del aspirante</div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${etapas.map(filaEtapa).join("")}</table>
 </td></tr>
 
 <tr><td class="px" style="padding:24px 36px 8px;">
-  <div style="font-family:${MONO};font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:${SLATE};margin-bottom:10px;">Tus 3 acciones prioritarias</div>
+  <div style="font-family:${MONO};font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:${SLATE};margin-bottom:10px;">Las 3 acciones para empezar</div>
   ${top.map(({ etapa, rec }, i) => `
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px;background:${CREAM};border-radius:10px;"><tr>
     <td style="width:34px;vertical-align:top;padding:14px 0 14px 14px;font-family:${SERIF};font-size:22px;color:${EMERALD};line-height:1;">${i + 1}</td>
@@ -89,32 +92,32 @@ export function mailInforme(d, { contactoEmail } = {}) {
 
 <tr><td class="px" style="padding:16px 36px 32px;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${NAVY_DK};border-radius:12px;"><tr><td style="padding:24px;">
-    <div style="font-family:${SERIF};font-size:20px;line-height:1.3;color:#ffffff;">¿Querés ayuda para implementar <em style="color:${EMERALD};">estas mejoras</em>?</div>
-    <p style="font-size:14px;line-height:1.6;color:#B8BCD8;margin:8px 0 18px;">CampusLatina trabaja con universidades de LATAM para optimizar cada etapa del proceso de atracción — desde el primer clic hasta el primer día de clases. Si querés profundizar en estos resultados, hablemos.</p>
-    ${hablemosHref ? `<a href="${esc(hablemosHref)}" style="display:inline-block;background:${EMERALD};color:${NAVY_DK};font-weight:700;font-size:14px;text-decoration:none;padding:14px 26px;border-radius:10px;">Hablemos →</a>
-    <div style="font-size:12px;color:#9AA0C8;margin-top:10px;">o simplemente respondé este mail.</div>` : `<div style="font-size:13px;color:#B8BCD8;">Respondé este mail y te contactamos.</div>`}
+    <div style="font-family:${SERIF};font-size:20px;line-height:1.3;color:#ffffff;">¿Quiere inscribir <em style="color:${EMERALD};">más estudiantes</em> el próximo ciclo?</div>
+    <p style="font-size:14px;line-height:1.6;color:#B8BCD8;margin:8px 0 18px;">${AUTORIDAD} Responda este mail y revisamos juntos su diagnóstico.</p>
+    ${hablemosHref ? `<a href="${esc(hablemosHref)}" style="display:inline-block;background:${EMERALD};color:${NAVY_DK};font-weight:700;font-size:14px;text-decoration:none;padding:14px 26px;border-radius:10px;">Escríbanos →</a>` : ""}
   </td></tr></table>
 </td></tr>`;
 
   const text = [
     `Hola ${nombre},`,
     ``,
-    `Gracias por completar el diagnóstico de madurez de ${d.universidad}.`,
-    `Puntaje global: ${f1(d.score_global)}/5 · ${nivel.label}`,
+    `Gracias por completar el diagnóstico del proceso de inscripción de ${d.universidad}.`,
+    `El momento donde más inscriptos se pierden es ${critica.name} (${critica.pregunta}).`,
+    `Puntaje global: ${f1(d.score_global)} de 5 · ${nivel.label}`,
     ``,
-    `Resumen por etapa:`,
+    `Las 7 etapas:`,
     ...etapas.map((e) => `  ${e.num}. ${e.name}: ${f1(e.score)} · ${getNivel(e.score).label}`),
     ``,
-    `Tus 3 acciones prioritarias:`,
+    `Las 3 acciones para empezar:`,
     ...top.map(({ etapa, rec }, i) => `  ${i + 1}. [${etapa.name}] ${rec.texto} (+${f1(rec.impacto)} pts)`),
     ``,
-    `Adjuntamos el informe completo en PDF.`,
+    `El informe completo va adjunto en PDF.`,
     ``,
-    `¿Querés ayuda para implementar estas mejoras? Respondé este mail y hablemos.`,
+    `¿Quiere inscribir más estudiantes el próximo ciclo? Responda este mail y revisamos juntos su diagnóstico.`,
     `— CampusLatina`,
   ].join("\n");
 
-  return { subject, html: layout({ preheader: `Puntaje ${f1(d.score_global)}/5 · ${nivel.label}. Tu informe completo va adjunto en PDF.`, body }), text };
+  return { subject, html: layout({ preheader: `Donde más inscriptos se pierden: ${critica.name}. El informe completo va adjunto en PDF.`, body }), text };
 }
 
 // Aviso interno a CampusLatina con los datos del prospecto (formato de la spec, sección 6.2).
