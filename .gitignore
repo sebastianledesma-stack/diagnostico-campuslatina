@@ -6,3 +6,6 @@ dist
 .env.*.local
 *.pdf
 .DS_Store
+
+# Configuración local de Claude Code (no versionar)
+.claude/settings.local*.json
