@@ -9,6 +9,7 @@ import { guardarDiagnostico } from "../lib/persist.js";
 import { EnvioNota, ContactoCTA } from "../components/ReportExtras.jsx";
 import { NIVEL_DESC, lecturaDiagnostico } from "../data/textos.js";
 import { PAIS_A_ISO } from "../lib/telefono.js";
+import { useIsDesktop } from "../lib/useIsDesktop.js";
 const PhoneField=lazy(()=>import("../components/PhoneField.jsx"));
 
 const nd=(score)=>nivelDarkColor(getNivel(score).label);
@@ -54,77 +55,106 @@ function RadarChart({scores}){
 
 // ── WELCOME ──────────────────────────────────────────────
 function Welcome({onStart}){
+  const desk=useIsDesktop();
   // Precarga el selector de teléfono (pesado) mientras se lee la bienvenida.
   useEffect(()=>{const t=setTimeout(()=>{import("../components/PhoneField.jsx");},1500);return()=>clearTimeout(t);},[]);
+
+  const BENEFICIOS=[
+    ["🗺","Dónde se van los aspirantes","Los 7 momentos del recorrido, de un vistazo: dónde el proceso es fuerte y dónde se pierden inscriptos."],
+    ["🔬","Por qué se van","Las trabas concretas que frenan a los aspirantes en cada momento."],
+    ["🎯","Qué resolver primero","3 acciones por etapa, ordenadas por el impacto que tienen en la inscripción."],
+    ["📈","Cuánto se puede mejorar","Elija las acciones que su equipo puede implementar y vea en tiempo real cuánto sube el puntaje."],
+  ];
+  const cta=(texto,extra={})=>(
+    <button type="button" onClick={onStart} style={{width:"100%",maxWidth:420,...BTN_PRIMARY,border:"none",borderRadius:12,minHeight:TOUCH+4,padding:"14px 20px",lineHeight:1.3,textAlign:"center",fontSize:16,fontWeight:700,fontFamily:"'DM Sans',sans-serif",cursor:"pointer",...extra}}>
+      {texto}{"\u00A0"}→
+    </button>
+  );
+  const encabezado=(
+    <>
+      <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
+        <Mono color={SLATE}>CampusLatina & CIeLatam</Mono>
+        <span style={{fontFamily:"'Space Mono',monospace",fontSize:11,letterSpacing:".1em",textTransform:"uppercase",color:NAVY_DK,background:EMERALD,borderRadius:999,padding:"3px 10px",fontWeight:700}}>Gratis</span>
+      </div>
+      <h1 style={{fontFamily:"'DM Serif Display',serif",fontSize:desk?56:"clamp(28px,5vw,48px)",color:WHITE,lineHeight:1.05,margin:desk?"16px 0 20px":"12px 0 16px"}}>
+        ¿Por qué se inscriben<br/><em style={{color:EMERALD}}>menos estudiantes</em><br/>de los esperados?
+      </h1>
+      <p style={{fontSize:desk?18:16,color:"rgba(255,255,255,.7)",lineHeight:1.7,marginBottom:desk?32:28,maxWidth:desk?520:480}}>
+        En 10 minutos, descubra en qué momento su universidad pierde aspirantes — desde la primera búsqueda en Google hasta el primer día de clases — y qué resolver primero.
+      </p>
+    </>
+  );
+  const beneficios=(
+    <div style={{background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.08)",borderRadius:desk?16:12,padding:desk?"24px":"20px 20px",marginBottom:desk?16:24}}>
+      <Mono color={EMERALD}>Lo que va a saber al terminar</Mono>
+      <div style={{marginTop:desk?16:12,display:desk?"grid":"flex",gridTemplateColumns:"1fr 1fr",flexDirection:"column",gap:desk?"20px 24px":10}}>
+        {BENEFICIOS.map(([icon,title,desc])=>(
+          <div key={title} style={{display:"flex",gap:12,alignItems:"flex-start"}}>
+            <span aria-hidden="true" style={{fontSize:desk?22:18,flexShrink:0}}>{icon}</span>
+            <div>
+              <div style={{fontSize:desk?16:15,color:WHITE,fontWeight:600}}>{title}</div>
+              <div style={{fontSize:14,color:"rgba(255,255,255,.6)",lineHeight:1.5,marginTop:2}}>{desc}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+  const enJuego=(
+    <div style={{background:"rgba(0,200,150,.08)",border:"1px solid rgba(0,200,150,.2)",borderRadius:desk?16:10,padding:desk?"20px 24px":"14px 16px",marginBottom:desk?0:28}}>
+      <Mono color={EMERALD}>Más publicidad no alcanza</Mono>
+      <p style={{fontSize:15,color:"rgba(255,255,255,.7)",lineHeight:1.65,margin:"6px 0 0"}}>
+        Si el proceso pierde aspirantes en el camino, invertir en campañas es llenar un balde agujereado. Este diagnóstico muestra dónde está el agujero.
+      </p>
+      <p style={{fontSize:15,color:"rgba(255,255,255,.7)",lineHeight:1.65,margin:"8px 0 0"}}>
+        Lo creamos en CampusLatina: ayudamos a inscribir a más de 180.000 estudiantes en Argentina, y ahora llevamos esa experiencia al resto de Latinoamérica.
+      </p>
+    </div>
+  );
+  const datos=(
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:28,maxWidth:desk?420:"none"}}>
+      {[["28","preguntas"],["7","etapas"],["~10 min","duración"]].map(([val,label])=>(
+        <div key={label} style={{background:"rgba(255,255,255,.05)",borderRadius:10,padding:"14px 12px",textAlign:"center",border:"1px solid rgba(255,255,255,.08)"}}>
+          <div style={{fontFamily:"'DM Serif Display',serif",fontSize:26,color:EMERALD,lineHeight:1}}>{val}</div>
+          <Mono color={SLATE}>{label}</Mono>
+        </div>
+      ))}
+    </div>
+  );
+
   return(
     <div style={{minHeight:"100vh",background:NAVY_DK,display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
       <div style={{position:"absolute",inset:0,backgroundImage:`linear-gradient(rgba(139,148,200,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(139,148,200,.06) 1px,transparent 1px)`,backgroundSize:"60px 60px"}}/>
       <div style={{position:"absolute",right:-80,top:"15%",width:400,height:400,borderRadius:"50%",background:"radial-gradient(circle, rgba(0,200,150,.08) 0%, transparent 70%)"}}/>
-      <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"40px 20px 40px",position:"relative",maxWidth:680,margin:"0 auto",width:"100%"}}>
-        <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
-          <Mono color={SLATE}>CampusLatina & CIeLatam</Mono>
-          <span style={{fontFamily:"'Space Mono',monospace",fontSize:11,letterSpacing:".1em",textTransform:"uppercase",color:NAVY_DK,background:EMERALD,borderRadius:999,padding:"3px 10px",fontWeight:700}}>Gratis</span>
-        </div>
-        <h1 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(28px,5vw,48px)",color:WHITE,lineHeight:1.05,margin:"12px 0 16px"}}>
-          ¿Por qué se inscriben<br/><em style={{color:EMERALD}}>menos estudiantes</em><br/>de los esperados?
-        </h1>
-        <p style={{fontSize:16,color:"rgba(255,255,255,.6)",lineHeight:1.7,marginBottom:28,maxWidth:480}}>
-          En 10 minutos, descubra en qué momento su universidad pierde aspirantes — desde la primera búsqueda en Google hasta el primer día de clases — y qué resolver primero.
-        </p>
-        <button type="button" onClick={onStart} style={{width:"100%",maxWidth:420,...BTN_PRIMARY,border:"none",borderRadius:12,minHeight:TOUCH+4,padding:"14px 20px",lineHeight:1.3,textAlign:"center",fontSize:16,fontWeight:700,fontFamily:"'DM Sans',sans-serif",cursor:"pointer",marginBottom:32}}>
-          Descubrir dónde se pierden inscriptos{"\u00A0"}→
-        </button>
-
-        {/* WHAT YOU'LL GET */}
-        <div style={{background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.08)",borderRadius:12,padding:"20px 20px",marginBottom:24}}>
-          <Mono color={EMERALD}>Lo que va a saber al terminar</Mono>
-          <div style={{marginTop:12,display:"flex",flexDirection:"column",gap:10}}>
-            {[
-              ["🗺","Dónde se van los aspirantes","Los 7 momentos del recorrido, de un vistazo: dónde el proceso es fuerte y dónde se pierden inscriptos."],
-              ["🔬","Por qué se van","Las trabas concretas que frenan a los aspirantes en cada momento."],
-              ["🎯","Qué resolver primero","3 acciones por etapa, ordenadas por el impacto que tienen en la inscripción."],
-              ["📈","Cuánto se puede mejorar","Elija las acciones que su equipo puede implementar y vea en tiempo real cuánto sube el puntaje."],
-            ].map(([icon,title,desc])=>(
-              <div key={title} style={{display:"flex",gap:12,alignItems:"flex-start"}}>
-                <span style={{fontSize:18,flexShrink:0}}>{icon}</span>
-                <div>
-                  <div style={{fontSize:15,color:WHITE,fontWeight:500}}>{title}</div>
-                  <div style={{fontSize:14,color:"rgba(255,255,255,.5)",lineHeight:1.5}}>{desc}</div>
-                </div>
-              </div>
-            ))}
+      {desk?(
+        <main style={{flex:1,display:"grid",gridTemplateColumns:"minmax(0,1.05fr) minmax(0,1fr)",gap:64,alignItems:"center",padding:"56px 48px",position:"relative",maxWidth:1200,margin:"0 auto",width:"100%"}}>
+          <div>
+            {encabezado}
+            {cta("Descubrir dónde se pierden inscriptos",{marginBottom:28})}
+            {datos}
           </div>
-        </div>
-
-        {/* METHODOLOGY NOTE */}
-        <div style={{background:"rgba(0,200,150,.08)",border:"1px solid rgba(0,200,150,.2)",borderRadius:10,padding:"14px 16px",marginBottom:28}}>
-          <Mono color={EMERALD}>Más publicidad no alcanza</Mono>
-          <p style={{fontSize:15,color:"rgba(255,255,255,.65)",lineHeight:1.65,margin:"6px 0 0"}}>
-            Si el proceso pierde aspirantes en el camino, invertir en campañas es llenar un balde agujereado. Este diagnóstico muestra dónde está el agujero.
-          </p>
-          <p style={{fontSize:15,color:"rgba(255,255,255,.65)",lineHeight:1.65,margin:"8px 0 0"}}>
-            Lo creamos en CampusLatina: ayudamos a inscribir a más de 180.000 estudiantes en Argentina, y ahora llevamos esa experiencia al resto de Latinoamérica.
-          </p>
-        </div>
-
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:28}}>
-          {[["28","preguntas"],["7","etapas"],["~10 min","duración"]].map(([val,label])=>(
-            <div key={label} style={{background:"rgba(255,255,255,.05)",borderRadius:10,padding:"14px 12px",textAlign:"center",border:"1px solid rgba(255,255,255,.08)"}}>
-              <div style={{fontFamily:"'DM Serif Display',serif",fontSize:26,color:EMERALD,lineHeight:1}}>{val}</div>
-              <Mono color={SLATE}>{label}</Mono>
-            </div>
-          ))}
-        </div>
-        <button type="button" onClick={onStart} style={{width:"100%",maxWidth:420,...BTN_PRIMARY,border:"none",borderRadius:12,minHeight:TOUCH+4,padding:"14px 20px",lineHeight:1.3,textAlign:"center",fontSize:16,fontWeight:700,fontFamily:"'DM Sans',sans-serif",cursor:"pointer"}}>
-          Empezar el diagnóstico{"\u00A0"}→
-        </button>
-      </div>
+          <div>
+            {beneficios}
+            {enJuego}
+          </div>
+        </main>
+      ):(
+        <main style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"40px 20px 40px",position:"relative",maxWidth:680,margin:"0 auto",width:"100%"}}>
+          {encabezado}
+          {cta("Descubrir dónde se pierden inscriptos",{marginBottom:32})}
+          {beneficios}
+          {enJuego}
+          {datos}
+          {cta("Empezar el diagnóstico")}
+        </main>
+      )}
     </div>
   );
 }
 
 // ── REGISTER ─────────────────────────────────────────────
 function Register({onNext}){
+  const desk=useIsDesktop();
   const [form,setForm]=useState({universidad:"",pais:"",nombre:"",cargo:"",email:"",whatsapp:""});
   const [emailError,setEmailError]=useState(false);
   const [telError,setTelError]=useState(false);
@@ -153,11 +183,12 @@ function Register({onNext}){
       <div style={{background:NAVY_DK,padding:"14px 20px"}}>
         <span style={{fontFamily:"'Space Mono',monospace",fontSize:12,letterSpacing:".12em",textTransform:"uppercase",color:"rgba(255,255,255,.5)"}}>Paso 1 de 2 — Datos institucionales</span>
       </div>
-      <div style={{flex:1,maxWidth:540,margin:"0 auto",padding:"36px 20px",width:"100%"}}>
-        <div style={{fontFamily:"'DM Serif Display',serif",fontSize:24,color:NAVY,marginBottom:6}}>Antes de empezar,<br/><em style={{color:EMERALD_TXT}}>cuéntenos sobre su institución</em></div>
-        <p style={{fontSize:16,color:"#3A4070",marginBottom:28,lineHeight:1.65}}>Con estos datos armamos su informe personalizado y se lo enviamos en PDF por mail, para compartirlo con su equipo.</p>
+      <div style={{flex:1,maxWidth:desk?1040:540,margin:"0 auto",padding:desk?"48px 32px":"36px 20px",width:"100%"}}>
+        <div style={desk?{display:"grid",gridTemplateColumns:"minmax(0,1fr) minmax(0,1fr)",gridTemplateAreas:'"head dir" "intro dir" "inst dir" "inst btn"',gridTemplateRows:"auto auto 1fr auto",columnGap:32,rowGap:12,alignItems:"start"}:undefined}>
+        <div style={{fontFamily:"'DM Serif Display',serif",fontSize:desk?34:24,color:NAVY,marginBottom:6,...(desk?{gridArea:"head"}:{})}}>Antes de empezar,<br/><em style={{color:EMERALD_TXT}}>cuéntenos sobre su institución</em></div>
+        <p style={{fontSize:16,color:"#3A4070",marginBottom:desk?8:28,lineHeight:1.65,...(desk?{gridArea:"intro"}:{})}}>Con estos datos armamos su informe personalizado y se lo enviamos en PDF por mail, para compartirlo con su equipo.</p>
 
-        <div style={{background:WHITE,border:`1px solid ${LINE}`,borderRadius:14,padding:"22px 20px",marginBottom:14}}>
+        <div style={{background:WHITE,border:`1px solid ${LINE}`,borderRadius:14,padding:desk?"26px 26px":"22px 20px",marginBottom:desk?0:14,...(desk?{gridArea:"inst"}:{})}}>
           <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16,paddingBottom:12,borderBottom:"1px solid #E8E6DF"}}>
             <div style={{width:6,height:6,borderRadius:"50%",background:EMERALD,flexShrink:0}}/>
             <span style={{fontFamily:"'Space Mono',monospace",fontSize:12,letterSpacing:".12em",textTransform:"uppercase",color:NAVY,fontWeight:700}}>Datos de la institución</span>
@@ -181,7 +212,7 @@ function Register({onNext}){
           </div>
         </div>
 
-        <div style={{background:WHITE,border:`1px solid ${LINE}`,borderRadius:14,padding:"22px 20px",marginBottom:24}}>
+        <div style={{background:WHITE,border:`1px solid ${LINE}`,borderRadius:14,padding:desk?"26px 26px":"22px 20px",marginBottom:desk?0:24,...(desk?{gridArea:"dir"}:{})}}>
           <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16,paddingBottom:12,borderBottom:"1px solid #E8E6DF"}}>
             <div style={{width:6,height:6,borderRadius:"50%",background:SLATE,flexShrink:0}}/>
             <span style={{fontFamily:"'Space Mono',monospace",fontSize:12,letterSpacing:".12em",textTransform:"uppercase",color:NAVY,fontWeight:700}}>Datos del directivo que responde</span>
@@ -217,6 +248,8 @@ function Register({onNext}){
           </div>
         </div>
 
+
+        <div style={desk?{gridArea:"btn"}:undefined}>
         <button type="button" onClick={()=>valid&&onNext(form)} disabled={!valid}
           style={{width:"100%",minHeight:TOUCH+4,borderRadius:10,border:"none",
             ...(valid?BTN_PRIMARY:BTN_DISABLED),
@@ -227,18 +260,63 @@ function Register({onNext}){
           Empezar el diagnóstico →
         </button>
         {!valid&&<p style={{textAlign:"center",fontSize:14,color:TEXT,marginTop:10,fontWeight:500}}>Complete los campos obligatorios (*) para continuar</p>}
+        </div>
+        </div>
       </div>
     </div>
   );
 }
 
+// ── PROGRESO LATERAL (solo escritorio) ─────────────────────
+const GRID_DESK={display:"grid",gridTemplateColumns:"250px minmax(0,720px)",justifyContent:"center",gap:56,width:"100%",maxWidth:1120,margin:"0 auto"};
+function ConProgreso({desk,etapa,etapasScores,respondidas,children}){
+  if(!desk) return children;
+  const pct=Math.round((respondidas/28)*100);
+  return(
+    <div style={{...GRID_DESK,flex:1,padding:"40px 32px 32px"}}>
+      <aside aria-label="Su avance">
+        <div style={{position:"sticky",top:28}}>
+          <Mono color={SLATE_TXT}>Su avance</Mono>
+          <div style={{fontSize:15,color:NAVY,fontWeight:600,margin:"8px 0 8px"}}>{respondidas} de 28 respuestas</div>
+          <div style={{height:6,background:LINE,borderRadius:3,marginBottom:22}}><div style={{height:"100%",width:`${pct}%`,background:EMERALD,borderRadius:3,transition:"width .4s"}}/></div>
+          <ol style={{listStyle:"none",padding:0,margin:0,display:"flex",flexDirection:"column",gap:4}}>
+            {ETAPAS_DATA.map(e=>{
+              const current=e.num===etapa.num;
+              const done=e.num<etapa.num||(!current&&etapasScores&&etapasScores[e.id]>0);
+              return(
+                <li key={e.id} aria-current={current?"step":undefined} style={{display:"flex",alignItems:"center",gap:12,padding:"8px 10px",borderRadius:10,background:current?WHITE:"transparent",border:`1px solid ${current?LINE:"transparent"}`}}>
+                  <span aria-hidden="true" style={{width:28,height:28,borderRadius:"50%",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:current?15:12,fontWeight:700,fontFamily:"'Space Mono',monospace",background:current?EMERALD:done?"rgba(0,200,150,.15)":"transparent",border:`2px solid ${current?EMERALD:done?"rgba(0,122,92,.45)":"#B9B7C0"}`,color:current?NAVY_DK:done?EMERALD_TXT:MUTED}}>{done?"✓":current?e.emoji:e.num}</span>
+                  <span style={{minWidth:0}}>
+                    <span style={{display:"block",fontSize:14,fontWeight:current?700:500,color:current||done?NAVY:MUTED}}>{e.name}</span>
+                    {current&&<span style={{display:"block",fontSize:13,color:EMERALD_TXT,marginTop:1}}>{e.pregunta}</span>}
+                  </span>
+                </li>
+              );
+            })}
+          </ol>
+        </div>
+      </aside>
+      <div>{children}</div>
+    </div>
+  );
+}
 // ── STAGE INTRO ───────────────────────────────────────────
 function StageIntro({etapa,onStart,etapasScores}){
+  const desk=useIsDesktop();
+  const barra=(
+    <div style={desk?{position:"sticky",bottom:0,zIndex:10,background:CREAM,padding:"16px 0 20px",marginTop:12}:{position:"sticky",bottom:0,zIndex:10,background:"rgba(245,244,240,.96)",backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)",borderTop:`1px solid ${LINE}`}}>
+      <div style={desk?undefined:{maxWidth:580,margin:"0 auto",padding:"10px 16px calc(10px + env(safe-area-inset-bottom))"}}>
+          <button type="button" onClick={onStart} style={{width:desk?"auto":"100%",padding:desk?"0 36px":undefined,minHeight:TOUCH+4,borderRadius:10,border:"none",...BTN_PRIMARY,fontSize:16,fontFamily:"'DM Sans',sans-serif",fontWeight:700,cursor:"pointer"}}>
+            Empezar etapa {etapa.num} →
+          </button>
+      </div>
+    </div>
+  );
   return(
     <div style={{minHeight:"100vh",background:CREAM,display:"flex",flexDirection:"column"}}>
       {/* Timeline header */}
       <div style={{background:NAVY_DK,padding:"12px 16px 12px"}}>
-        <div aria-hidden="true" style={{display:"flex",gap:4,justifyContent:"center",marginBottom:8}}>
+        {!desk&&<div aria-hidden="true" style={{display:"flex",gap:4,justifyContent:"center",marginBottom:8}}>
           {ETAPAS_DATA.map(e=>{
             const done=etapasScores&&etapasScores[e.id]>0;
             const current=e.num===etapa.num;
@@ -251,15 +329,16 @@ function StageIntro({etapa,onStart,etapasScores}){
               </div>
             );
           })}
-        </div>
+        </div>}
         <div style={{textAlign:"center"}}><Mono color={SLATE}>Etapa {etapa.num} de 7</Mono></div>
       </div>
 
-      <div style={{flex:1,maxWidth:580,margin:"0 auto",padding:"20px 16px 20px",width:"100%"}}>
+      <ConProgreso desk={desk} etapa={etapa} etapasScores={etapasScores} respondidas={(etapa.num-1)*4}>
+      <div style={desk?{paddingTop:8}:{flex:1,maxWidth:580,margin:"0 auto",padding:"20px 16px 20px",width:"100%"}}>
         <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:16}}>
           <div aria-hidden="true" style={{width:56,height:56,borderRadius:16,background:WHITE,border:`1px solid ${LINE}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:30,flexShrink:0}}>{etapa.emoji}</div>
           <div>
-            <h1 style={{fontFamily:"'DM Serif Display',serif",fontWeight:400,fontSize:30,color:NAVY,lineHeight:1.1,margin:0}}>{etapa.name}</h1>
+            <h1 style={{fontFamily:"'DM Serif Display',serif",fontWeight:400,fontSize:desk?38:30,color:NAVY,lineHeight:1.1,margin:0}}>{etapa.name}</h1>
             <div style={{fontSize:17,color:EMERALD_TXT,fontWeight:600,marginTop:4}}>{etapa.pregunta}</div>
           </div>
         </div>
@@ -271,21 +350,28 @@ function StageIntro({etapa,onStart,etapasScores}){
           <span aria-hidden="true" style={{fontSize:18,lineHeight:1.3}}>📝</span>
           <span><strong style={{color:NAVY}}>4 preguntas.</strong> Elija la opción que describe cómo está su institución <em>hoy</em>, no cómo le gustaría que estuviera.</span>
         </p>
+        {desk&&barra}
       </div>
-      {/* Barra fija: el botón siempre visible */}
-      <div style={{position:"sticky",bottom:0,zIndex:10,background:"rgba(245,244,240,.96)",backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)",borderTop:`1px solid ${LINE}`}}>
-        <div style={{maxWidth:580,margin:"0 auto",padding:"10px 16px calc(10px + env(safe-area-inset-bottom))"}}>
-          <button type="button" onClick={onStart} style={{width:"100%",minHeight:TOUCH+4,borderRadius:10,border:"none",...BTN_PRIMARY,fontSize:16,fontFamily:"'DM Sans',sans-serif",fontWeight:700,cursor:"pointer"}}>
-            Empezar etapa {etapa.num} →
-          </button>
-        </div>
-      </div>
+      </ConProgreso>
+      {!desk&&barra}
     </div>
   );
 }
 
 // ── QUESTION ─────────────────────────────────────────────
 function Question({etapaIdx,preguntaIdx,etapa,pregunta,selected,onSelect,onNext,onBack,isLast,etapasScores}){
+  const desk=useIsDesktop();
+  const barra=(
+    <div style={desk?{position:"sticky",bottom:0,zIndex:10,background:CREAM,padding:"16px 0 20px",marginTop:8}:{position:"sticky",bottom:0,zIndex:10,background:"rgba(245,244,240,.96)",backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)",borderTop:`1px solid ${LINE}`}}>
+      <div style={desk?{display:"flex",gap:10,maxWidth:520}:{maxWidth:640,margin:"0 auto",padding:"10px 16px calc(10px + env(safe-area-inset-bottom))",display:"flex",gap:10}}>
+          <button type="button" onClick={onBack} style={{minHeight:TOUCH,padding:"0 18px",borderRadius:10,border:`1px solid ${LINE}`,background:WHITE,color:NAVY,cursor:"pointer",fontSize:16,fontFamily:"'DM Sans',sans-serif"}}>← Atrás</button>
+          <button type="button" onClick={()=>selected&&onNext()} disabled={!selected} aria-disabled={!selected}
+            style={{flex:1,minHeight:TOUCH,borderRadius:10,border:"none",...(selected?BTN_PRIMARY:BTN_DISABLED),cursor:selected?"pointer":"not-allowed",fontSize:16,fontFamily:"'DM Sans',sans-serif",fontWeight:700,transition:"background .15s"}}>
+            {!selected?"Elija una opción":isLast?"Ver mi diagnóstico →":"Siguiente →"}
+          </button>
+      </div>
+    </div>
+  );
   const globalIdx=etapaIdx*4+preguntaIdx;
   const TOTAL=28;
   const pct=Math.round((globalIdx/TOTAL)*100);
@@ -297,8 +383,8 @@ function Question({etapaIdx,preguntaIdx,etapa,pregunta,selected,onSelect,onNext,
         <div role="progressbar" aria-label="Progreso del diagnóstico" aria-valuemin={0} aria-valuemax={TOTAL} aria-valuenow={globalIdx+1} style={{height:4,background:"rgba(255,255,255,.08)"}}>
           <div style={{height:"100%",background:EMERALD,width:`${pct}%`,transition:"width .4s"}}/>
         </div>
-        <div style={{maxWidth:640,margin:"0 auto",padding:"10px 16px 12px"}}>
-          <div aria-hidden="true" style={{display:"flex",gap:3,justifyContent:"center",marginBottom:10}}>
+        <div style={desk?{maxWidth:1120,margin:"0 auto",padding:"12px 32px"}:{maxWidth:640,margin:"0 auto",padding:"10px 16px 12px"}}>
+          {!desk&&<div aria-hidden="true" style={{display:"flex",gap:3,justifyContent:"center",marginBottom:10}}>
             {ETAPAS_DATA.map(e=>{
               const done=e.num<etapa.num||(e.num===etapa.num&&etapasScores&&etapasScores[e.id]>0);
               const current=e.num===etapa.num;
@@ -319,7 +405,7 @@ function Question({etapaIdx,preguntaIdx,etapa,pregunta,selected,onSelect,onNext,
                 </div>
               );
             })}
-          </div>
+          </div>}
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",gap:8}}>
             <span style={{fontFamily:"'Space Mono',monospace",fontSize:12,color:EMERALD,letterSpacing:".08em",textTransform:"uppercase"}}>{etapa.name} · {preguntaIdx+1} de 4</span>
             <Mono color={SLATE}>{globalIdx+1} / {TOTAL}</Mono>
@@ -328,8 +414,9 @@ function Question({etapaIdx,preguntaIdx,etapa,pregunta,selected,onSelect,onNext,
       </div>
 
       {/* Pregunta */}
-      <div style={{flex:1,maxWidth:640,margin:"0 auto",padding:"22px 16px 24px",width:"100%"}}>
-        <h2 id={qid} style={{fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:21,color:NAVY,lineHeight:1.3,letterSpacing:"-.01em",margin:0}}>{pregunta.texto}</h2>
+      <ConProgreso desk={desk} etapa={etapa} etapasScores={etapasScores} respondidas={globalIdx}>
+      <div style={desk?{paddingTop:4}:{flex:1,maxWidth:640,margin:"0 auto",padding:"22px 16px 24px",width:"100%"}}>
+        <h2 id={qid} style={{fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:desk?26:21,color:NAVY,lineHeight:1.3,letterSpacing:"-.01em",margin:0}}>{pregunta.texto}</h2>
         {pregunta.ayuda&&<p id={`${qid}-ayuda`} style={{fontSize:15,color:MUTED,lineHeight:1.55,margin:"8px 0 0"}}>{pregunta.ayuda}</p>}
         <div style={{height:18}}/>
         <div role="radiogroup" aria-labelledby={qid} aria-describedby={pregunta.ayuda?`${qid}-ayuda`:undefined} style={{display:"flex",flexDirection:"column",gap:10}}>
@@ -346,18 +433,11 @@ function Question({etapaIdx,preguntaIdx,etapa,pregunta,selected,onSelect,onNext,
             );
           })}
         </div>
+        {desk&&barra}
       </div>
+      </ConProgreso>
 
-      {/* Barra de navegación fija: siempre visible */}
-      <div style={{position:"sticky",bottom:0,zIndex:10,background:"rgba(245,244,240,.96)",backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)",borderTop:`1px solid ${LINE}`}}>
-        <div style={{maxWidth:640,margin:"0 auto",padding:"10px 16px calc(10px + env(safe-area-inset-bottom))",display:"flex",gap:10}}>
-          <button type="button" onClick={onBack} style={{minHeight:TOUCH,padding:"0 18px",borderRadius:10,border:`1px solid ${LINE}`,background:WHITE,color:NAVY,cursor:"pointer",fontSize:16,fontFamily:"'DM Sans',sans-serif"}}>← Atrás</button>
-          <button type="button" onClick={()=>selected&&onNext()} disabled={!selected} aria-disabled={!selected}
-            style={{flex:1,minHeight:TOUCH,borderRadius:10,border:"none",...(selected?BTN_PRIMARY:BTN_DISABLED),cursor:selected?"pointer":"not-allowed",fontSize:16,fontFamily:"'DM Sans',sans-serif",fontWeight:700,transition:"background .15s"}}>
-            {!selected?"Elija una opción":isLast?"Ver mi diagnóstico →":"Siguiente →"}
-          </button>
-        </div>
-      </div>
+      {!desk&&barra}
     </div>
   );
 }
@@ -405,11 +485,14 @@ function Report({registroData,respuestas,envio}){
   const totalChecked=Object.values(checked).filter(Boolean).length;
 
   const TABS=["Resumen","Radar","Etapas","Acciones","PDF"];
+  const desk=useIsDesktop();
+  // En escritorio, bloques lado a lado; en celular, una columna como siempre.
+  const g2=(cols,gap)=>desk?{display:"grid",gridTemplateColumns:cols,gap,alignItems:"start"}:undefined;
 
   // ── TAB: RESUMEN
   const TabResumen=()=>(
     <div>
-      <div style={{background:NAVY_DK,padding:"26px 20px 20px",position:"relative",overflow:"hidden"}}>
+      <div style={{background:NAVY_DK,padding:desk?"32px 32px 28px":"26px 20px 20px",position:"relative",overflow:"hidden",...(desk?{borderRadius:18,margin:"24px 18px 0"}:{})}}>
         <div style={{position:"absolute",inset:0,backgroundImage:`linear-gradient(rgba(139,148,200,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(139,148,200,.06) 1px,transparent 1px)`,backgroundSize:"56px 56px"}}/>
         <div style={{position:"relative"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12,marginBottom:16}}>
@@ -444,7 +527,8 @@ function Report({registroData,respuestas,envio}){
           </div>
         </div>
       </div>
-      <div style={{padding:"16px 18px"}}>
+      <div style={desk?{padding:"24px 18px",display:"grid",gridTemplateColumns:"minmax(0,1.4fr) minmax(0,1fr)",gap:32,alignItems:"start"}:{padding:"16px 18px"}}>
+        <div>
         <Mono color={SLATE_TXT}>El recorrido del aspirante — 7 etapas</Mono>
         <div style={{marginTop:12,display:"flex",flexDirection:"column",gap:7}}>
           {etapaScores.map((e,i)=>(
@@ -463,7 +547,8 @@ function Report({registroData,respuestas,envio}){
             </div>
           ))}
         </div>
-        <div style={{marginTop:16,background:CREAM,border:"1px solid #E8E6DF",borderRadius:10,padding:"13px 16px"}}>
+        </div>
+        <div style={{marginTop:desk?30:16,background:CREAM,border:"1px solid #E8E6DF",borderRadius:10,padding:"13px 16px"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             <div>
               <Mono color={SLATE_TXT}>Puntaje posible con todas las mejoras</Mono>
@@ -499,6 +584,7 @@ function Report({registroData,respuestas,envio}){
       <div style={{padding:18}}>
         <Mono color={EMERALD_TXT}>Visualización</Mono>
         <div style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:NAVY,margin:"5px 0 16px"}}>Dónde está <em style={{color:EMERALD_TXT}}>cada etapa</em></div>
+        <div style={g2("minmax(0,1fr) minmax(0,1fr)",16)}>
         <div style={{background:WHITE,border:"1px solid #E8E6DF",borderRadius:14,padding:18,marginBottom:14,display:"flex",flexDirection:"column",alignItems:"center"}}>
           <RadarChart scores={scores}/>
         </div>
@@ -546,59 +632,106 @@ function Report({registroData,respuestas,envio}){
             </table>
           </div>
         </div>
+        </div>
       </div>
     );
   };
 
   // ── TAB: ETAPAS
   const TabEtapas=()=>{
-    const [open,setOpen]=useState(null);
-    return(
-      <div style={{padding:18}}>
+    // Celular: acordeón. Escritorio: lista + detalle (arranca en la etapa donde más inscriptos se pierden).
+    const [open,setOpen]=useState(desk?etapaScores.findIndex(e=>e.id===bottleneck.id):null);
+    const cabecera=(e,activo)=>(
+      <>
+        <div style={{width:32,height:32,borderRadius:"50%",background:e.nivel.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>{e.emoji}</div>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontSize:16,fontWeight:activo&&desk?700:500,color:NAVY}}>{e.name}{!desk&&<span style={{fontWeight:400,color:MUTED,fontStyle:"italic"}}> · {e.pregunta}</span>}</div>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginTop:2}}>
+            <div style={{height:5,width:56,background:LINE,borderRadius:3}}>
+              <div style={{height:"100%",width:`${(e.score/5)*100}%`,background:e.nivel.color,borderRadius:2}}/>
+            </div>
+            <Mono color={e.nivel.color}>{fmt1(e.score)} · {e.nivel.label}</Mono>
+          </div>
+        </div>
+      </>
+    );
+    const detalle=(e)=>(
+      <>
+        <p style={{fontSize:15,color:TEXT,lineHeight:1.7,paddingTop:desk?0:12,marginTop:0,marginBottom:14}}>{e.resumen} {e.contexto}</p>
+        <Mono color={SLATE_TXT}>Dónde se pierde valor</Mono>
+        <div style={{marginTop:10,display:"flex",flexDirection:"column",gap:8}}>
+          {(FRICCIONES[e.id]||[]).map((f,fi)=>(
+            <div key={fi} style={{display:"flex",gap:10,padding:"10px 13px",background:CREAM,borderRadius:8}}>
+              <span aria-hidden="true" style={{fontSize:16,flexShrink:0}}>{f.icon}</span>
+              <p style={{fontSize:15,color:TEXT,lineHeight:1.55,margin:0}}>{f.texto}</p>
+            </div>
+          ))}
+        </div>
+        <div style={{marginTop:14,padding:"10px 14px",background:e.nivel.bg,borderRadius:8,borderLeft:`3px solid ${e.nivel.color}`,display:"flex",justifyContent:"space-between",flexWrap:"wrap",gap:8}}>
+          <div>
+            <Mono color={e.nivel.color}>Puntaje actual</Mono>
+            <div style={{fontFamily:"'DM Serif Display',serif",fontSize:18,color:e.nivel.color,marginTop:2}}>{fmt1(e.score)}/5 · {e.nivel.label}</div>
+          </div>
+          <div style={{textAlign:"right"}}>
+            <Mono color="#2E7D32">Potencial alcanzable</Mono>
+            <div style={{fontFamily:"'DM Serif Display',serif",fontSize:18,color:"#2E7D32",marginTop:2}}>{fmt1(POT[e.id])}/5 · {getNivel(POT[e.id]).label}</div>
+          </div>
+        </div>
+      </>
+    );
+    const titulo=(
+      <>
         <Mono color={EMERALD_TXT}>Diagnóstico detallado</Mono>
         <div style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:NAVY,margin:"5px 0 6px"}}>Las 7 <em style={{color:EMERALD_TXT}}>etapas</em></div>
         <p style={{fontSize:15,color:MUTED,marginBottom:14,lineHeight:1.6}}>Un cuello de botella en cualquier etapa afecta todo lo que viene después.</p>
+      </>
+    );
+    if(desk){
+      const sel=etapaScores[open??0];
+      return(
+        <div style={{padding:18}}>
+          {titulo}
+          <div style={{display:"grid",gridTemplateColumns:"340px minmax(0,1fr)",gap:20,alignItems:"start"}}>
+            <div role="tablist" aria-orientation="vertical" aria-label="Etapas" style={{display:"flex",flexDirection:"column",gap:8}}>
+              {etapaScores.map((e,i)=>{
+                const activo=(open??0)===i;
+                return(
+                  <button key={e.id} type="button" role="tab" aria-selected={activo} aria-controls="etapa-detalle" onClick={()=>setOpen(i)}
+                    style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",width:"100%",minHeight:TOUCH+16,background:activo?WHITE:"transparent",border:`1px solid ${activo?e.nivel.color+"66":LINE}`,borderLeft:`4px solid ${activo?e.nivel.color:"transparent"}`,borderRadius:12,textAlign:"left",cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>
+                    {cabecera(e,activo)}
+                  </button>
+                );
+              })}
+            </div>
+            <section id="etapa-detalle" role="tabpanel" aria-label={sel.name} style={{background:WHITE,border:`1px solid ${sel.nivel.color}66`,borderRadius:14,padding:"22px 24px",position:"sticky",top:64}}>
+              <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
+                <span aria-hidden="true" style={{fontSize:26}}>{sel.emoji}</span>
+                <div>
+                  <h3 style={{fontFamily:"'DM Serif Display',serif",fontWeight:400,fontSize:26,color:NAVY,margin:0,lineHeight:1.1}}>{sel.name}</h3>
+                  <div style={{fontSize:15,color:EMERALD_TXT,fontWeight:600,marginTop:2}}>{sel.pregunta}</div>
+                </div>
+              </div>
+              {detalle(sel)}
+            </section>
+          </div>
+        </div>
+      );
+    }
+    return(
+      <div style={{padding:18}}>
+        {titulo}
         {etapaScores.map((e,i)=>{
           const isOpen=open===i;
-          const fricc=FRICCIONES[e.id]||[];
           return(
             <div key={e.id} style={{background:WHITE,border:`1px solid ${isOpen?e.nivel.color+"66":"#E8E6DF"}`,borderRadius:12,marginBottom:10,overflow:"hidden"}}>
               <button type="button" aria-expanded={isOpen} aria-controls={`etapa-${e.id}`} onClick={()=>setOpen(isOpen?null:i)}
                 style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",cursor:"pointer",width:"100%",minHeight:TOUCH+16,background:"none",border:"none",textAlign:"left",fontFamily:"'DM Sans',sans-serif"}}>
-                <div style={{width:32,height:32,borderRadius:"50%",background:e.nivel.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>{e.emoji}</div>
-                <div style={{flex:1}}>
-                  <div style={{fontSize:16,fontWeight:500,color:NAVY}}>{e.name} <span style={{fontWeight:400,color:MUTED,fontStyle:"italic"}}>· {e.pregunta}</span></div>
-                  <div style={{display:"flex",alignItems:"center",gap:8,marginTop:2}}>
-                    <div style={{height:5,width:56,background:LINE,borderRadius:3}}>
-                      <div style={{height:"100%",width:`${(e.score/5)*100}%`,background:e.nivel.color,borderRadius:2}}/>
-                    </div>
-                    <Mono color={e.nivel.color}>{fmt1(e.score)} · {e.nivel.label}</Mono>
-                  </div>
-                </div>
+                {cabecera(e,isOpen)}
                 <span aria-hidden="true" style={{color:MUTED,fontSize:18,transform:isOpen?"rotate(180deg)":"none",transition:"transform .2s"}}>▾</span>
               </button>
               {isOpen&&(
                 <div id={`etapa-${e.id}`} style={{padding:"0 16px 16px",borderTop:`1px solid ${e.nivel.color}22`}}>
-                  <p style={{fontSize:15,color:"#3A4070",lineHeight:1.7,paddingTop:12,marginBottom:14}}>{e.resumen} {e.contexto}</p>
-                  <Mono color={SLATE_TXT}>Dónde se pierde valor</Mono>
-                  <div style={{marginTop:10,display:"flex",flexDirection:"column",gap:8}}>
-                    {fricc.map((f,fi)=>(
-                      <div key={fi} style={{display:"flex",gap:10,padding:"10px 13px",background:CREAM,borderRadius:8}}>
-                        <span style={{fontSize:16,flexShrink:0}}>{f.icon}</span>
-                        <p style={{fontSize:15,color:"#3A4070",lineHeight:1.55,margin:0}}>{f.texto}</p>
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{marginTop:14,padding:"10px 14px",background:e.nivel.bg,borderRadius:8,borderLeft:`3px solid ${e.nivel.color}`,display:"flex",justifyContent:"space-between",flexWrap:"wrap",gap:8}}>
-                    <div>
-                      <Mono color={e.nivel.color}>Puntaje actual</Mono>
-                      <div style={{fontFamily:"'DM Serif Display',serif",fontSize:18,color:e.nivel.color,marginTop:2}}>{fmt1(e.score)}/5 · {e.nivel.label}</div>
-                    </div>
-                    <div style={{textAlign:"right"}}>
-                      <Mono color="#2E7D32">Potencial alcanzable</Mono>
-                      <div style={{fontFamily:"'DM Serif Display',serif",fontSize:18,color:"#2E7D32",marginTop:2}}>{fmt1(POT[e.id])}/5 · {getNivel(POT[e.id]).label}</div>
-                    </div>
-                  </div>
+                  {detalle(e)}
                 </div>
               )}
             </div>
@@ -640,6 +773,7 @@ function Report({registroData,respuestas,envio}){
         </div>
       </div>
 
+      <div style={g2("minmax(0,1fr) minmax(0,1fr)",16)}>
       {etapaScores.map((e,ei)=>{
         const recs=RECS[e.id]||[];
         const newScore=calcEtapaProjected(e.id);
@@ -677,6 +811,7 @@ function Report({registroData,respuestas,envio}){
           </div>
         );
       })}
+      </div>
     </div>
   );
 
@@ -714,7 +849,8 @@ function Report({registroData,respuestas,envio}){
         <Mono color={EMERALD_TXT}>Su diagnóstico</Mono>
         <div style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:NAVY,margin:"5px 0 16px"}}>Descargue el <em style={{color:EMERALD_TXT}}>informe completo</em></div>
 
-        <div style={{background:NAVY,borderRadius:14,padding:"20px 18px",marginBottom:14}}>
+        <div style={desk?{display:"grid",gridTemplateColumns:"minmax(0,1fr) minmax(0,1fr)",gridTemplateAreas:'"hoy mejora" "pdf mejora" "pdf bench"',gridTemplateRows:"auto auto 1fr",columnGap:16,rowGap:16,alignItems:"start"}:undefined}>
+        <div style={{background:NAVY,borderRadius:14,padding:"20px 18px",marginBottom:desk?0:14,...(desk?{gridArea:"hoy"}:{})}}>
           <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",alignItems:"center",gap:8}}>
             <div style={{textAlign:"center"}}>
               <Mono color={SLATE}>Hoy</Mono>
@@ -741,7 +877,7 @@ function Report({registroData,respuestas,envio}){
           </div>
         </div>
 
-        <div style={{background:WHITE,border:"1px solid #E8E6DF",borderRadius:14,padding:"16px 18px",marginBottom:14}}>
+        <div style={{background:WHITE,border:"1px solid #E8E6DF",borderRadius:14,padding:"16px 18px",marginBottom:desk?0:14,...(desk?{gridArea:"mejora"}:{})}}>
           <Mono color={SLATE_TXT}>Mejora proyectada por etapa</Mono>
           <div style={{marginTop:12,display:"flex",flexDirection:"column",gap:7}}>
             {[...etapaScores].sort((a,b)=>(POT[b.id]-b.score)-(POT[a.id]-a.score)).map(e=>{
@@ -767,7 +903,7 @@ function Report({registroData,respuestas,envio}){
           </div>
         </div>
 
-        <div style={{background:WHITE,border:"1px solid #E8E6DF",borderRadius:14,padding:"20px 18px",marginBottom:14}}>
+        <div style={{background:WHITE,border:"1px solid #E8E6DF",borderRadius:14,padding:"20px 18px",marginBottom:desk?0:14,...(desk?{gridArea:"pdf"}:{})}}>
           <Mono color={SLATE_TXT}>Informe completo en PDF</Mono>
           <p style={{fontSize:16,color:"#3A4070",marginTop:8,marginBottom:6,lineHeight:1.65}}>El PDF incluye el diagnóstico completo de cada etapa, las fricciones detectadas, el plan de acción y el puntaje potencial. Listo para imprimir o compartir con el equipo directivo.</p>
           <ul style={{listStyle:"none",padding:0,margin:"4px 0 18px",display:"flex",flexDirection:"column",gap:8}}>
@@ -791,9 +927,10 @@ function Report({registroData,respuestas,envio}){
           <EnvioNota email={registroData.email} estado={envio}/>
         </div>
 
-        <div style={{background:CREAM,border:"1px solid #E8E6DF",borderRadius:10,padding:"14px 16px",textAlign:"center",marginBottom:14}}>
+        <div style={{background:CREAM,border:"1px solid #E8E6DF",borderRadius:10,padding:"14px 16px",textAlign:"center",marginBottom:desk?0:14,...(desk?{gridArea:"bench"}:{})}}>
           <Mono color={SLATE_TXT}>Benchmark regional — próximamente</Mono>
           <p style={{fontSize:15,color:"#3A4070",lineHeight:1.65,marginTop:6}}>Cuando 10 o más universidades completen el diagnóstico, podrá ver cómo se compara su proceso con el de otras instituciones de LATAM.</p>
+        </div>
         </div>
       </div>
     );
@@ -811,9 +948,9 @@ function Report({registroData,respuestas,envio}){
             style={{flex:"1 1 0",maxWidth:130,minHeight:TOUCH,fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:tab===i?700:500,color:tab===i?EMERALD:"rgba(255,255,255,.75)",background:"none",border:"none",borderBottom:tab===i?`3px solid ${EMERALD}`:"3px solid transparent",cursor:"pointer",padding:"0 4px",whiteSpace:"nowrap"}}>{t}</button>
         ))}
       </div>
-      <div style={{maxWidth:680,margin:"0 auto"}}><CurrentTab/></div>
-      {tab===TABS.length-1&&<ContactoCTA universidad={registroData.universidad}/>}
-      <div style={{maxWidth:680,margin:"0 auto",padding:"8px 16px 20px",display:"grid",gridTemplateColumns:"1fr auto 1fr",alignItems:"center",gap:8}}>
+      <div style={{maxWidth:desk?1120:680,margin:"0 auto"}}><CurrentTab/></div>
+      {tab===TABS.length-1&&<ContactoCTA universidad={registroData.universidad} ancho={desk?1120:680}/>}
+      <div style={{maxWidth:desk?1120:680,margin:"0 auto",padding:desk?"8px 18px 20px":"8px 16px 20px",display:"grid",gridTemplateColumns:"1fr auto 1fr",alignItems:"center",gap:8}}>
         {tab>0?<button type="button" onClick={()=>irATab(tab-1)} style={{justifySelf:"start",minHeight:TOUCH,padding:"0 16px",borderRadius:10,border:`1px solid ${LINE}`,background:WHITE,color:NAVY,cursor:"pointer",fontSize:15,fontFamily:"'DM Sans',sans-serif"}}>← {TABS[tab-1]}</button>:<span/>}
         <Mono color={MUTED}>{tab+1} / {TABS.length}</Mono>
         {tab<TABS.length-1?<button type="button" onClick={()=>irATab(tab+1)} style={{justifySelf:"end",minHeight:TOUCH,padding:"0 16px",borderRadius:10,border:`1.5px solid ${NAVY}`,background:WHITE,color:NAVY,cursor:"pointer",fontSize:15,fontWeight:600,fontFamily:"'DM Sans',sans-serif"}}>{TABS[tab+1]} →</button>:<span/>}

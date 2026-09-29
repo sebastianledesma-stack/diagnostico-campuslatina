@@ -28,10 +28,10 @@ function contactoHref(universidad){
 }
 
 // CTA fijo al pie de todas las solapas del informe.
-export function ContactoCTA({universidad}){
+export function ContactoCTA({universidad,ancho=680}){
   const href=contactoHref(universidad);
   return(
-    <div style={{maxWidth:680,margin:"0 auto",padding:"4px 18px 18px"}}>
+    <div style={{maxWidth:ancho,margin:"0 auto",padding:"4px 18px 18px"}}>
       <div style={{background:NAVY_DK,borderRadius:14,padding:"20px 18px",position:"relative",overflow:"hidden"}}>
         <div style={{position:"absolute",right:-60,top:-60,width:200,height:200,borderRadius:"50%",background:"radial-gradient(circle, rgba(0,200,150,.12) 0%, transparent 70%)"}}/>
         <div style={{position:"relative"}}>
