@@ -55,7 +55,8 @@ function RadarChart({scores}){
 
 // ── WELCOME ──────────────────────────────────────────────
 function Welcome({onStart}){
-  const desk=useIsDesktop();
+  // Responsive con CSS (clases wl-* en index.html), no con JavaScript: así el HTML prerenderizado
+  // es uno solo para celular y escritorio (sin contenido duplicado para buscadores).
   // Precarga el selector de teléfono (pesado) mientras se lee la bienvenida.
   useEffect(()=>{const t=setTimeout(()=>{import("../components/PhoneField.jsx");},1500);return()=>clearTimeout(t);},[]);
 
@@ -65,89 +66,66 @@ function Welcome({onStart}){
     ["🎯","Qué resolver primero","3 acciones por etapa, ordenadas por el impacto que tienen en la inscripción."],
     ["📈","Cuánto se puede mejorar","Elija las acciones que su equipo puede implementar y vea en tiempo real cuánto sube el puntaje."],
   ];
-  const cta=(texto,extra={})=>(
-    <button type="button" onClick={onStart} style={{width:"100%",maxWidth:420,...BTN_PRIMARY,border:"none",borderRadius:12,minHeight:TOUCH+4,padding:"14px 20px",lineHeight:1.3,textAlign:"center",fontSize:16,fontWeight:700,fontFamily:"'DM Sans',sans-serif",cursor:"pointer",...extra}}>
-      {texto}{"\u00A0"}→
-    </button>
-  );
-  const encabezado=(
-    <>
-      <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
-        <Mono color={SLATE}>CampusLatina & CIeLatam</Mono>
-        <span style={{fontFamily:"'Space Mono',monospace",fontSize:11,letterSpacing:".1em",textTransform:"uppercase",color:NAVY_DK,background:EMERALD,borderRadius:999,padding:"3px 10px",fontWeight:700}}>Gratis</span>
-      </div>
-      <h1 style={{fontFamily:"'DM Serif Display',serif",fontSize:desk?56:"clamp(28px,5vw,48px)",color:WHITE,lineHeight:1.05,margin:desk?"16px 0 20px":"12px 0 16px"}}>
-        ¿Por qué se inscriben<br/><em style={{color:EMERALD}}>menos estudiantes</em><br/>de los esperados?
-      </h1>
-      <p style={{fontSize:desk?18:16,color:"rgba(255,255,255,.7)",lineHeight:1.7,marginBottom:desk?32:28,maxWidth:desk?520:480}}>
-        En 10 minutos, descubra en qué momento su universidad pierde aspirantes — desde la primera búsqueda en Google hasta el primer día de clases — y qué resolver primero.
-      </p>
-    </>
-  );
-  const beneficios=(
-    <div style={{background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.08)",borderRadius:desk?16:12,padding:desk?"24px":"20px 20px",marginBottom:desk?16:24}}>
-      <Mono color={EMERALD}>Lo que va a saber al terminar</Mono>
-      <div style={{marginTop:desk?16:12,display:desk?"grid":"flex",gridTemplateColumns:"1fr 1fr",flexDirection:"column",gap:desk?"20px 24px":10}}>
-        {BENEFICIOS.map(([icon,title,desc])=>(
-          <div key={title} style={{display:"flex",gap:12,alignItems:"flex-start"}}>
-            <span aria-hidden="true" style={{fontSize:desk?22:18,flexShrink:0}}>{icon}</span>
-            <div>
-              <div style={{fontSize:desk?16:15,color:WHITE,fontWeight:600}}>{title}</div>
-              <div style={{fontSize:14,color:"rgba(255,255,255,.6)",lineHeight:1.5,marginTop:2}}>{desc}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-  const enJuego=(
-    <div style={{background:"rgba(0,200,150,.08)",border:"1px solid rgba(0,200,150,.2)",borderRadius:desk?16:10,padding:desk?"20px 24px":"14px 16px",marginBottom:desk?0:28}}>
-      <Mono color={EMERALD}>Más publicidad no alcanza</Mono>
-      <p style={{fontSize:15,color:"rgba(255,255,255,.7)",lineHeight:1.65,margin:"6px 0 0"}}>
-        Si el proceso pierde aspirantes en el camino, invertir en campañas es llenar un balde agujereado. Este diagnóstico muestra dónde está el agujero.
-      </p>
-      <p style={{fontSize:15,color:"rgba(255,255,255,.7)",lineHeight:1.65,margin:"8px 0 0"}}>
-        Lo creamos en CampusLatina: ayudamos a inscribir a más de 180.000 estudiantes en Argentina, y ahora llevamos esa experiencia al resto de Latinoamérica.
-      </p>
-    </div>
-  );
-  const datos=(
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:28,maxWidth:desk?420:"none"}}>
-      {[["28","preguntas"],["7","etapas"],["~10 min","duración"]].map(([val,label])=>(
-        <div key={label} style={{background:"rgba(255,255,255,.05)",borderRadius:10,padding:"14px 12px",textAlign:"center",border:"1px solid rgba(255,255,255,.08)"}}>
-          <div style={{fontFamily:"'DM Serif Display',serif",fontSize:26,color:EMERALD,lineHeight:1}}>{val}</div>
-          <Mono color={SLATE}>{label}</Mono>
-        </div>
-      ))}
-    </div>
-  );
+  const btn={width:"100%",maxWidth:420,...BTN_PRIMARY,border:"none",borderRadius:12,minHeight:TOUCH+4,padding:"14px 20px",lineHeight:1.3,textAlign:"center",fontSize:16,fontWeight:700,fontFamily:"'DM Sans',sans-serif",cursor:"pointer"};
 
   return(
     <div style={{minHeight:"100vh",background:NAVY_DK,display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
       <div style={{position:"absolute",inset:0,backgroundImage:`linear-gradient(rgba(139,148,200,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(139,148,200,.06) 1px,transparent 1px)`,backgroundSize:"60px 60px"}}/>
       <div style={{position:"absolute",right:-80,top:"15%",width:400,height:400,borderRadius:"50%",background:"radial-gradient(circle, rgba(0,200,150,.08) 0%, transparent 70%)"}}/>
-      {desk?(
-        <main style={{flex:1,display:"grid",gridTemplateColumns:"minmax(0,1.05fr) minmax(0,1fr)",gap:64,alignItems:"center",padding:"56px 48px",position:"relative",maxWidth:1200,margin:"0 auto",width:"100%"}}>
-          <div>
-            {encabezado}
-            {cta("Descubrir dónde se pierden inscriptos",{marginBottom:28})}
-            {datos}
+      <main className="wl" style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"40px 20px 40px",position:"relative",maxWidth:680,margin:"0 auto",width:"100%"}}>
+        <div className="wl-head">
+          <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
+            <Mono color={SLATE}>CampusLatina & CIeLatam</Mono>
+            <span style={{fontFamily:"'Space Mono',monospace",fontSize:11,letterSpacing:".1em",textTransform:"uppercase",color:NAVY_DK,background:EMERALD,borderRadius:999,padding:"3px 10px",fontWeight:700}}>Gratis</span>
           </div>
-          <div>
-            {beneficios}
-            {enJuego}
+          <h1 className="wl-h1" style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(28px,5vw,48px)",color:WHITE,lineHeight:1.05,margin:"12px 0 16px"}}>
+            ¿Por qué se inscriben<br/><em style={{color:EMERALD}}>menos estudiantes</em><br/>de los esperados?
+          </h1>
+          <p className="wl-lead" style={{fontSize:16,color:"rgba(255,255,255,.7)",lineHeight:1.7,marginBottom:28,maxWidth:480}}>
+            En 10 minutos, descubra en qué momento su universidad pierde aspirantes — desde la primera búsqueda en Google hasta el primer día de clases — y qué resolver primero.
+          </p>
+        </div>
+        <div className="wl-cta">
+          <button type="button" onClick={onStart} style={{...btn,marginBottom:32}}>Descubrir dónde se pierden inscriptos{"\u00A0"}→</button>
+        </div>
+        <div className="wl-ben" style={{background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.08)",borderRadius:12,padding:"20px 20px",marginBottom:24}}>
+          <Mono color={EMERALD}>Lo que va a saber al terminar</Mono>
+          <div className="wl-ben-grid" style={{marginTop:12,display:"flex",flexDirection:"column",gap:10}}>
+            {BENEFICIOS.map(([icon,title,desc])=>(
+              <div key={title} style={{display:"flex",gap:12,alignItems:"flex-start"}}>
+                <span aria-hidden="true" style={{fontSize:18,flexShrink:0}}>{icon}</span>
+                <div>
+                  <div style={{fontSize:15,color:WHITE,fontWeight:600}}>{title}</div>
+                  <div style={{fontSize:14,color:"rgba(255,255,255,.6)",lineHeight:1.5,marginTop:2}}>{desc}</div>
+                </div>
+              </div>
+            ))}
           </div>
-        </main>
-      ):(
-        <main style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"40px 20px 40px",position:"relative",maxWidth:680,margin:"0 auto",width:"100%"}}>
-          {encabezado}
-          {cta("Descubrir dónde se pierden inscriptos",{marginBottom:32})}
-          {beneficios}
-          {enJuego}
-          {datos}
-          {cta("Empezar el diagnóstico")}
-        </main>
-      )}
+        </div>
+        <div className="wl-jue" style={{background:"rgba(0,200,150,.08)",border:"1px solid rgba(0,200,150,.2)",borderRadius:10,padding:"14px 16px",marginBottom:28}}>
+          <Mono color={EMERALD}>Más publicidad no alcanza</Mono>
+          <p style={{fontSize:15,color:"rgba(255,255,255,.7)",lineHeight:1.65,margin:"6px 0 0"}}>
+            Si el proceso pierde aspirantes en el camino, invertir en campañas es llenar un balde agujereado. Este diagnóstico muestra dónde está el agujero.
+          </p>
+          <p style={{fontSize:15,color:"rgba(255,255,255,.7)",lineHeight:1.65,margin:"8px 0 0"}}>
+            Lo creamos en CampusLatina: ayudamos a inscribir a más de 180.000 estudiantes en Argentina, y ahora llevamos esa experiencia al resto de Latinoamérica.
+          </p>
+        </div>
+        <div className="wl-datos" style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:28}}>
+          {[["28","preguntas"],["7","etapas"],["~10 min","duración"]].map(([val,label])=>(
+            <div key={label} style={{background:"rgba(255,255,255,.05)",borderRadius:10,padding:"14px 12px",textAlign:"center",border:"1px solid rgba(255,255,255,.08)"}}>
+              <div style={{fontFamily:"'DM Serif Display',serif",fontSize:26,color:EMERALD,lineHeight:1}}>{val}</div>
+              <Mono color={SLATE}>{label}</Mono>
+            </div>
+          ))}
+        </div>
+        <div className="wl-cta2">
+          <button type="button" onClick={onStart} style={btn}>Empezar el diagnóstico{"\u00A0"}→</button>
+        </div>
+        <p className="wl-guia" style={{margin:"20px 0 0",fontSize:15}}>
+          <a href="/guia/" style={{color:"rgba(255,255,255,.8)",textUnderlineOffset:3}}>Leer la guía: las 7 etapas del proceso de inscripción →</a>
+        </p>
+      </main>
     </div>
   );
 }

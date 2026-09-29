@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 const QUERY = "(min-width: 1024px)";
 
 export function useIsDesktop() {
-  const [desk, setDesk] = useState(() => typeof window !== "undefined" && window.matchMedia(QUERY).matches);
+  // En el prerender (sin window) se genera una versión por layout: __PRERENDER_DESK__ indica cuál.
+  const [desk, setDesk] = useState(() => typeof window !== "undefined" ? window.matchMedia(QUERY).matches : !!globalThis.__PRERENDER_DESK__);
   useEffect(() => {
     const mq = window.matchMedia(QUERY);
     const on = () => setDesk(mq.matches);

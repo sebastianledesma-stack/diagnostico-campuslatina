@@ -13,6 +13,13 @@
   # pdfkit carga sus fuentes estándar con require dinámico, que el bundler no detecta
   included_files = ["node_modules/pdfkit/js/standard-fonts/**"]
 
+# Un solo dominio para buscadores: el subdominio de Netlify redirige (301) al dominio propio.
+[[redirects]]
+  from = "https://diagnostico-campuslatina.netlify.app/*"
+  to = "https://diagnostico.campuslatina.com/:splat"
+  status = 301
+  force = true
+
 # SPA: /admin se sirve con index.html y lo resuelve React Router.
 # No se usa un comodín "/*" para no interferir con /api/*, que atienden las functions por su config.path.
 [[redirects]]
@@ -36,3 +43,26 @@
   for = "/assets/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+# Panel y API fuera de los buscadores
+[[headers]]
+  for = "/admin*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
+# Archivos para buscadores y modelos de lenguaje
+[[headers]]
+  for = "/llms*.txt"
+  [headers.values]
+    Content-Type = "text/plain; charset=utf-8"
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/robots.txt"
+  [headers.values]
+    Content-Type = "text/plain; charset=utf-8"

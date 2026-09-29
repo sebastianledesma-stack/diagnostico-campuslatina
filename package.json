@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:netlify": "netlify dev",
-    "build": "vite build",
+    "build": "vite build && vite build --ssr src/entry-server.jsx --outDir dist-ssr && node scripts/prerender.mjs && node scripts/build-seo.mjs",
     "preview": "vite preview",
     "pdf:sample": "node scripts/sample-pdf.mjs"
   },

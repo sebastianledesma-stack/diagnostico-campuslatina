@@ -9,3 +9,4 @@ dist
 
 # Configuración local de Claude Code (no versionar)
 .claude/settings.local*.json
+dist-ssr

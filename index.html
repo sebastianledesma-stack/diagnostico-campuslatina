@@ -7,6 +7,27 @@
     <meta name="description" content="Descubra en 10 minutos en qué momento su universidad pierde inscriptos y qué resolver primero. Diagnóstico gratuito con informe en PDF." />
     <meta name="theme-color" content="#0E1240" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+    <link rel="canonical" href="https://diagnostico.campuslatina.com/" />
+    <link rel="alternate" hreflang="es" href="https://diagnostico.campuslatina.com/" />
+    <link rel="alternate" hreflang="x-default" href="https://diagnostico.campuslatina.com/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Diagnóstico del proceso de inscripción · CampusLatina" />
+    <meta property="og:locale" content="es_LA" />
+    <meta property="og:title" content="¿Por qué se inscriben menos estudiantes de los esperados?" />
+    <meta property="og:description" content="Descubra en 10 minutos en qué momento su universidad pierde inscriptos y qué resolver primero. Diagnóstico gratuito con informe en PDF." />
+    <meta property="og:url" content="https://diagnostico.campuslatina.com/" />
+    <meta property="og:image" content="https://diagnostico.campuslatina.com/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Diagnóstico gratuito del proceso de inscripción universitaria · CampusLatina" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="¿Por qué se inscriben menos estudiantes de los esperados?" />
+    <meta name="twitter:description" content="Descubra en 10 minutos en qué momento su universidad pierde inscriptos y qué resolver primero. Diagnóstico gratuito con informe en PDF." />
+    <meta name="twitter:image" content="https://diagnostico.campuslatina.com/og.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="alternate" type="text/plain" title="Resumen para modelos de lenguaje" href="/llms.txt" />
+    <script type="application/ld+json">[{"@context": "https://schema.org", "@type": "WebSite", "name": "Diagnóstico del proceso de inscripción", "url": "https://diagnostico.campuslatina.com/", "inLanguage": "es", "publisher": {"@type": "Organization", "name": "CampusLatina", "url": "https://campuslatina.com"}}, {"@context": "https://schema.org", "@type": "WebApplication", "name": "Diagnóstico del proceso de inscripción universitaria", "url": "https://diagnostico.campuslatina.com/", "description": "Descubra en 10 minutos en qué momento su universidad pierde inscriptos y qué resolver primero. Diagnóstico gratuito con informe en PDF.", "applicationCategory": "BusinessApplication", "operatingSystem": "Web", "inLanguage": "es", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "image": "https://diagnostico.campuslatina.com/og.png", "audience": {"@type": "Audience", "audienceType": "Directivos de universidades, admisiones y marketing universitario de Latinoamérica"}, "provider": {"@type": "Organization", "name": "CampusLatina", "url": "https://campuslatina.com"}}, {"@context": "https://schema.org", "@type": "Organization", "name": "CampusLatina", "url": "https://campuslatina.com", "description": "Ayudamos a inscribir a más de 180.000 estudiantes en Argentina y llevamos esa experiencia al resto de Latinoamérica."}]</script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
@@ -18,6 +39,20 @@
       /* Foco visible para teclado (4.8:1 sobre crema, 3.5:1 sobre azul) */
       :focus-visible { outline: 3px solid #007A5C; outline-offset: 2px; border-radius: 6px; }
       button:focus:not(:focus-visible) { outline: none; }
+      /* Bienvenida en escritorio (≥1024 px): dos columnas. Los estilos inline son los del celular. */
+      @media (min-width: 1024px) {
+        .wl { display: grid !important; grid-template-columns: minmax(0,1.05fr) minmax(0,1fr); column-gap: 64px; align-content: center;
+              grid-template-areas: "head ben" "cta ben" "datos jue" "guia jue"; grid-template-rows: auto auto auto 1fr;
+              max-width: 1200px !important; padding: 56px 48px !important; }
+        .wl-head { grid-area: head; } .wl-cta { grid-area: cta; } .wl-datos { grid-area: datos; max-width: 420px; }
+        .wl-guia { grid-area: guia; margin: 4px 0 0 !important; } .wl-cta2 { display: none; }
+        .wl-ben { grid-area: ben; align-self: end; border-radius: 16px !important; padding: 24px !important; margin-bottom: 16px !important; }
+        .wl-jue { grid-area: jue; align-self: start; border-radius: 16px !important; padding: 20px 24px !important; margin-bottom: 0 !important; }
+        .wl-ben-grid { display: grid !important; grid-template-columns: 1fr 1fr; gap: 20px 24px !important; margin-top: 16px !important; }
+        .wl-h1 { font-size: 56px !important; margin: 16px 0 20px !important; }
+        .wl-lead { font-size: 18px !important; max-width: 520px !important; margin-bottom: 32px !important; }
+        .wl-cta button { margin-bottom: 28px !important; }
+      }
       @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
     </style>
   </head>

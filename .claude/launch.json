@@ -1,7 +1,39 @@
 {
   "version": "0.0.1",
   "configurations": [
-    { "name": "vite", "runtimeExecutable": "npx", "runtimeArgs": ["vite", "--port", "5173", "--strictPort"], "port": 5173 },
-    { "name": "netlify-dev", "runtimeExecutable": "npx", "runtimeArgs": ["netlify", "dev", "--port", "8888"], "port": 8888 }
+    {
+      "name": "vite",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "vite",
+        "--port",
+        "5173",
+        "--strictPort"
+      ],
+      "port": 5173
+    },
+    {
+      "name": "netlify-dev",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "netlify",
+        "dev",
+        "--port",
+        "8888"
+      ],
+      "port": 8888
+    },
+    {
+      "name": "preview",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "vite",
+        "preview",
+        "--port",
+        "4173",
+        "--strictPort"
+      ],
+      "port": 4173
+    }
   ]
 }
