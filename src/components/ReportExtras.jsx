@@ -1,5 +1,6 @@
 // Agregados al informe pedidos por la spec (secciones 2 y 4.1), con los tokens visuales del v3.
 import { NAVY_DK, EMERALD, WHITE, MUTED, BTN_PRIMARY, TOUCH } from "../theme.js";
+import { track } from "../lib/analytics.js";
 import { AUTORIDAD } from "../data/textos.js";
 
 const CONTACT_EMAIL = import.meta.env.VITE_CONTACT_EMAIL || "";
@@ -41,7 +42,7 @@ export function ContactoCTA({universidad,ancho=680}){
             {AUTORIDAD} Responda el mail con su informe o escríbanos, y lo revisamos juntos.
           </p>
           {href&&(
-            <a href={href} target="_blank" rel="noopener noreferrer"
+            <a href={href} target="_blank" rel="noopener noreferrer" onClick={()=>track("contacto_click",{canal:CONTACT_WHATSAPP?"whatsapp":"mail"})}
               style={{display:"inline-flex",alignItems:"center",justifyContent:"center",minHeight:48,padding:"0 24px",borderRadius:10,background:EMERALD,color:NAVY_DK,fontSize:16,fontWeight:700,fontFamily:"'DM Sans',sans-serif",textDecoration:"none"}}>
               {CONTACT_WHATSAPP?"Escríbanos por WhatsApp →":"Escríbanos →"}
             </a>

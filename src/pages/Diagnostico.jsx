@@ -4,8 +4,9 @@ import { PAISES_LATAM } from "../data/paises.js";
 import { ETAPAS_DATA } from "../data/etapas.js";
 import { FRICCIONES } from "../data/fricciones.js";
 import { RECS, SCORE_POTENTIALS } from "../data/recs.js";
-import { getNivel, calcScore, calcEtapaProjected as projectEtapa, r1, fmt1, potencialEtapa, calcGlobalPotential } from "../lib/scoring.js";
+import { getNivel, calcScore, calcEtapaProjected as projectEtapa, r1, fmt1, potencialEtapa, calcGlobalPotential, calcResultados, etapasCriticas } from "../lib/scoring.js";
 import { guardarDiagnostico } from "../lib/persist.js";
+import { track } from "../lib/analytics.js";
 import { EnvioNota, ContactoCTA } from "../components/ReportExtras.jsx";
 import { NIVEL_DESC, lecturaDiagnostico } from "../data/textos.js";
 import { PAIS_A_ISO } from "../lib/telefono.js";
@@ -920,7 +921,7 @@ function Report({registroData,respuestas,envio}){
 
   const TAB_COMPONENTS=[TabResumen,TabRadar,TabEtapas,TabRecs,TabRecibir];
   const CurrentTab=TAB_COMPONENTS[tab];
-  const irATab=(i)=>{setTab(i);window.scrollTo(0,0);};
+  const irATab=(i)=>{setTab(i);window.scrollTo(0,0);track("informe_seccion",{seccion:TABS[i]});};
 
   return(
     <div style={{fontFamily:"'DM Sans',sans-serif",background:CREAM,minHeight:"100vh"}}>
@@ -953,7 +954,7 @@ export default function Diagnostico(){
 
   useEffect(()=>{window.scrollTo(0,0);},[phase,quizPos.etapa,quizPos.pregunta,quizPos.showIntro]);
 
-  const handleRegister=(data)=>{setRegistroData(data);setPhase("quiz");setQuizPos({etapa:0,pregunta:0,showIntro:true});};
+  const handleRegister=(data)=>{track("generate_lead",{pais:data.pais});setRegistroData(data);setPhase("quiz");setQuizPos({etapa:0,pregunta:0,showIntro:true});};
 
   const handleSelect=(valor)=>{
     const e=ETAPAS_DATA[quizPos.etapa];
@@ -971,12 +972,16 @@ export default function Diagnostico(){
       ETAPAS_DATA.forEach(et=>{finalScores[et.id]=calcScore(respuestas,et.id);});
       setEtapasScores(finalScores);
       // INSERT en Supabase + mail con PDF. No bloquea: el informe se muestra igual si algo falla.
-      guardarDiagnostico(registroData,respuestas).then(setEnvio);
+      guardarDiagnostico(registroData,respuestas).then((r)=>{setEnvio(r);if(r==="error")track("envio_error");});
+      const {score_global,nivel}=calcResultados(respuestas);
+      track("etapa_completada",{etapa:e.id,numero:e.num});
+      track("diagnostico_completo",{puntaje:score_global,nivel,etapa_critica:etapasCriticas(finalScores)[0]?.id});
       setPhase("processing");
       setTimeout(()=>setPhase("report"),4000);
     } else if(isLastP){
       // calc score for completed etapa
       const scores={...etapasScores,[e.id]:calcScore(respuestas,e.id)};
+      track("etapa_completada",{etapa:e.id,numero:e.num});
       setEtapasScores(scores);
       setQuizPos({etapa:quizPos.etapa+1,pregunta:0,showIntro:true});
     } else {
@@ -995,7 +1000,7 @@ export default function Diagnostico(){
     setQuizPos({...quizPos,showIntro:true});
   };
 
-  if(phase==="welcome") return <Welcome onStart={()=>setPhase("register")}/>;
+  if(phase==="welcome") return <Welcome onStart={()=>{track("diagnostico_inicio");setPhase("register");}}/>;
   if(phase==="register") return <Register onNext={handleRegister}/>;
   if(phase==="processing") return <Processing/>;
   if(phase==="report") return <Report registroData={registroData} respuestas={respuestas} envio={envio}/>;

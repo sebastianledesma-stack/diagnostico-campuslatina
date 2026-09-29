@@ -27,7 +27,19 @@
     <meta name="twitter:image" content="https://diagnostico.campuslatina.com/og.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="alternate" type="text/plain" title="Resumen para modelos de lenguaje" href="/llms.txt" />
-    <script type="application/ld+json">[{"@context": "https://schema.org", "@type": "WebSite", "name": "Diagnóstico del proceso de inscripción", "url": "https://diagnostico.campuslatina.com/", "inLanguage": "es", "publisher": {"@type": "Organization", "name": "CampusLatina", "url": "https://campuslatina.com"}}, {"@context": "https://schema.org", "@type": "WebApplication", "name": "Diagnóstico del proceso de inscripción universitaria", "url": "https://diagnostico.campuslatina.com/", "description": "Descubra en 10 minutos en qué momento su universidad pierde inscriptos y qué resolver primero. Diagnóstico gratuito con informe en PDF.", "applicationCategory": "BusinessApplication", "operatingSystem": "Web", "inLanguage": "es", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "image": "https://diagnostico.campuslatina.com/og.png", "audience": {"@type": "Audience", "audienceType": "Directivos de universidades, admisiones y marketing universitario de Latinoamérica"}, "provider": {"@type": "Organization", "name": "CampusLatina", "url": "https://campuslatina.com"}}, {"@context": "https://schema.org", "@type": "Organization", "name": "CampusLatina", "url": "https://campuslatina.com", "description": "Ayudamos a inscribir a más de 180.000 estudiantes en Argentina y llevamos esa experiencia al resto de Latinoamérica."}]</script>
+    <script type="application/ld+json">[{"@context": "https://schema.org", "@type": "WebSite", "name": "Diagnóstico del proceso de inscripción", "url": "https://diagnostico.campuslatina.com/", "inLanguage": "es", "publisher": {"@id": "https://campuslatina.com/#organizacion"}}, {"@context": "https://schema.org", "@type": "WebApplication", "name": "Diagnóstico del proceso de inscripción universitaria", "url": "https://diagnostico.campuslatina.com/", "description": "Descubra en 10 minutos en qué momento su universidad pierde inscriptos y qué resolver primero. Diagnóstico gratuito con informe en PDF.", "applicationCategory": "BusinessApplication", "operatingSystem": "Web", "inLanguage": "es", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "image": "https://diagnostico.campuslatina.com/og.png", "audience": {"@type": "Audience", "audienceType": "Directivos de universidades, admisiones y marketing universitario de Latinoamérica"}, "provider": {"@id": "https://campuslatina.com/#organizacion"}}, {"@context": "https://schema.org", "@type": "Organization", "@id": "https://campuslatina.com/#organizacion", "name": "Campus Latina", "alternateName": "CampusLatina", "url": "https://campuslatina.com/", "logo": "https://campuslatina.com/logo.png", "description": "Ayudamos a inscribir a más de 180.000 estudiantes en Argentina y llevamos esa experiencia al resto de Latinoamérica."}]</script>
+    <!-- Google Analytics 4 (mismo código que GA_SNIPPET en src/lib/analytics.js) -->
+    <script>
+      (function () {
+        if (location.hostname !== "diagnostico.campuslatina.com" || location.pathname.indexOf("/admin") === 0) return;
+        var s = document.createElement("script"); s.async = true;
+        s.src = "https://www.googletagmanager.com/gtag/js?id=G-3R3PVW6BMY"; document.head.appendChild(s);
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = function () { dataLayer.push(arguments); };
+        gtag("js", new Date());
+        gtag("config", "G-3R3PVW6BMY");
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />

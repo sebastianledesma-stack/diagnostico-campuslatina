@@ -9,10 +9,13 @@ import { FRICCIONES } from "../src/data/fricciones.js";
 import { RECS } from "../src/data/recs.js";
 import { NIVEL_DESC, AUTORIDAD } from "../src/data/textos.js";
 import { siteHeaderHTML, SITE_HEADER_CSS } from "../src/data/siteHeader.js";
+import { NOTAS, notasDeEtapa } from "../src/data/notas.js";
+import { GA_SNIPPET } from "../src/lib/analytics.js";
 
 const SITE = "https://diagnostico.campuslatina.com";
 const HOY = new Date().toISOString().slice(0, 10);
-const ORG = { "@type": "Organization", name: "CampusLatina", url: "https://campuslatina.com" };
+// Misma entidad que en campuslatina.com (mismo @id), para que buscadores e IA la reconozcan como una sola.
+const ORG = { "@type": "Organization", "@id": "https://campuslatina.com/#organizacion", name: "Campus Latina", alternateName: "CampusLatina", url: "https://campuslatina.com/", logo: "https://campuslatina.com/logo.png" };
 const NIVELES = [
   ["Inicial", "1.0–1.9", "#CC3333"], ["En desarrollo", "2.0–3.0", "#A94F16"],
   ["Consolidado", "3.1–4.0", "#2E7D32"], ["Avanzado", "4.1–5.0", "#185FA5"],
@@ -122,6 +125,7 @@ function page({ path, title, description, body, jsonld = [], type = "article" })
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700&family=DM+Serif+Display:ital@0;1&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
 <style>${CSS}${SITE_HEADER_CSS}</style>
 ${jsonld.map(ld).join("\n")}
+${GA_SNIPPET}
 </head>
 <body>
 ${siteHeaderHTML()}
@@ -145,6 +149,10 @@ const nivelesTabla = () => `
   <thead><tr><th>Nivel</th><th>Puntaje</th><th>Qué significa</th></tr></thead>
   <tbody>${NIVELES.map(([n, r, c]) => `<tr><td><strong style="color:${c}">${n}</strong></td><td>${r}</td><td>${esc(NIVEL_DESC[n].charAt(0).toUpperCase() + NIVEL_DESC[n].slice(1))}.</td></tr>`).join("")}</tbody>
 </table>`;
+
+const lecturas = (notas, titulo) => notas.length ? `
+<h2>${esc(titulo)}</h2>
+<ul>${notas.map((n) => `<li><a href="${n.url}">${esc(n.titulo)}</a></li>`).join("")}</ul>` : "";
 
 const out = (path, html) => { const dir = "dist" + path; mkdirSync(dir, { recursive: true }); writeFileSync(dir + "index.html", html); };
 
@@ -175,6 +183,8 @@ ${e.preguntas.map((p, k) => `
   <p class="muted">${esc(p.ayuda)}</p>
   ${p.opciones.map((o) => `<div class="opcion"><b>${NIVEL_POR_LETRA[o.letra]}</b><span>${esc(o.texto)}</span></div>`).join("")}
 </section>`).join("")}
+
+${lecturas(notasDeEtapa(e.id), "Lecturas relacionadas")}
 
 ${ctaBox(`¿Cómo está su universidad en ${e.name.toLowerCase()}?`)}
 
@@ -216,6 +226,8 @@ ${ETAPAS_DATA.map((e) => `<li><a href="${etapaUrl(e)}"><strong>${e.num}. ${esc(e
 ${nivelesTabla()}
 
 ${ctaBox()}
+
+${lecturas(NOTAS, "Notas de Campus Latina sobre admisión universitaria")}
 
 <h2>Preguntas frecuentes</h2>
 ${FAQ.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join("\n")}
@@ -267,8 +279,12 @@ ${ETAPAS_DATA.map((e) => `- [${SEO[e.id].t}](${url(etapaUrl(e))}): ${SEO[e.id].d
 ## Herramienta
 - [Diagnóstico gratuito](${url("/")}): 28 preguntas, informe en pantalla y en PDF por mail, con 3 acciones prioritarias por etapa.
 
+## Notas de Campus Latina
+${NOTAS.map((n) => `- [${n.titulo}](${n.url}) (${n.fecha})`).join("\n")}
+
 ## Optional
 - [Contenido completo en texto](${url("/llms-full.txt")}): todas las etapas, fricciones, recomendaciones y preguntas del diagnóstico.
+- [Campus Latina](https://campuslatina.com/llms.txt): quiénes somos y cómo trabajamos.
 `);
 writeFileSync("dist/llms-full.txt", `# Las 7 etapas del proceso de inscripción universitaria
 Fuente: ${url("/guia/")} · CampusLatina & CIeLatam · Actualizado ${HOY}
