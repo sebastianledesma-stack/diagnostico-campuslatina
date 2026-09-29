@@ -972,7 +972,7 @@ export default function Diagnostico(){
       ETAPAS_DATA.forEach(et=>{finalScores[et.id]=calcScore(respuestas,et.id);});
       setEtapasScores(finalScores);
       // INSERT en Supabase + mail con PDF. No bloquea: el informe se muestra igual si algo falla.
-      guardarDiagnostico(registroData,respuestas).then((r)=>{setEnvio(r);if(r==="error")track("envio_error");});
+      guardarDiagnostico(registroData,respuestas).then(setEnvio);
       const {score_global,nivel}=calcResultados(respuestas);
       track("etapa_completada",{etapa:e.id,numero:e.num});
       track("diagnostico_completo",{puntaje:score_global,nivel,etapa_critica:etapasCriticas(finalScores)[0]?.id});
