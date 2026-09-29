@@ -10,6 +10,7 @@ import { EnvioNota, ContactoCTA } from "../components/ReportExtras.jsx";
 import { NIVEL_DESC, lecturaDiagnostico } from "../data/textos.js";
 import { PAIS_A_ISO } from "../lib/telefono.js";
 import { useIsDesktop } from "../lib/useIsDesktop.js";
+import SiteHeader from "../components/SiteHeader.jsx";
 const PhoneField=lazy(()=>import("../components/PhoneField.jsx"));
 
 const nd=(score)=>nivelDarkColor(getNivel(score).label);
@@ -69,7 +70,9 @@ function Welcome({onStart}){
   const btn={width:"100%",maxWidth:420,...BTN_PRIMARY,border:"none",borderRadius:12,minHeight:TOUCH+4,padding:"14px 20px",lineHeight:1.3,textAlign:"center",fontSize:16,fontWeight:700,fontFamily:"'DM Sans',sans-serif",cursor:"pointer"};
 
   return(
-    <div style={{minHeight:"100vh",background:NAVY_DK,display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
+    <div style={{minHeight:"100vh",background:NAVY_DK,display:"flex",flexDirection:"column",position:"relative"}}>
+      <SiteHeader onCta={onStart}/>
+      <div style={{position:"relative",flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>
       <div style={{position:"absolute",inset:0,backgroundImage:`linear-gradient(rgba(139,148,200,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(139,148,200,.06) 1px,transparent 1px)`,backgroundSize:"60px 60px"}}/>
       <div style={{position:"absolute",right:-80,top:"15%",width:400,height:400,borderRadius:"50%",background:"radial-gradient(circle, rgba(0,200,150,.08) 0%, transparent 70%)"}}/>
       <main className="wl" style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"40px 20px 40px",position:"relative",maxWidth:680,margin:"0 auto",width:"100%"}}>
@@ -122,10 +125,11 @@ function Welcome({onStart}){
         <div className="wl-cta2">
           <button type="button" onClick={onStart} style={btn}>Empezar el diagnóstico{"\u00A0"}→</button>
         </div>
-        <p className="wl-guia" style={{margin:"20px 0 0",fontSize:15}}>
-          <a href="/guia/" style={{color:"rgba(255,255,255,.8)",textUnderlineOffset:3}}>Leer la guía: las 7 etapas del proceso de inscripción →</a>
+        <p className="wl-guia" style={{margin:"8px 0 0",fontSize:15}}>
+          <a href="/guia/" style={{color:"rgba(255,255,255,.8)",textUnderlineOffset:3,display:"inline-flex",alignItems:"center",minHeight:44}}>Leer la guía: las 7 etapas del proceso de inscripción →</a>
         </p>
       </main>
+      </div>
     </div>
   );
 }

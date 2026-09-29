@@ -8,6 +8,7 @@ import { ETAPAS_DATA } from "../src/data/etapas.js";
 import { FRICCIONES } from "../src/data/fricciones.js";
 import { RECS } from "../src/data/recs.js";
 import { NIVEL_DESC, AUTORIDAD } from "../src/data/textos.js";
+import { siteHeaderHTML, SITE_HEADER_CSS } from "../src/data/siteHeader.js";
 
 const SITE = "https://diagnostico.campuslatina.com";
 const HOY = new Date().toISOString().slice(0, 10);
@@ -50,10 +51,6 @@ html,body{margin:0;background:#F5F4F0;color:#1A1F5E;-webkit-text-size-adjust:100
 body{font:17px/1.7 'DM Sans',system-ui,sans-serif}
 a{color:#007A5C;text-underline-offset:3px}
 a:focus-visible{outline:3px solid #007A5C;outline-offset:2px;border-radius:4px}
-.top{background:#0E1240;color:#fff}
-.top .in{max-width:1080px;margin:0 auto;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
-.brand{font:700 12px/1 'Space Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#8B94C8;text-decoration:none;display:inline-flex;align-items:center;min-height:44px}
-.top .cta{background:#00C896;color:#0E1240;font-weight:700;text-decoration:none;border-radius:10px;padding:0 16px;min-height:44px;display:inline-flex;align-items:center;font-size:15px}
 main{max-width:760px;margin:0 auto;padding:32px 20px 56px}
 .crumbs{font-size:14px;color:#565C80;margin-bottom:12px}
 .crumbs a{color:#565C80;display:inline-flex;align-items:center;min-height:44px}
@@ -123,11 +120,11 @@ function page({ path, title, description, body, jsonld = [], type = "article" })
 <link rel="alternate" type="text/plain" title="Resumen para modelos de lenguaje" href="/llms.txt">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700&family=DM+Serif+Display:ital@0;1&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
-<style>${CSS}</style>
+<style>${CSS}${SITE_HEADER_CSS}</style>
 ${jsonld.map(ld).join("\n")}
 </head>
 <body>
-<header class="top"><div class="in"><a class="brand" href="/">CampusLatina · Diagnóstico</a><a class="cta" href="/">Hacer el diagnóstico gratis →</a></div></header>
+${siteHeaderHTML()}
 <main>
 ${body}
 </main>
