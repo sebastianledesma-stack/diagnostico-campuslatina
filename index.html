@@ -37,7 +37,8 @@
         window.dataLayer = window.dataLayer || [];
         window.gtag = function () { dataLayer.push(arguments); };
         gtag("js", new Date());
-        gtag("config", "G-3R3PVW6BMY");
+        // El link /d/<clave> es secreto: a Analytics llega sin la clave.
+        gtag("config", "G-3R3PVW6BMY", { page_location: location.origin + location.pathname.replace(/^\/d\/[^/]+/, "/d/privado") });
       })();
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -70,6 +71,8 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- La portada viene prerenderizada; en /d/… y /admin se vacía para que no aparezca un instante. -->
+    <script>if (location.pathname !== "/") document.getElementById("root").innerHTML = "";</script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

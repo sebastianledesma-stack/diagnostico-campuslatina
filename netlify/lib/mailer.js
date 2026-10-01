@@ -6,6 +6,11 @@ let resend;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 export async function enviarMail(payload, { idempotencyKey } = {}) {
+  // Desarrollo local (vite.config.js): no se envía nada, solo se registra.
+  if (process.env.MAIL_SOLO_LOG) {
+    console.log(`[mailer] (solo log) → ${[].concat(payload.to).join(", ")} · ${payload.subject}`);
+    return true;
+  }
   if (!env.RESEND_API_KEY) {
     console.error("[mailer] Falta RESEND_API_KEY");
     return false;

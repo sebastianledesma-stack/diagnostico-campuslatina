@@ -3,6 +3,7 @@ import { NAVY, NAVY_DK, EMERALD, SLATE, CREAM, EMERALD_TXT, SLATE_TXT, MUTED, ni
 import { ETAPAS_DATA } from "../../src/data/etapas.js";
 import { getNivel, etapasCriticas, topRecomendaciones, fmt1 } from "../../src/lib/scoring.js";
 import { AUTORIDAD } from "../../src/data/textos.js";
+import { textoRango } from "../../src/data/calificacion.js";
 
 const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const f1 = fmt1;
@@ -38,16 +39,25 @@ function filaEtapa(e) {
 }
 
 // Mail al directivo, con el PDF adjunto.
-export function mailInforme(d, { contactoEmail } = {}) {
+// Botón final del informe: reunión de 45 min si la universidad es target; si no, contacto por mail.
+export function ctaInforme(d, { contactoEmail, agendaUrl } = {}) {
+  const asunto = (t) => encodeURIComponent(`${t} — ${d.universidad}`);
+  if (d.target) {
+    const href = agendaUrl || (contactoEmail ? `mailto:${contactoEmail}?subject=${asunto("Quiero agendar la reunión de 45 minutos")}` : null);
+    return { titulo: "Revisemos su diagnóstico en 45 minutos", texto: "Una reunión por videollamada para recorrer sus resultados y definir por dónde empezar. Sin compromiso.", boton: "Agendar la reunión →", href };
+  }
+  const href = contactoEmail ? `mailto:${contactoEmail}?subject=${asunto("Diagnóstico del proceso de inscripción")}` : null;
+  return { titulo: "¿Quiere inscribir más estudiantes el próximo ciclo?", texto: "Responda este mail y revisamos juntos su diagnóstico.", boton: "Escríbanos →", href };
+}
+
+export function mailInforme(d, { contactoEmail, agendaUrl } = {}) {
   const nivel = getNivel(Number(d.score_global));
   const etapas = ETAPAS_DATA.map((e) => ({ ...e, score: d.scores?.[e.id] || 0 }));
   const top = topRecomendaciones(d.scores || {});
   const nombre = String(d.nombre || "").trim().split(/\s+/)[0];
   const critica = etapasCriticas(d.scores || {})[0];
   const subject = `${d.universidad}: dónde se están perdiendo inscriptos`;
-  const hablemosHref = contactoEmail
-    ? `mailto:${contactoEmail}?subject=${encodeURIComponent(`Diagnóstico del proceso de inscripción — ${d.universidad}`)}`
-    : null;
+  const cta = ctaInforme(d, { contactoEmail, agendaUrl });
 
   const body = `
 <tr><td class="px" style="background:${NAVY_DK};padding:32px 36px;">
@@ -92,9 +102,9 @@ export function mailInforme(d, { contactoEmail } = {}) {
 
 <tr><td class="px" style="padding:16px 36px 32px;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${NAVY_DK};border-radius:12px;"><tr><td style="padding:24px;">
-    <div style="font-family:${SERIF};font-size:20px;line-height:1.3;color:#ffffff;">¿Quiere inscribir <em style="color:${EMERALD};">más estudiantes</em> el próximo ciclo?</div>
-    <p style="font-size:14px;line-height:1.6;color:#B8BCD8;margin:8px 0 18px;">${AUTORIDAD} Responda este mail y revisamos juntos su diagnóstico.</p>
-    ${hablemosHref ? `<a href="${esc(hablemosHref)}" style="display:inline-block;background:${EMERALD};color:${NAVY_DK};font-weight:700;font-size:14px;text-decoration:none;padding:14px 26px;border-radius:10px;">Escríbanos →</a>` : ""}
+    <div style="font-family:${SERIF};font-size:20px;line-height:1.3;color:#ffffff;">${esc(cta.titulo)}</div>
+    <p style="font-size:14px;line-height:1.6;color:#B8BCD8;margin:8px 0 18px;">${AUTORIDAD} ${esc(cta.texto)}</p>
+    ${cta.href ? `<a href="${esc(cta.href)}" style="display:inline-block;background:${EMERALD};color:${NAVY_DK};font-weight:700;font-size:14px;text-decoration:none;padding:14px 26px;border-radius:10px;">${esc(cta.boton)}</a>` : ""}
   </td></tr></table>
 </td></tr>`;
 
@@ -113,7 +123,7 @@ export function mailInforme(d, { contactoEmail } = {}) {
     ``,
     `El informe completo va adjunto en PDF.`,
     ``,
-    `¿Quiere inscribir más estudiantes el próximo ciclo? Responda este mail y revisamos juntos su diagnóstico.`,
+    `${cta.titulo} ${cta.texto}${cta.href && !cta.href.startsWith("mailto:") ? ` ${cta.href}` : ""}`,
     `— CampusLatina`,
   ].join("\n");
 
@@ -125,7 +135,8 @@ export function mailInterno(d, { adminUrl } = {}) {
   const nivel = getNivel(Number(d.score_global));
   const criticas = etapasCriticas(d.scores || {}).slice(0, 2);
   const waNum = String(d.whatsapp || "").replace(/\D/g, "");
-  const subject = `🎯 Nuevo diagnóstico — ${d.universidad} (${d.pais}) · ${f1(d.score_global)}/5`;
+  const colegas = (d.colaboradores || []).map((c) => c.nombre).filter(Boolean);
+  const subject = `${d.target ? "🎯 TARGET · " : ""}Nuevo diagnóstico — ${d.universidad} (${d.pais}) · ${f1(d.score_global)}/5`;
   const row = (icon, label, value) => `<tr><td style="padding:6px 0;width:28px;font-size:16px;">${icon}</td><td style="padding:6px 0;width:110px;font-family:${MONO};font-size:12px;letter-spacing:1px;text-transform:uppercase;color:${SLATE_TXT};">${label}</td><td style="padding:6px 0;font-size:14px;color:${NAVY};">${value}</td></tr>`;
 
   const body = `
@@ -141,6 +152,10 @@ export function mailInterno(d, { adminUrl } = {}) {
     ${row("👤", "Directivo", `${esc(d.nombre)}${d.cargo ? ` — ${esc(d.cargo)}` : ""}`)}
     ${row("📧", "Email", `<a href="mailto:${esc(d.email)}" style="color:${NAVY};">${esc(d.email)}</a>`)}
     ${row("📱", "WhatsApp", waNum ? `<a href="https://wa.me/${waNum}" style="color:${NAVY};">${esc(d.whatsapp)}</a>` : esc(d.whatsapp))}
+    ${row("🎓", "Alumnos hoy", esc(textoRango(d.alumnos_actuales)))}
+    ${row("📈", "Meta 3 años", esc(textoRango(d.alumnos_meta)))}
+    ${row("🎯", "Calificación", d.target ? "<strong>Target: se le ofreció la reunión de 45 min</strong>" : "No target: se le ofreció escribir por mail")}
+    ${colegas.length ? row("👥", "Colegas", esc(colegas.join(", "))) : ""}
   </table>
 </td></tr>
 <tr><td class="px" style="padding:12px 36px 8px;">
@@ -160,6 +175,9 @@ export function mailInterno(d, { adminUrl } = {}) {
     `👤 ${d.nombre}${d.cargo ? ` — ${d.cargo}` : ""}`,
     `📧 ${d.email}`,
     `📱 ${d.whatsapp}`,
+    `🎓 Alumnos hoy: ${textoRango(d.alumnos_actuales)} · Meta a 3 años: ${textoRango(d.alumnos_meta)}`,
+    `🎯 ${d.target ? "TARGET (reunión de 45 min)" : "No target (contacto por mail)"}`,
+    colegas.length ? `👥 Colegas: ${colegas.join(", ")}` : "",
     ``,
     `📊 Score global: ${f1(d.score_global)}/5 · ${nivel.label}`,
     ``,
@@ -170,4 +188,67 @@ export function mailInterno(d, { adminUrl } = {}) {
   ].join("\n");
 
   return { subject, html: layout({ preheader: `${d.nombre} · ${d.pais} · ${f1(d.score_global)}/5`, body }), text };
+}
+
+// Bloque de texto + botón para los mails cortos.
+function mailSimple({ preheader, titulo, parrafos, boton, href, pie }) {
+  const body = `
+<tr><td class="px" style="background:${NAVY_DK};padding:28px 36px;">
+  <div style="font-family:${MONO};font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:${SLATE};">CampusLatina & CIeLatam</div>
+  <div style="font-family:${SERIF};font-size:24px;line-height:1.25;color:#ffffff;margin-top:10px;">${titulo}</div>
+</td></tr>
+<tr><td class="px" style="padding:28px 36px 32px;">
+  ${parrafos.map((p) => `<p style="font-size:15px;line-height:1.65;margin:0 0 12px;">${p}</p>`).join("")}
+  <a href="${esc(href)}" style="display:inline-block;background:${EMERALD};color:${NAVY_DK};font-weight:700;font-size:15px;text-decoration:none;padding:14px 26px;border-radius:10px;margin-top:8px;">${esc(boton)}</a>
+  ${pie ? `<p style="font-size:13px;line-height:1.6;color:${MUTED};margin:18px 0 0;">${pie}</p>` : ""}
+</td></tr>`;
+  return layout({ preheader, body });
+}
+const plano = (html) => html.replace(/<[^>]+>/g, "");
+
+// Al iniciar: link para retomar y compartir. Sirve de "guardado" si cierra la pestaña.
+export function mailEnCurso(d, { link }) {
+  const nombre = String(d.nombre || "").trim().split(/\s+/)[0];
+  const parrafos = [
+    `Hola ${esc(nombre)},`,
+    `Empezó el diagnóstico del proceso de inscripción de <strong>${esc(d.universidad)}</strong>. Cada etapa se guarda al terminarla: puede seguir cuando quiera desde este link.`,
+    `Si hay etapas que conoce mejor otra persona del equipo (marketing, admisiones, administración o el área académica), puede invitarla desde el tablero para que las complete. El informe se genera cuando estén las 7 etapas.`,
+  ];
+  return {
+    subject: `Su diagnóstico de ${d.universidad}: link para continuar`,
+    html: mailSimple({ preheader: "Cada etapa se guarda al terminarla. Puede seguir o compartirlo desde este link.", titulo: `Diagnóstico de <em style="color:${EMERALD};">${esc(d.universidad)}</em>`, parrafos, boton: "Continuar el diagnóstico →", href: link, pie: "Guarde este mail: el link es personal de su institución y da acceso a las respuestas." }),
+    text: [...parrafos.map(plano), "", `Continuar: ${link}`].join("\n"),
+  };
+}
+
+// Invitación a un colega para completar algunas etapas.
+export function mailInvitacion(d, { link, invitado, de, etapas, mensaje }) {
+  const nombres = etapas.map((id) => ETAPAS_DATA.find((e) => e.id === id)?.name).filter(Boolean);
+  const lista = nombres.length ? nombres.join(", ") : "algunas etapas";
+  const parrafos = [
+    `Hola ${esc(String(invitado || "").trim().split(/\s+/)[0])},`,
+    `<strong>${esc(de)}</strong> está haciendo el diagnóstico del proceso de inscripción de <strong>${esc(d.universidad)}</strong> y le pidió que complete: <strong>${esc(lista)}</strong>.`,
+    mensaje ? `<em>“${esc(mensaje)}”</em>` : "",
+    `Son 4 preguntas por etapa, de opción múltiple: unos 2 minutos cada una. Elija la opción que describe cómo funciona hoy, no cómo le gustaría que funcionara.`,
+  ].filter(Boolean);
+  return {
+    subject: `${de} le pidió completar parte del diagnóstico de ${d.universidad}`,
+    html: mailSimple({ preheader: `Etapas: ${lista}. Unos 2 minutos por etapa.`, titulo: `Su mirada sobre <em style="color:${EMERALD};">${esc(lista)}</em>`, parrafos, boton: "Responder mis etapas →", href: link }),
+    text: [...parrafos.map(plano), "", `Responder: ${link}`].join("\n"),
+  };
+}
+
+// A los colegas que participaron, cuando el diagnóstico queda completo.
+export function mailColaboradorListo(d, { link, nombre }) {
+  const critica = etapasCriticas(d.scores || {})[0];
+  const parrafos = [
+    `Hola ${esc(String(nombre || "").trim().split(/\s+/)[0])},`,
+    `El diagnóstico del proceso de inscripción de <strong>${esc(d.universidad)}</strong> está completo. Gracias por su parte.`,
+    `Puntaje global: <strong>${f1(d.score_global)} de 5</strong>. El momento donde más inscriptos se pierden es <strong>${esc(critica.name)}</strong>.`,
+  ];
+  return {
+    subject: `Listo: el diagnóstico de ${d.universidad} está completo`,
+    html: mailSimple({ preheader: `Puntaje global ${f1(d.score_global)} de 5. Vea el informe completo.`, titulo: "El diagnóstico está completo", parrafos, boton: "Ver el informe →", href: link, pie: "El informe en PDF va adjunto." }),
+    text: [...parrafos.map(plano), "", `Ver el informe: ${link}`].join("\n"),
+  };
 }

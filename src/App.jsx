@@ -9,6 +9,8 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Diagnostico />} />
+      {/* Diagnóstico en curso o terminado: el link secreto se comparte con el equipo. */}
+      <Route path="/d/:clave" element={<Diagnostico />} />
       <Route path="/admin" element={<Suspense fallback={null}><Admin /></Suspense>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

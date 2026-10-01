@@ -5,6 +5,8 @@ import { AUTORIDAD } from "../data/textos.js";
 
 const CONTACT_EMAIL = import.meta.env.VITE_CONTACT_EMAIL || "";
 const CONTACT_WHATSAPP = (import.meta.env.VITE_CONTACT_WHATSAPP || "").replace(/\D/g, "");
+// Link público para agendar la reunión de 45 min. Sin él, el botón abre un mail pidiendo la reunión.
+const AGENDA_URL = import.meta.env.VITE_AGENDA_URL || "";
 
 const monoStyle = {fontFamily:"'Space Mono',monospace",fontSize:11,letterSpacing:".12em",textTransform:"uppercase"};
 
@@ -28,23 +30,34 @@ function contactoHref(universidad){
   return null;
 }
 
-// CTA fijo al pie de todas las solapas del informe.
-export function ContactoCTA({universidad,ancho=680}){
-  const href=contactoHref(universidad);
+function agendaHref(universidad){
+  if(AGENDA_URL) return AGENDA_URL;
+  if(CONTACT_EMAIL) return `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`Quiero agendar la reunión de 45 minutos — ${universidad||""}`)}&body=${encodeURIComponent(`Hola, completamos el diagnóstico del proceso de inscripción de ${universidad||"nuestra universidad"} y queremos agendar la reunión de 45 minutos para revisar los resultados. Estos son algunos horarios que nos quedan cómodos: `)}`;
+  return null;
+}
+
+// Cierre del informe: reunión de 45 min si la universidad es target (src/data/calificacion.js);
+// si no, contacto por mail.
+export function ContactoCTA({universidad,target,ancho=680}){
+  const href=target?agendaHref(universidad):contactoHref(universidad);
   return(
     <div style={{maxWidth:ancho,margin:"0 auto",padding:"4px 18px 18px"}}>
       <div style={{background:NAVY_DK,borderRadius:14,padding:"20px 18px",position:"relative",overflow:"hidden"}}>
         <div style={{position:"absolute",right:-60,top:-60,width:200,height:200,borderRadius:"50%",background:"radial-gradient(circle, rgba(0,200,150,.12) 0%, transparent 70%)"}}/>
         <div style={{position:"relative"}}>
           <span style={{...monoStyle,color:EMERALD}}>CampusLatina</span>
-          <div style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:WHITE,lineHeight:1.25,margin:"6px 0 8px"}}>¿Quiere inscribir <em style={{color:EMERALD}}>más estudiantes</em> el próximo ciclo?</div>
-          <p style={{fontSize:15,color:"rgba(255,255,255,.6)",lineHeight:1.65,margin:"0 0 16px",fontFamily:"'DM Sans',sans-serif"}}>
-            {AUTORIDAD} Responda el mail con su informe o escríbanos, y lo revisamos juntos.
+          <div style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:WHITE,lineHeight:1.25,margin:"6px 0 8px"}}>
+            {target?<>Revisemos su diagnóstico <em style={{color:EMERALD}}>en 45 minutos</em></>:<>¿Quiere inscribir <em style={{color:EMERALD}}>más estudiantes</em> el próximo ciclo?</>}
+          </div>
+          <p style={{fontSize:15,color:"rgba(255,255,255,.7)",lineHeight:1.65,margin:"0 0 16px",fontFamily:"'DM Sans',sans-serif"}}>
+            {target
+              ?<>Una videollamada para recorrer sus resultados y definir por dónde empezar. Sin compromiso. {AUTORIDAD}</>
+              :<>{AUTORIDAD} Responda el mail con su informe o escríbanos, y lo revisamos juntos.</>}
           </p>
           {href&&(
-            <a href={href} target="_blank" rel="noopener noreferrer" onClick={()=>track("contacto_click",{canal:CONTACT_WHATSAPP?"whatsapp":"mail"})}
+            <a href={href} target="_blank" rel="noopener noreferrer" onClick={()=>track(target?"reunion_click":"contacto_click",{canal:target?(AGENDA_URL?"agenda":"mail"):(CONTACT_WHATSAPP?"whatsapp":"mail")})}
               style={{display:"inline-flex",alignItems:"center",justifyContent:"center",minHeight:48,padding:"0 24px",borderRadius:10,background:EMERALD,color:NAVY_DK,fontSize:16,fontWeight:700,fontFamily:"'DM Sans',sans-serif",textDecoration:"none"}}>
-              {CONTACT_WHATSAPP?"Escríbanos por WhatsApp →":"Escríbanos →"}
+              {target?"Agendar la reunión →":CONTACT_WHATSAPP?"Escríbanos por WhatsApp →":"Escríbanos →"}
             </a>
           )}
         </div>

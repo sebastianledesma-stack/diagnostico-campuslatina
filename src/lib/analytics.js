@@ -13,7 +13,7 @@ export const GA_SNIPPET = `<script>
   window.dataLayer = window.dataLayer || [];
   window.gtag = function () { dataLayer.push(arguments); };
   gtag("js", new Date());
-  gtag("config", "${GA_ID}");
+  gtag("config", "${GA_ID}", { page_location: location.origin + location.pathname.replace(/^\\/d\\/[^/]+/, "/d/privado") });
 })();
 </script>`;
 
@@ -21,5 +21,7 @@ export const GA_SNIPPET = `<script>
 // → diagnostico_completo → informe_seccion / contacto_click.
 export function track(evento, params = {}) {
   if (typeof window === "undefined" || typeof window.gtag !== "function") return;
-  window.gtag("event", evento, params);
+  // Cada evento lleva la URL actual: sin esto, Analytics guardaría el link secreto /d/<clave>.
+  const page_location = location.origin + location.pathname.replace(/^\/d\/[^/]+/, "/d/privado");
+  window.gtag("event", evento, { page_location, ...params });
 }

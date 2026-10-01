@@ -1,11 +1,14 @@
-import { useState, useRef, useEffect, lazy, Suspense } from "react";
+import { useState, useRef, useEffect, useCallback, lazy, Suspense } from "react";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { NAVY, NAVY_DK, EMERALD, SLATE, CREAM, WHITE, EMERALD_TXT, ORANGE_TXT, SLATE_TXT, MUTED, TEXT, LINE, BTN_PRIMARY, BTN_DISABLED, TOUCH, nivelDarkColor } from "../theme.js";
 import { PAISES_LATAM } from "../data/paises.js";
 import { ETAPAS_DATA } from "../data/etapas.js";
 import { FRICCIONES } from "../data/fricciones.js";
 import { RECS, SCORE_POTENTIALS } from "../data/recs.js";
 import { getNivel, calcScore, calcEtapaProjected as projectEtapa, r1, fmt1, potencialEtapa, calcGlobalPotential, calcResultados, etapasCriticas } from "../lib/scoring.js";
-import { guardarDiagnostico } from "../lib/persist.js";
+import { crearDiagnostico, leerDiagnostico, guardarEtapa, invitarColega, finalizarDiagnostico, leerQuien, guardarQuien, etapaCompleta } from "../lib/api.js";
+import { RANGOS_ALUMNOS } from "../data/calificacion.js";
+import { Tablero, InvitarVentana, QuienVentana, Cargando, NoEncontrado } from "./Tablero.jsx";
 import { track } from "../lib/analytics.js";
 import { EnvioNota, ContactoCTA } from "../components/ReportExtras.jsx";
 import { NIVEL_DESC, lecturaDiagnostico } from "../data/textos.js";
@@ -138,13 +141,16 @@ function Welcome({onStart}){
 // ── REGISTER ─────────────────────────────────────────────
 function Register({onNext}){
   const desk=useIsDesktop();
-  const [form,setForm]=useState({universidad:"",pais:"",nombre:"",cargo:"",email:"",whatsapp:""});
+  const [form,setForm]=useState({universidad:"",pais:"",alumnos_actuales:"",alumnos_meta:"",nombre:"",cargo:"",email:"",whatsapp:""});
+  const [enviando,setEnviando]=useState(false);
+  const [errorEnvio,setErrorEnvio]=useState("");
   const [emailError,setEmailError]=useState(false);
   const [telError,setTelError]=useState(false);
   // País sugerido para el teléfono: el elegido arriba, mientras el número siga vacío.
   const [telPais,setTelPais]=useState(undefined);
   const [telValido,setTelValido]=useState(false);
-  const valid=form.universidad&&form.nombre&&form.email&&isValidEmail(form.email)&&form.pais&&telValido;
+  const valid=form.universidad&&form.nombre&&form.email&&isValidEmail(form.email)&&form.pais&&form.alumnos_actuales&&form.alumnos_meta&&telValido;
+  const enviar=async()=>{if(!valid||enviando)return;setEnviando(true);setErrorEnvio("");try{await onNext(form);}catch(err){setErrorEnvio(err.message&&err.status<500?"Revise los datos e intente de nuevo.":"No pudimos conectarnos. Revise su conexión e intente de nuevo.");setEnviando(false);}};
 
   const handleEmailBlur=()=>setEmailError(form.email.length>0&&!isValidEmail(form.email));
   const set=(k,v)=>{
@@ -169,7 +175,7 @@ function Register({onNext}){
       <div style={{flex:1,maxWidth:desk?1040:540,margin:"0 auto",padding:desk?"48px 32px":"36px 20px",width:"100%"}}>
         <div style={desk?{display:"grid",gridTemplateColumns:"minmax(0,1fr) minmax(0,1fr)",gridTemplateAreas:'"head dir" "intro dir" "inst dir" "inst btn"',gridTemplateRows:"auto auto 1fr auto",columnGap:32,rowGap:12,alignItems:"start"}:undefined}>
         <div style={{fontFamily:"'DM Serif Display',serif",fontSize:desk?34:24,color:NAVY,marginBottom:6,...(desk?{gridArea:"head"}:{})}}>Antes de empezar,<br/><em style={{color:EMERALD_TXT}}>cuéntenos sobre su institución</em></div>
-        <p style={{fontSize:16,color:"#3A4070",marginBottom:desk?8:28,lineHeight:1.65,...(desk?{gridArea:"intro"}:{})}}>Con estos datos armamos su informe personalizado y se lo enviamos en PDF por mail, para compartirlo con su equipo.</p>
+        <p style={{fontSize:16,color:"#3A4070",marginBottom:desk?8:28,lineHeight:1.65,...(desk?{gridArea:"intro"}:{})}}>Con estos datos armamos su informe personalizado y se lo enviamos en PDF por mail. Puede pausar cuando quiera e invitar a colegas a completar las etapas que conocen mejor.</p>
 
         <div style={{background:WHITE,border:`1px solid ${LINE}`,borderRadius:14,padding:desk?"26px 26px":"22px 20px",marginBottom:desk?0:14,...(desk?{gridArea:"inst"}:{})}}>
           <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16,paddingBottom:12,borderBottom:"1px solid #E8E6DF"}}>
@@ -181,6 +187,18 @@ function Register({onNext}){
               <LabelField label="Nombre de la universidad o institución" required htmlFor="f-universidad"/>
               <input id="f-universidad" required autoComplete="organization" value={form.universidad} onChange={e=>set("universidad",e.target.value)} placeholder="Ej: Universidad Nacional de Córdoba" style={campo}/>
             </div>
+            {[["alumnos_actuales","Estudiantes que tiene hoy"],["alumnos_meta","Estudiantes que quiere tener en 3 años"]].map(([k,l])=>(
+              <div key={k}>
+                <LabelField label={l} required htmlFor={`f-${k}`}/>
+                <div style={{position:"relative"}}>
+                  <select id={`f-${k}`} required value={form[k]} onChange={e=>set(k,e.target.value)} style={{...campo,color:form[k]?NAVY:MUTED,appearance:"none",cursor:"pointer"}}>
+                    <option value="">Seleccione un rango</option>
+                    {RANGOS_ALUMNOS.map(r=><option key={r.id} value={r.id}>{r.texto}</option>)}
+                  </select>
+                  <span aria-hidden="true" style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",color:NAVY,pointerEvents:"none",fontSize:14}}>▾</span>
+                </div>
+              </div>
+            ))}
             <div>
               <LabelField label="País" required htmlFor="f-pais"/>
               <div style={{position:"relative"}}>
@@ -233,15 +251,16 @@ function Register({onNext}){
 
 
         <div style={desk?{gridArea:"btn"}:undefined}>
-        <button type="button" onClick={()=>valid&&onNext(form)} disabled={!valid}
+        <button type="button" onClick={enviar} disabled={!valid||enviando}
           style={{width:"100%",minHeight:TOUCH+4,borderRadius:10,border:"none",
-            ...(valid?BTN_PRIMARY:BTN_DISABLED),
+            ...(valid&&!enviando?BTN_PRIMARY:BTN_DISABLED),
             fontSize:16,fontFamily:"'DM Sans',sans-serif",fontWeight:700,
             cursor:valid?"pointer":"not-allowed",
             transition:"background .2s"
           }}>
-          Empezar el diagnóstico →
+          {enviando?"Preparando su diagnóstico…":"Empezar el diagnóstico →"}
         </button>
+        {errorEnvio&&<p role="alert" style={{textAlign:"center",fontSize:14,color:"#B3261E",marginTop:10,fontWeight:500}}>{errorEnvio}</p>}
         {!valid&&<p style={{textAlign:"center",fontSize:14,color:TEXT,marginTop:10,fontWeight:500}}>Complete los campos obligatorios (*) para continuar</p>}
         </div>
         </div>
@@ -265,7 +284,7 @@ function ConProgreso({desk,etapa,etapasScores,respondidas,children}){
           <ol style={{listStyle:"none",padding:0,margin:0,display:"flex",flexDirection:"column",gap:4}}>
             {ETAPAS_DATA.map(e=>{
               const current=e.num===etapa.num;
-              const done=e.num<etapa.num||(!current&&etapasScores&&etapasScores[e.id]>0);
+              const done=!current&&!!etapasScores&&etapasScores[e.id]>0;
               return(
                 <li key={e.id} aria-current={current?"step":undefined} style={{display:"flex",alignItems:"center",gap:12,padding:"8px 10px",borderRadius:10,background:current?WHITE:"transparent",border:`1px solid ${current?LINE:"transparent"}`}}>
                   <span aria-hidden="true" style={{width:28,height:28,borderRadius:"50%",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:current?15:12,fontWeight:700,fontFamily:"'Space Mono',monospace",background:current?EMERALD:done?"rgba(0,200,150,.15)":"transparent",border:`2px solid ${current?EMERALD:done?"rgba(0,122,92,.45)":"#B9B7C0"}`,color:current?NAVY_DK:done?EMERALD_TXT:MUTED}}>{done?"✓":current?e.emoji:e.num}</span>
@@ -284,7 +303,7 @@ function ConProgreso({desk,etapa,etapasScores,respondidas,children}){
   );
 }
 // ── STAGE INTRO ───────────────────────────────────────────
-function StageIntro({etapa,onStart,etapasScores}){
+function StageIntro({etapa,onStart,etapasScores,respondidas,onTablero,onInvitar}){
   const desk=useIsDesktop();
   const barra=(
     <div style={desk?{position:"sticky",bottom:0,zIndex:10,background:CREAM,padding:"16px 0 20px",marginTop:12}:{position:"sticky",bottom:0,zIndex:10,background:"rgba(245,244,240,.96)",backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)",borderTop:`1px solid ${LINE}`}}>
@@ -292,6 +311,10 @@ function StageIntro({etapa,onStart,etapasScores}){
           <button type="button" onClick={onStart} style={{width:desk?"auto":"100%",padding:desk?"0 36px":undefined,minHeight:TOUCH+4,borderRadius:10,border:"none",...BTN_PRIMARY,fontSize:16,fontFamily:"'DM Sans',sans-serif",fontWeight:700,cursor:"pointer"}}>
             Empezar etapa {etapa.num} →
           </button>
+          <div style={{display:"flex",flexWrap:"wrap",justifyContent:desk?"flex-start":"center",gap:"0 18px",marginTop:4}}>
+            <button type="button" onClick={onTablero} style={{minHeight:44,padding:"0 4px",border:"none",background:"none",color:NAVY,fontSize:15,fontFamily:"'DM Sans',sans-serif",textDecoration:"underline",textUnderlineOffset:3,cursor:"pointer"}}>← Ver las 7 etapas</button>
+            <button type="button" onClick={onInvitar} style={{minHeight:44,padding:"0 4px",border:"none",background:"none",color:EMERALD_TXT,fontSize:15,fontWeight:600,fontFamily:"'DM Sans',sans-serif",textDecoration:"underline",textUnderlineOffset:3,cursor:"pointer"}}>Pedirle esta etapa a un colega</button>
+          </div>
       </div>
     </div>
   );
@@ -316,7 +339,7 @@ function StageIntro({etapa,onStart,etapasScores}){
         <div style={{textAlign:"center"}}><Mono color={SLATE}>Etapa {etapa.num} de 7</Mono></div>
       </div>
 
-      <ConProgreso desk={desk} etapa={etapa} etapasScores={etapasScores} respondidas={(etapa.num-1)*4}>
+      <ConProgreso desk={desk} etapa={etapa} etapasScores={etapasScores} respondidas={respondidas}>
       <div style={desk?{paddingTop:8}:{flex:1,maxWidth:580,margin:"0 auto",padding:"20px 16px 20px",width:"100%"}}>
         <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:16}}>
           <div aria-hidden="true" style={{width:56,height:56,borderRadius:16,background:WHITE,border:`1px solid ${LINE}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:30,flexShrink:0}}>{etapa.emoji}</div>
@@ -342,20 +365,21 @@ function StageIntro({etapa,onStart,etapasScores}){
 }
 
 // ── QUESTION ─────────────────────────────────────────────
-function Question({etapaIdx,preguntaIdx,etapa,pregunta,selected,onSelect,onNext,onBack,isLast,etapasScores}){
+function Question({preguntaIdx,etapa,pregunta,selected,onSelect,onNext,onBack,isLast,esFinal,etapasScores,hechas,guardando,errorGuardar}){
   const desk=useIsDesktop();
   const barra=(
     <div style={desk?{position:"sticky",bottom:0,zIndex:10,background:CREAM,padding:"16px 0 20px",marginTop:8}:{position:"sticky",bottom:0,zIndex:10,background:"rgba(245,244,240,.96)",backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)",borderTop:`1px solid ${LINE}`}}>
       <div style={desk?{display:"flex",gap:10,maxWidth:520}:{maxWidth:640,margin:"0 auto",padding:"10px 16px calc(10px + env(safe-area-inset-bottom))",display:"flex",gap:10}}>
           <button type="button" onClick={onBack} style={{minHeight:TOUCH,padding:"0 18px",borderRadius:10,border:`1px solid ${LINE}`,background:WHITE,color:NAVY,cursor:"pointer",fontSize:16,fontFamily:"'DM Sans',sans-serif"}}>← Atrás</button>
-          <button type="button" onClick={()=>selected&&onNext()} disabled={!selected} aria-disabled={!selected}
-            style={{flex:1,minHeight:TOUCH,borderRadius:10,border:"none",...(selected?BTN_PRIMARY:BTN_DISABLED),cursor:selected?"pointer":"not-allowed",fontSize:16,fontFamily:"'DM Sans',sans-serif",fontWeight:700,transition:"background .15s"}}>
-            {!selected?"Elija una opción":isLast?"Ver mi diagnóstico →":"Siguiente →"}
+          <button type="button" onClick={()=>selected&&!guardando&&onNext()} disabled={!selected||guardando} aria-disabled={!selected||guardando}
+            style={{flex:1,minHeight:TOUCH,borderRadius:10,border:"none",...(selected&&!guardando?BTN_PRIMARY:BTN_DISABLED),cursor:selected&&!guardando?"pointer":"not-allowed",fontSize:16,fontFamily:"'DM Sans',sans-serif",fontWeight:700,transition:"background .15s"}}>
+            {!selected?"Elija una opción":guardando?"Guardando…":isLast?(esFinal?"Guardar y ver el diagnóstico →":"Guardar etapa →"):"Siguiente →"}
           </button>
       </div>
+      {errorGuardar&&<p role="alert" style={{maxWidth:640,margin:"0 auto",padding:"0 16px 10px",fontSize:14,color:"#B3261E",textAlign:desk?"left":"center"}}>{errorGuardar}</p>}
     </div>
   );
-  const globalIdx=etapaIdx*4+preguntaIdx;
+  const globalIdx=hechas;
   const TOTAL=28;
   const pct=Math.round((globalIdx/TOTAL)*100);
   const qid=`pregunta-${etapa.id}-${preguntaIdx}`;
@@ -369,7 +393,7 @@ function Question({etapaIdx,preguntaIdx,etapa,pregunta,selected,onSelect,onNext,
         <div style={desk?{maxWidth:1120,margin:"0 auto",padding:"12px 32px"}:{maxWidth:640,margin:"0 auto",padding:"10px 16px 12px"}}>
           {!desk&&<div aria-hidden="true" style={{display:"flex",gap:3,justifyContent:"center",marginBottom:10}}>
             {ETAPAS_DATA.map(e=>{
-              const done=e.num<etapa.num||(e.num===etapa.num&&etapasScores&&etapasScores[e.id]>0);
+              const done=!!etapasScores&&etapasScores[e.id]>0;
               const current=e.num===etapa.num;
               return(
                 <div key={e.id} style={{display:"flex",alignItems:"center",gap:3}}>
@@ -932,7 +956,7 @@ function Report({registroData,respuestas,envio}){
         ))}
       </div>
       <div style={{maxWidth:desk?1120:680,margin:"0 auto"}}><CurrentTab/></div>
-      {tab===TABS.length-1&&<ContactoCTA universidad={registroData.universidad} ancho={desk?1120:680}/>}
+      {tab===TABS.length-1&&<ContactoCTA universidad={registroData.universidad} target={registroData.target} ancho={desk?1120:680}/>}
       <div style={{maxWidth:desk?1120:680,margin:"0 auto",padding:desk?"8px 18px 20px":"8px 16px 20px",display:"grid",gridTemplateColumns:"1fr auto 1fr",alignItems:"center",gap:8}}>
         {tab>0?<button type="button" onClick={()=>irATab(tab-1)} style={{justifySelf:"start",minHeight:TOUCH,padding:"0 16px",borderRadius:10,border:`1px solid ${LINE}`,background:WHITE,color:NAVY,cursor:"pointer",fontSize:15,fontFamily:"'DM Sans',sans-serif"}}>← {TABS[tab-1]}</button>:<span/>}
         <Mono color={MUTED}>{tab+1} / {TABS.length}</Mono>
@@ -944,82 +968,177 @@ function Report({registroData,respuestas,envio}){
 }
 
 // ── APP MAIN ─────────────────────────────────────────────
+// "/"           bienvenida → formulario → crea el diagnóstico y pasa a /d/<clave>
+// "/d/<clave>"  tablero de 7 etapas → cada etapa se guarda al terminarla → informe con las 7
 export default function Diagnostico(){
-  const [phase,setPhase]=useState("welcome");
+  const {clave}=useParams();
+  const navigate=useNavigate();
+  const [params]=useSearchParams();
+  const [diag,setDiag]=useState(null);           // vista del servidor (respuestas guardadas, quién respondió)
+  const [estado,setEstado]=useState(clave?"cargando":"welcome"); // welcome|register|cargando|no-encontrado|tablero|quiz|processing|report
+  const [pos,setPos]=useState({etapa:0,pregunta:0,showIntro:true});
+  const [borrador,setBorrador]=useState({});     // respuestas de la etapa en curso, antes de guardarla
+  const [quien,setQuien]=useState(()=>clave?leerQuien(clave):"");
+  const [ventana,setVentana]=useState(null);     // {tipo:"invitar",etapas} | {tipo:"quien",etapa}
+  const [aviso,setAviso]=useState("");
+  const [guardando,setGuardando]=useState(false);
+  const [errorGuardar,setErrorGuardar]=useState("");
+  const [finalizando,setFinalizando]=useState(false);
+  const [errorFinal,setErrorFinal]=useState("");
   const [envio,setEnvio]=useState("pendiente");
-  const [registroData,setRegistroData]=useState({});
-  const [respuestas,setRespuestas]=useState({});
-  const [quizPos,setQuizPos]=useState({etapa:0,pregunta:0,showIntro:true});
-  const [etapasScores,setEtapasScores]=useState({});
 
-  useEffect(()=>{window.scrollTo(0,0);},[phase,quizPos.etapa,quizPos.pregunta,quizPos.showIntro]);
+  useEffect(()=>{window.scrollTo(0,0);},[estado,pos.etapa,pos.pregunta,pos.showIntro]);
+  useEffect(()=>{if(!aviso)return;const t=setTimeout(()=>setAviso(""),6000);return()=>clearTimeout(t);},[aviso]);
 
-  const handleRegister=(data)=>{track("generate_lead",{pais:data.pais});setRegistroData(data);setPhase("quiz");setQuizPos({etapa:0,pregunta:0,showIntro:true});};
+  // Colega invitado: el link trae ?inv=<id> y sus etapas quedan destacadas.
+  const invitado=diag?.colaboradores?.find(c=>c.id===params.get("inv"));
+  const misEtapas=invitado?.etapas||[];
 
-  const handleSelect=(valor)=>{
-    const e=ETAPAS_DATA[quizPos.etapa];
-    const key=`${e.id}_${quizPos.pregunta}`;
-    setRespuestas(prev=>({...prev,[key]:valor}));
+  const cargar=useCallback(async()=>{
+    if(!clave)return;
+    try{
+      const d=await leerDiagnostico(clave);
+      setDiag(d);
+      if(d.estado==="completo"){setEnvio(d.mail_enviado?"enviado":"pendiente");setEstado("report");}
+      else setEstado(e=>e==="cargando"?"tablero":e);
+    }catch(err){setEstado(err.status===404?"no-encontrado":"error");}
+  },[clave]);
+  useEffect(()=>{cargar();},[cargar]);
+
+  // El nombre de quien responde: el del formulario, el de la invitación o el que escriba.
+  useEffect(()=>{
+    if(!clave||quien)return;
+    const n=invitado?.nombre;
+    if(n){setQuien(n);guardarQuien(clave,n);}
+  },[clave,quien,invitado]);
+
+  const respuestas={...(diag?.respuestas||{}),...borrador};
+  const etapasScores=Object.fromEntries(ETAPAS_DATA.filter(e=>etapaCompleta(e,diag?.respuestas)).map(e=>[e.id,calcScore(diag.respuestas,e.id)]));
+  const guardadas=Object.keys(diag?.respuestas||{}).length;
+
+  const handleRegister=async(form)=>{
+    const d=await crearDiagnostico(form);
+    track("generate_lead",{pais:form.pais,alumnos:form.alumnos_actuales,target:d.target});
+    guardarQuien(d.clave,form.nombre);
+    setQuien(form.nombre);
+    setDiag(d);
+    setEstado("tablero");
+    navigate(`/d/${d.clave}`);
+  };
+
+  const abrirEtapa=(i)=>{
+    if(!quien){setVentana({tipo:"quien",etapa:i});return;}
+    const e=ETAPAS_DATA[i];
+    // Al revisar una etapa ya respondida, se parte de las respuestas guardadas.
+    setBorrador(Object.fromEntries(e.preguntas.map((_,k)=>[`${e.id}_${k}`,diag.respuestas[`${e.id}_${k}`]]).filter(([,v])=>v)));
+    setPos({etapa:i,pregunta:0,showIntro:true});
+    setErrorGuardar("");
+    setEstado("quiz");
+  };
+
+  const finalizar=async()=>{
+    setFinalizando(true);setErrorFinal("");setEstado("processing");
+    const inicio=Date.now();
+    try{
+      const d=await finalizarDiagnostico(clave);
+      const {score_global,nivel}=calcResultados(d.respuestas);
+      track("diagnostico_completo",{puntaje:score_global,nivel,etapa_critica:etapasCriticas(calcResultados(d.respuestas).scores)[0]?.id,colegas:d.colaboradores.length});
+      if(d.envio==="error")track("envio_error",{paso:"mail",motivo:"finalizar"});
+      // La animación de "procesando" dura al menos 3 s: el informe no aparece de golpe.
+      await new Promise(r=>setTimeout(r,Math.max(0,3000-(Date.now()-inicio))));
+      setDiag(d);setEnvio(d.envio||"enviado");setEstado("report");
+    }catch(err){
+      setErrorFinal(err.status===409?"Todavía faltan etapas: actualizamos el tablero.":"No pudimos generar el informe. Revise su conexión e intente de nuevo.");
+      await cargar();
+      setEstado("tablero");
+    }finally{setFinalizando(false);}
+  };
+
+  const guardarEtapaActual=async()=>{
+    const e=ETAPAS_DATA[pos.etapa];
+    const resp=Object.fromEntries(e.preguntas.map((_,k)=>[`${e.id}_${k}`,respuestas[`${e.id}_${k}`]]));
+    setGuardando(true);setErrorGuardar("");
+    try{
+      const d=await guardarEtapa(clave,e.id,resp,quien);
+      setDiag(d);setBorrador({});
+      track("etapa_completada",{etapa:e.id,numero:e.num,colega:!!invitado});
+      const pendientes=ETAPAS_DATA.filter(x=>!etapaCompleta(x,d.respuestas));
+      if(!pendientes.length){await finalizar();return;}
+      // Sigue con la próxima etapa: primero las asignadas a esta persona; si no tiene, la siguiente pendiente.
+      const prox=invitado?pendientes.find(x=>misEtapas.includes(x.id)):(pendientes.find(x=>x.num>e.num)||pendientes[0]);
+      if(prox){setAviso(`Etapa ${e.num} guardada.`);setPos({etapa:prox.num-1,pregunta:0,showIntro:true});}
+      else{setAviso(`¡Listo! Sus etapas quedaron guardadas.`);setEstado("tablero");}
+    }catch(err){
+      setErrorGuardar(err.status===409?"Este diagnóstico ya se completó.":"No pudimos guardar la etapa. Revise su conexión y vuelva a intentar: sus respuestas no se perdieron.");
+      if(err.status===409)cargar();
+    }finally{setGuardando(false);}
   };
 
   const handleNext=()=>{
-    const e=ETAPAS_DATA[quizPos.etapa];
-    const isLastP=quizPos.pregunta>=e.preguntas.length-1;
-    const isLastE=quizPos.etapa>=ETAPAS_DATA.length-1;
-    if(isLastP&&isLastE){
-      // calc final scores
-      const finalScores={};
-      ETAPAS_DATA.forEach(et=>{finalScores[et.id]=calcScore(respuestas,et.id);});
-      setEtapasScores(finalScores);
-      // INSERT en Supabase + mail con PDF. No bloquea: el informe se muestra igual si algo falla.
-      guardarDiagnostico(registroData,respuestas).then(setEnvio);
-      const {score_global,nivel}=calcResultados(respuestas);
-      track("etapa_completada",{etapa:e.id,numero:e.num});
-      track("diagnostico_completo",{puntaje:score_global,nivel,etapa_critica:etapasCriticas(finalScores)[0]?.id});
-      setPhase("processing");
-      setTimeout(()=>setPhase("report"),4000);
-    } else if(isLastP){
-      // calc score for completed etapa
-      const scores={...etapasScores,[e.id]:calcScore(respuestas,e.id)};
-      track("etapa_completada",{etapa:e.id,numero:e.num});
-      setEtapasScores(scores);
-      setQuizPos({etapa:quizPos.etapa+1,pregunta:0,showIntro:true});
-    } else {
-      setQuizPos({...quizPos,pregunta:quizPos.pregunta+1,showIntro:false});
-    }
+    const e=ETAPAS_DATA[pos.etapa];
+    if(pos.pregunta>=e.preguntas.length-1)guardarEtapaActual();
+    else setPos({...pos,pregunta:pos.pregunta+1,showIntro:false});
   };
-
   const handleBack=()=>{
-    if(quizPos.showIntro&&quizPos.etapa===0){setPhase("register");return;}
-    if(quizPos.showIntro&&quizPos.etapa>0){
-      const prevE=ETAPAS_DATA[quizPos.etapa-1];
-      setQuizPos({etapa:quizPos.etapa-1,pregunta:prevE.preguntas.length-1,showIntro:false});
-      return;
-    }
-    if(quizPos.pregunta>0){setQuizPos({...quizPos,pregunta:quizPos.pregunta-1,showIntro:false});return;}
-    setQuizPos({...quizPos,showIntro:true});
+    if(pos.pregunta>0)setPos({...pos,pregunta:pos.pregunta-1});
+    else setPos({...pos,showIntro:true});
   };
 
-  if(phase==="welcome") return <Welcome onStart={()=>{track("diagnostico_inicio");setPhase("register");}}/>;
-  if(phase==="register") return <Register onNext={handleRegister}/>;
-  if(phase==="processing") return <Processing/>;
-  if(phase==="report") return <Report registroData={registroData} respuestas={respuestas} envio={envio}/>;
+  const invitar=async(datos)=>{
+    const d=await invitarColega(clave,{...datos,de:quien||diag.nombre});
+    setDiag(d);setVentana(null);
+    setAviso(d.invitacion_enviada?`Le enviamos la invitación a ${datos.nombre}.`:`Agregamos a ${datos.nombre}, pero el mail no salió. Comparta el link con "Copiar link".`);
+    track("colega_invitado",{etapas:datos.etapas.length});
+  };
+  const copiar=async()=>{
+    const link=`${window.location.origin}/d/${clave}`;
+    try{await navigator.clipboard.writeText(link);setAviso("Link copiado. Quien lo tenga puede ver y completar el diagnóstico.");}
+    catch{window.prompt("Copie el link del diagnóstico:",link);}
+    track("link_copiado");
+  };
 
-  const etapa=ETAPAS_DATA[quizPos.etapa];
-  if(quizPos.showIntro) return <StageIntro etapa={etapa} onStart={()=>setQuizPos({...quizPos,showIntro:false})} etapasScores={etapasScores}/>;
+  const ventanas=<>
+    {ventana?.tipo==="invitar"&&<InvitarVentana etapasIniciales={ventana.etapas} onCerrar={()=>setVentana(null)} onEnviar={invitar}/>}
+    {ventana?.tipo==="quien"&&<QuienVentana sugerido="" onCerrar={()=>setVentana(null)} onListo={(n)=>{guardarQuien(clave,n);setQuien(n);const i=ventana.etapa;setVentana(null);
+      const e=ETAPAS_DATA[i];setBorrador(Object.fromEntries(e.preguntas.map((_,k)=>[`${e.id}_${k}`,diag.respuestas[`${e.id}_${k}`]]).filter(([,v])=>v)));setPos({etapa:i,pregunta:0,showIntro:true});setEstado("quiz");}}/>}
+  </>;
 
-  const pregunta=etapa.preguntas[quizPos.pregunta];
-  const key=`${etapa.id}_${quizPos.pregunta}`;
-  const selected=respuestas[key]||null;
-  const isLast=quizPos.etapa===ETAPAS_DATA.length-1&&quizPos.pregunta===etapa.preguntas.length-1;
+  if(estado==="welcome") return <Welcome onStart={()=>{track("diagnostico_inicio");setEstado("register");}}/>;
+  if(estado==="register") return <Register onNext={handleRegister}/>;
+  if(estado==="cargando") return <Cargando/>;
+  if(estado==="no-encontrado") return <NoEncontrado/>;
+  if(estado==="error") return <Cargando texto="No pudimos cargar el diagnóstico. Revise su conexión y recargue la página."/>;
+  if(estado==="processing") return <Processing/>;
+  if(estado==="report") return <Report registroData={diag} respuestas={diag.respuestas} envio={envio}/>;
+  if(estado==="tablero") return <>
+    <Tablero diag={diag} quien={quien} misEtapas={misEtapas} aviso={aviso} onResponder={abrirEtapa}
+      onInvitar={(etapas)=>setVentana({tipo:"invitar",etapas})} onCopiar={copiar}
+      onFinalizar={finalizar} finalizando={finalizando} errorFinal={errorFinal}/>
+    {ventanas}
+  </>;
+
+  const etapa=ETAPAS_DATA[pos.etapa];
+  if(pos.showIntro) return <>
+    {aviso&&<p role="status" style={{position:"fixed",top:12,left:"50%",transform:"translateX(-50%)",zIndex:150,margin:0,padding:"10px 16px",borderRadius:10,background:NAVY,color:WHITE,fontSize:15,fontWeight:600,boxShadow:"0 6px 20px rgba(14,18,64,.25)",maxWidth:"calc(100% - 32px)"}}>✓ {aviso}</p>}
+    <StageIntro etapa={etapa} onStart={()=>setPos({...pos,showIntro:false})} etapasScores={etapasScores} respondidas={guardadas}
+      onTablero={()=>{setBorrador({});setEstado("tablero");}} onInvitar={()=>setVentana({tipo:"invitar",etapas:[etapa.id]})}/>
+    {ventanas}
+  </>;
+
+  const pregunta=etapa.preguntas[pos.pregunta];
+  const key=`${etapa.id}_${pos.pregunta}`;
+  const isLast=pos.pregunta===etapa.preguntas.length-1;
+  const otrasPendientes=ETAPAS_DATA.filter(x=>x.id!==etapa.id&&!etapaCompleta(x,diag.respuestas)).length;
+  const guardadasOtras=Object.keys(diag.respuestas).filter(k=>!k.startsWith(`${etapa.id}_`)).length;
 
   return(
     <Question
-      etapaIdx={quizPos.etapa} preguntaIdx={quizPos.pregunta}
+      preguntaIdx={pos.pregunta}
       etapa={etapa} pregunta={pregunta}
-      selected={selected} onSelect={handleSelect}
+      selected={respuestas[key]||null} onSelect={(v)=>setBorrador(b=>({...b,[key]:v}))}
       onNext={handleNext} onBack={handleBack}
-      isLast={isLast} etapasScores={etapasScores}
+      isLast={isLast} esFinal={isLast&&otrasPendientes===0} etapasScores={etapasScores}
+      hechas={guardadasOtras+pos.pregunta} guardando={guardando} errorGuardar={errorGuardar}
     />
   );
 }

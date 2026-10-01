@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { NAVY, NAVY_DK, EMERALD, SLATE, CREAM, WHITE } from "../theme.js";
 import { ETAPAS_DATA } from "../data/etapas.js";
 import { getNivel, fmt1 } from "../lib/scoring.js";
+import { textoRango, RANGOS_ALUMNOS } from "../data/calificacion.js";
 import { supabase, authRedirectError, isRecoveryLink } from "../lib/supabase.js";
 
 const NIVELES = ["Inicial", "En desarrollo", "Consolidado", "Avanzado"];
@@ -14,6 +15,9 @@ const mono = (size = 9, color = SLATE) => ({ fontFamily: "'Space Mono',monospace
 const input = { padding: "10px 12px", border: "1.5px solid #D4D2CC", borderRadius: 8, fontSize: 14, fontFamily: "'DM Sans',sans-serif", color: NAVY, background: WHITE, outline: "none", minHeight: 44, width: "100%" };
 const btn = (primary) => ({ minHeight: 44, padding: "0 18px", borderRadius: 8, border: primary ? "none" : `1px solid ${LINE}`, background: primary ? NAVY : WHITE, color: primary ? WHITE : NAVY, fontSize: 14, fontWeight: 600, fontFamily: "'DM Sans',sans-serif", cursor: "pointer", whiteSpace: "nowrap" });
 const fmtFecha = (iso) => new Date(iso).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" });
+const enCurso = (r) => r.estado === "en_curso";
+// Etapas con sus 4 respuestas (vale también para diagnósticos en curso).
+const etapasListas = (r) => ETAPAS_DATA.filter((e) => e.preguntas.every((_, i) => r.respuestas?.[`${e.id}_${i}`])).length;
 const fmtFechaHora = (iso) => new Date(iso).toLocaleString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
 
 // ── AUTH ─────────────────────────────────────────────────
@@ -182,17 +186,21 @@ function NuevaClave({ email, onListo }) {
 }
 
 // ── MÉTRICAS ─────────────────────────────────────────────
-function Metricas({ rows }) {
+function Metricas({ rows: todasLasFilas }) {
   const m = useMemo(() => {
-    const total = rows.length;
     const hace30 = Date.now() - 30 * 864e5;
-    const ultimoMes = rows.filter((r) => new Date(r.created_at).getTime() >= hace30).length;
+    const ultimoMes = todasLasFilas.filter((r) => new Date(r.created_at).getTime() >= hace30).length;
+    const enCursoN = todasLasFilas.filter(enCurso).length;
+    const targetN = todasLasFilas.filter((r) => r.target).length;
+    const todos = todasLasFilas.length;
+    const rows = todasLasFilas.filter((r) => !enCurso(r)); // los puntajes salen solo de diagnósticos completos
+    const total = rows.length;
     const promedio = total ? rows.reduce((a, r) => a + Number(r.score_global), 0) / total : 0;
     const porNivel = NIVELES.map((n) => ({ n, c: rows.filter((r) => r.nivel === n).length }));
     const paises = Object.entries(rows.reduce((a, r) => ((a[r.pais] = (a[r.pais] || 0) + 1), a), {})).sort((a, b) => b[1] - a[1]).slice(0, 5);
     const etapas = ETAPAS_DATA.map((e) => ({ ...e, avg: total ? rows.reduce((a, r) => a + Number(r.scores?.[e.id] || 0), 0) / total : 0 })).sort((a, b) => a.avg - b.avg);
-    return { total, ultimoMes, promedio, porNivel, paises, critica: total ? etapas[0] : null };
-  }, [rows]);
+    return { todos, total, enCursoN, targetN, ultimoMes, promedio, porNivel, paises, critica: total ? etapas[0] : null };
+  }, [todasLasFilas]);
 
   const card = { background: WHITE, border: `1px solid ${LINE}`, borderRadius: 12, padding: "14px 16px" };
   const big = { fontFamily: "'DM Serif Display',serif", fontSize: 30, lineHeight: 1.1, marginTop: 4 };
@@ -202,9 +210,9 @@ function Metricas({ rows }) {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 12, marginBottom: 20 }}>
       <div style={card}>
-        <span style={mono(8)}>Total diagnósticos</span>
-        <div style={big}>{m.total}</div>
-        <div style={{ fontSize: 12, color: MUTED }}>{m.ultimoMes} en los últimos 30 días</div>
+        <span style={mono(8)}>Diagnósticos</span>
+        <div style={big}>{m.total} <span style={{ fontSize: 16, color: MUTED }}>completos</span></div>
+        <div style={{ fontSize: 12, color: MUTED }}>{m.enCursoN} en curso · {m.targetN} target · {m.ultimoMes} iniciados en 30 días</div>
       </div>
       <div style={card}>
         <span style={mono(8)}>Promedio global</span>
@@ -251,16 +259,18 @@ function Metricas({ rows }) {
 // ── CSV ──────────────────────────────────────────────────
 function exportarCSV(rows) {
   const preguntas = ETAPAS_DATA.flatMap((e) => e.preguntas.map((_, i) => `${e.id}_${i}`));
-  const headers = ["id", "fecha", "universidad", "pais", "nombre", "cargo", "email", "whatsapp", "score_global", "nivel",
+  const headers = ["id", "fecha", "estado", "etapas_listas", "universidad", "pais", "alumnos_hoy", "alumnos_meta_3_anios", "target", "nombre", "cargo", "email", "whatsapp", "colegas", "score_global", "nivel",
     ...ETAPAS_DATA.map((e) => `score_${e.id}`), "mail_enviado", "notif_enviada", ...preguntas];
   const cell = (v) => {
     const s = v == null ? "" : String(v);
     return /[";\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
   const lines = rows.map((r) => [
-    r.id, fmtFechaHora(r.created_at), r.universidad, r.pais, r.nombre, r.cargo, r.email, r.whatsapp,
-    fmt1(r.score_global), r.nivel,
-    ...ETAPAS_DATA.map((e) => fmt1(r.scores?.[e.id] || 0)),
+    r.id, fmtFechaHora(r.created_at), enCurso(r) ? "en curso" : "completo", etapasListas(r), r.universidad, r.pais,
+    textoRango(r.alumnos_actuales), textoRango(r.alumnos_meta), r.target ? "sí" : "no", r.nombre, r.cargo, r.email, r.whatsapp,
+    (r.colaboradores || []).map((c) => `${c.nombre} <${c.email}>`).join(", "),
+    enCurso(r) ? "" : fmt1(r.score_global), r.nivel || "",
+    ...ETAPAS_DATA.map((e) => (enCurso(r) ? "" : fmt1(r.scores?.[e.id] || 0))),
     r.mail_enviado ? "sí" : "no", r.notif_enviada ? "sí" : "no",
     ...preguntas.map((k) => r.respuestas?.[k] || ""),
   ].map(cell).join(";"));
@@ -284,7 +294,9 @@ function Detalle({ d, onClose }) {
   const nivel = getNivel(Number(d.score_global));
   const waNum = String(d.whatsapp || "").replace(/\D/g, "");
   const nombre = String(d.nombre || "").split(/\s+/)[0];
-  const waMsg = `¡Hola, ${nombre}! Soy de CampusLatina. Vi que completó el diagnóstico del proceso de inscripción de ${d.universidad} (puntaje ${fmt1(d.score_global)} de 5). ¿Le parece si conversamos sobre los resultados?`;
+  const waMsg = enCurso(d)
+    ? `¡Hola, ${nombre}! Soy de CampusLatina. Vi que empezó el diagnóstico del proceso de inscripción de ${d.universidad}. ¿Lo podemos ayudar a completarlo?`
+    : `¡Hola, ${nombre}! Soy de CampusLatina. Vi que completó el diagnóstico del proceso de inscripción de ${d.universidad} (puntaje ${fmt1(d.score_global)} de 5). ¿Le parece si conversamos sobre los resultados?`;
 
   return (
     <div role="dialog" aria-modal="true" aria-label={`Diagnóstico de ${d.universidad}`} onClick={onClose}
@@ -299,8 +311,13 @@ function Detalle({ d, onClose }) {
             </div>
             <div style={{ textAlign: "right", flexShrink: 0 }}>
               <button onClick={onClose} aria-label="Cerrar" style={{ background: "none", border: "none", color: WHITE, fontSize: 22, cursor: "pointer", minHeight: 44, minWidth: 44 }}>✕</button>
-              <div style={{ fontFamily: "'DM Serif Display',serif", fontSize: 36, color: EMERALD, lineHeight: 1 }}>{fmt1(d.score_global)}</div>
-              <span style={mono(8, EMERALD)}>{nivel.label}</span>
+              {enCurso(d) ? <>
+                <div style={{ fontFamily: "'DM Serif Display',serif", fontSize: 30, color: WHITE, lineHeight: 1 }}>{etapasListas(d)}/7</div>
+                <span style={mono(8, EMERALD)}>En curso</span>
+              </> : <>
+                <div style={{ fontFamily: "'DM Serif Display',serif", fontSize: 36, color: EMERALD, lineHeight: 1 }}>{fmt1(d.score_global)}</div>
+                <span style={mono(8, EMERALD)}>{nivel.label}</span>
+              </>}
             </div>
           </div>
         </div>
@@ -319,21 +336,39 @@ function Detalle({ d, onClose }) {
               <a href={`mailto:${d.email}?subject=${encodeURIComponent(`Su diagnóstico del proceso de inscripción — ${d.universidad}`)}`} style={{ ...btn(false), display: "inline-flex", alignItems: "center", textDecoration: "none" }}>Escribir mail</a>
             </div>
             <div style={{ fontSize: 12, color: MUTED, marginTop: 10 }}>
-              Informe por mail: {d.mail_enviado ? "✅ enviado" : "⚠️ no enviado"} · Aviso interno: {d.notif_enviada ? "✅" : "⚠️"}
+              Informe por mail: {d.mail_enviado ? "✅ enviado" : enCurso(d) ? "pendiente (faltan etapas)" : "⚠️ no enviado"} · Aviso interno: {d.notif_enviada ? "✅" : enCurso(d) ? "pendiente" : "⚠️"}
             </div>
           </div>
 
           <div style={{ background: WHITE, border: `1px solid ${LINE}`, borderRadius: 12, padding: 16 }}>
-            <span style={mono(8)}>Puntaje por etapa</span>
+            <span style={mono(8)}>Calificación</span>
+            <div style={{ fontSize: 14, marginTop: 8, lineHeight: 1.8 }}>
+              🎓 Alumnos hoy: <strong>{textoRango(d.alumnos_actuales)}</strong><br />
+              📈 Meta a 3 años: <strong>{textoRango(d.alumnos_meta)}</strong><br />
+              🎯 {d.target ? <strong>Target: se le ofrece la reunión de 45 min</strong> : d.alumnos_actuales ? "No target: se le ofrece escribir por mail" : "Sin datos (diagnóstico anterior a la calificación)"}
+            </div>
+            {(d.colaboradores || []).length > 0 && (
+              <div style={{ fontSize: 14, marginTop: 10, lineHeight: 1.7 }}>
+                <span style={mono(8)}>Colegas invitados</span>
+                {d.colaboradores.map((c) => (
+                  <div key={c.id}>👥 {c.nombre} · <a href={`mailto:${c.email}`} style={{ color: NAVY }}>{c.email}</a>{c.etapas?.length ? <span style={{ color: MUTED }}> · {c.etapas.map((id) => ETAPAS_DATA.find((e) => e.id === id)?.name).filter(Boolean).join(", ")}</span> : null}</div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div style={{ background: WHITE, border: `1px solid ${LINE}`, borderRadius: 12, padding: 16 }}>
+            <span style={mono(8)}>{enCurso(d) ? "Etapas" : "Puntaje por etapa"}</span>
             <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
               {ETAPAS_DATA.map((e) => {
                 const s = Number(d.scores?.[e.id] || 0);
                 const n = getNivel(s);
+                const por = d.etapas_por?.[e.id]?.nombre;
                 return (
                   <div key={e.id}>
                     <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 3 }}>
-                      <span>{e.emoji} {e.name}</span>
-                      <span style={mono(9, n.color)}>{fmt1(s)} · {n.label}</span>
+                      <span>{e.emoji} {e.name}{por ? <span style={{ color: MUTED }}> · {por}</span> : null}</span>
+                      <span style={mono(9, n.color)}>{enCurso(d) ? (d.respuestas?.[`${e.id}_3`] ? "Respondida" : "Pendiente") : `${fmt1(s)} · ${n.label}`}</span>
                     </div>
                     <div style={{ height: 6, background: LINE, borderRadius: 3 }}><div style={{ height: "100%", width: `${(s / 5) * 100}%`, background: n.color, borderRadius: 3 }} /></div>
                   </div>
@@ -375,14 +410,15 @@ const COLUMNAS = [
   { key: "universidad", label: "Universidad" },
   { key: "pais", label: "País" },
   { key: "nombre", label: "Nombre" },
-  { key: "cargo", label: "Cargo" },
+  { key: "alumnos_actuales", label: "Tamaño" },
   { key: "score_global", label: "Score" },
   { key: "nivel", label: "Nivel" },
   { key: "mail_enviado", label: "Mail" },
 ];
 
 function comparar(a, b, key) {
-  if (key === "score_global") return Number(a[key]) - Number(b[key]);
+  if (key === "score_global") return (enCurso(a) ? -1 : Number(a[key])) - (enCurso(b) ? -1 : Number(b[key]));
+  if (key === "alumnos_actuales") return RANGOS_ALUMNOS.findIndex((x) => x.id === a[key]) - RANGOS_ALUMNOS.findIndex((x) => x.id === b[key]);
   if (key === "created_at") return new Date(a[key]) - new Date(b[key]);
   if (key === "nivel") return NIVELES.indexOf(a[key]) - NIVELES.indexOf(b[key]);
   if (key === "mail_enviado") return Number(a[key]) - Number(b[key]);
@@ -392,7 +428,7 @@ function comparar(a, b, key) {
 function Panel({ session }) {
   const [rows, setRows] = useState(null);
   const [error, setError] = useState("");
-  const [f, setF] = useState({ q: "", pais: "", nivel: "", desde: "", hasta: "" });
+  const [f, setF] = useState({ q: "", estado: "", pais: "", nivel: "", desde: "", hasta: "" });
   const [sort, setSort] = useState({ key: "created_at", dir: "desc" });
   const [page, setPage] = useState(0);
   const [params, setParams] = useSearchParams();
@@ -423,6 +459,7 @@ function Panel({ session }) {
     const hasta = f.hasta ? new Date(`${f.hasta}T23:59:59.999`) : null;
     return rows
       .filter((r) => !q || `${r.universidad} ${r.nombre}`.toLowerCase().includes(q))
+      .filter((r) => !f.estado || (f.estado === "target" ? r.target : f.estado === "en_curso" ? enCurso(r) : !enCurso(r)))
       .filter((r) => !f.pais || r.pais === f.pais)
       .filter((r) => !f.nivel || r.nivel === f.nivel)
       .filter((r) => !desde || new Date(r.created_at) >= desde)
@@ -457,6 +494,15 @@ function Panel({ session }) {
           <input value={f.q} onChange={set("q")} placeholder="Ej: Córdoba, María…" style={{ ...input, marginTop: 4 }} />
         </label>
         <label>
+          <span style={mono(8)}>Estado</span>
+          <select value={f.estado} onChange={set("estado")} style={{ ...input, marginTop: 4 }}>
+            <option value="">Todos</option>
+            <option value="completo">Completos</option>
+            <option value="en_curso">En curso</option>
+            <option value="target">Solo target</option>
+          </select>
+        </label>
+        <label>
           <span style={mono(8)}>País</span>
           <select value={f.pais} onChange={set("pais")} style={{ ...input, marginTop: 4 }}>
             <option value="">Todos</option>
@@ -483,7 +529,7 @@ function Panel({ session }) {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 10, flexWrap: "wrap" }}>
         <span style={{ fontSize: 13, color: MUTED }}>
           {filtrados.length} de {rows.length} diagnósticos
-          {hayFiltros && <button onClick={() => setF({ q: "", pais: "", nivel: "", desde: "", hasta: "" })} style={{ background: "none", border: "none", color: NAVY, textDecoration: "underline", cursor: "pointer", fontSize: 13, marginLeft: 8 }}>Limpiar filtros</button>}
+          {hayFiltros && <button onClick={() => setF({ q: "", estado: "", pais: "", nivel: "", desde: "", hasta: "" })} style={{ background: "none", border: "none", color: NAVY, textDecoration: "underline", cursor: "pointer", fontSize: 13, marginLeft: 8 }}>Limpiar filtros</button>}
         </span>
         <div style={{ display: "flex", gap: 8 }}>
           <button onClick={cargar} style={btn(false)}>Actualizar</button>
@@ -517,10 +563,15 @@ function Panel({ session }) {
                   <td style={{ padding: "10px 12px", fontWeight: 600 }}>{r.universidad}</td>
                   <td style={{ padding: "10px 12px" }}>{r.pais}</td>
                   <td style={{ padding: "10px 12px" }}>{r.nombre}</td>
-                  <td style={{ padding: "10px 12px", color: MUTED }}>{r.cargo || "—"}</td>
-                  <td style={{ padding: "10px 12px", fontFamily: "'DM Serif Display',serif", fontSize: 17, color: n.color }}>{fmt1(r.score_global)}</td>
-                  <td style={{ padding: "10px 12px" }}><span style={{ background: n.bg, color: n.color, borderRadius: 6, padding: "3px 8px", fontSize: 11, whiteSpace: "nowrap" }}>{r.nivel}</span></td>
-                  <td style={{ padding: "10px 12px" }} title={r.mail_enviado ? "Informe enviado" : "Informe no enviado"}>{r.mail_enviado ? "✅" : "⚠️"}</td>
+                  <td style={{ padding: "10px 12px", whiteSpace: "nowrap" }}>{r.target ? "🎯 " : ""}{r.alumnos_actuales ? textoRango(r.alumnos_actuales) : "—"}</td>
+                  {enCurso(r) ? <>
+                    <td style={{ padding: "10px 12px", fontFamily: "'Space Mono',monospace", fontSize: 12, color: MUTED }}>{etapasListas(r)}/7</td>
+                    <td style={{ padding: "10px 12px" }}><span style={{ background: "#EEF0F8", color: NAVY, borderRadius: 6, padding: "3px 8px", fontSize: 11, whiteSpace: "nowrap" }}>En curso</span></td>
+                  </> : <>
+                    <td style={{ padding: "10px 12px", fontFamily: "'DM Serif Display',serif", fontSize: 17, color: n.color }}>{fmt1(r.score_global)}</td>
+                    <td style={{ padding: "10px 12px" }}><span style={{ background: n.bg, color: n.color, borderRadius: 6, padding: "3px 8px", fontSize: 11, whiteSpace: "nowrap" }}>{r.nivel}</span></td>
+                  </>}
+                  <td style={{ padding: "10px 12px" }} title={r.mail_enviado ? "Informe enviado" : enCurso(r) ? "Faltan etapas" : "Informe no enviado"}>{r.mail_enviado ? "✅" : enCurso(r) ? "…" : "⚠️"}</td>
                   <td style={{ padding: "6px 12px" }}>
                     <button onClick={(e) => { e.stopPropagation(); abrir(r.id); }} style={{ ...btn(false), minHeight: 34, padding: "0 12px", fontSize: 12 }}>Ver</button>
                   </td>

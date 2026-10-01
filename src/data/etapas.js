@@ -9,10 +9,10 @@ export const ETAPAS_DATA = [
         texto:"¿Cómo llegan sus aspirantes a conocer su universidad?",
         ayuda:"Piense en qué tan activa es su presencia en los canales donde buscan: los que ya usa y los que todavía no aprovecha (publicidad digital, embajadores, alianzas con colegios o empresas).",
         opciones:[
-          {letra:"A",texto:"Nos llegan principalmente por recomendación espontánea o ferias. No invertimos en publicidad digital ni tenemos alianzas o embajadores activos. No sabemos bien de dónde viene cada aspirante.",valor:1},
+          {letra:"A",texto:"Nos llegan principalmente por recomendación espontánea o ferias. No invertimos en publicidad digital ni tenemos alianzas o embajadores activos.",valor:1},
           {letra:"B",texto:"Hacemos algo de publicidad digital en temporada, tenemos alguna alianza con colegios y algunos estudiantes recomiendan, pero cada acción funciona por separado y sin coordinación ni medición.",valor:2},
           {letra:"C",texto:"Combinamos canales propios, pauta digital planificada y alianzas o embajadores activos. Sabemos cuáles son nuestros canales principales y los gestionamos con responsables definidos.",valor:4},
-          {letra:"D",texto:"Operamos una estrategia integrada: pauta optimizada por datos, red de alianzas y embajadores con métricas propias, y trazabilidad completa de qué canal, campaña o referido generó cada aspirante.",valor:5},
+          {letra:"D",texto:"Operamos una estrategia integrada: pauta optimizada con datos, red de alianzas y embajadores con metas propias, y el presupuesto de cada canal se ajusta según los aspirantes que genera.",valor:5},
         ]
       },
       {
@@ -69,7 +69,7 @@ export const ETAPAS_DATA = [
           {letra:"A",texto:"El sitio tiene mucha información pero es difícil de navegar. No monitoreamos reseñas ni estamos presentes en espacios de comparación.",valor:1},
           {letra:"B",texto:"Tenemos un sitio funcional y algo de presencia en portales, pero no hay landings específicas por programa ni gestionamos activamente lo que dicen de nosotros en espacios externos.",valor:2},
           {letra:"C",texto:"Contamos con landings por programa, gestionamos nuestro perfil en Google y portales educativos, y respondemos reseñas. La experiencia digital está pensada para el aspirante.",valor:4},
-          {letra:"D",texto:"La experiencia digital es integral: landings optimizadas, reputación activamente gestionada en todos los canales de comparación, y posicionamiento en respuestas de IA donde los aspirantes consultan.",valor:5},
+          {letra:"D",texto:"La experiencia digital es integral: landings optimizadas, reputación gestionada activamente en todos los espacios de comparación, y medimos qué páginas y fuentes llevan a los aspirantes a contactarnos.",valor:5},
         ]
       },
       {
@@ -79,7 +79,7 @@ export const ETAPAS_DATA = [
           {letra:"A",texto:"No contamos con testimonios actualizados ni datos de empleabilidad. La credibilidad descansa en la trayectoria o el nombre de la institución.",valor:1},
           {letra:"B",texto:"Tenemos algunos testimonios, pero son genéricos o están desactualizados, y no están ubicados donde el aspirante toma decisiones.",valor:2},
           {letra:"C",texto:"Mostramos testimonios reales y datos de inserción laboral en las páginas de los programas, de forma actualizada y verificable.",valor:4},
-          {letra:"D",texto:"Tenemos una estrategia activa de prueba social: casos de éxito por carrera, datos de empleabilidad verificables, eventos presenciales y virtuales para aspirantes, y reseñas en todos los espacios de comparación.",valor:5},
+          {letra:"D",texto:"Tenemos una estrategia activa de prueba social: casos de éxito por carrera, datos de empleabilidad verificables y eventos presenciales y virtuales donde los aspirantes conocen a estudiantes y egresados.",valor:5},
         ]
       },
       {
@@ -113,7 +113,7 @@ export const ETAPAS_DATA = [
         texto:"¿Cuánto tarda su universidad en responder una consulta?",
         ayuda:"Desde que el aspirante consulta o deja sus datos, y si la respuesta llega por el mismo canal que usó.",
         opciones:[
-          {letra:"A",texto:"La respuesta puede tardar horas o días, depende de quién esté disponible. No hay protocolo de tiempos ni seguimiento de consultas sin respuesta.",valor:1},
+          {letra:"A",texto:"La respuesta puede tardar más de un día y depende de quién esté disponible. No hay protocolo de tiempos ni seguimiento de consultas sin respuesta.",valor:1},
           {letra:"B",texto:"Intentamos responder el mismo día, pero los tiempos varían según el canal, la carga del equipo o el horario en que llegó la consulta.",valor:2},
           {letra:"C",texto:"Tenemos tiempos máximos de respuesta definidos por canal (ej: menos de 2 horas por WhatsApp) y un protocolo que se cumple de forma consistente.",valor:4},
           {letra:"D",texto:"La primera respuesta es inmediata o en minutos, con automatización que activa el contacto al instante y deriva a un asesor cuando la consulta lo requiere.",valor:5},
@@ -126,7 +126,7 @@ export const ETAPAS_DATA = [
           {letra:"A",texto:"La respuesta es un mensaje genérico o un PDF con toda la oferta, sin importar qué preguntó el aspirante ni qué programa consultó.",valor:1},
           {letra:"B",texto:"La respuesta intenta ser relevante, pero depende del criterio de quien responde. No hay guía ni plantilla por programa ni componente que genere entusiasmo.",valor:2},
           {letra:"C",texto:"Contamos con plantillas de respuesta por programa que incluyen el programa consultado, un elemento motivacional y un paso siguiente concreto.",valor:4},
-          {letra:"D",texto:"La primera respuesta está automatizada y personalizada por programa y canal: celebra el contacto, genera anticipación y activa inmediatamente el deseo de continuar.",valor:5},
+          {letra:"D",texto:"La primera respuesta sale de forma automática, personalizada según el programa, el canal y lo que preguntó el aspirante, y un asesor la continúa con todo el contexto.",valor:5},
         ]
       },
       {
@@ -162,8 +162,8 @@ export const ETAPAS_DATA = [
         opciones:[
           {letra:"A",texto:"Recibe mensajes del tipo '¿pudiste revisar la información?' o 'las inscripciones están abiertas', sin contenido que lo ayude a decidir ni que reactive su interés.",valor:1},
           {letra:"B",texto:"Recibe algo de información sobre el programa de interés, pero los mensajes son iguales para todos sin importar en qué momento del proceso están ni si ya se enfrió.",valor:2},
-          {letra:"C",texto:"Los mensajes incluyen contenido relevante según el programa y el momento: testimonios, fechas clave, becas, respuestas a dudas frecuentes y argumentos nuevos para quien se enfrió.",valor:4},
-          {letra:"D",texto:"El contenido se adapta según el perfil, el momento del proceso y el comportamiento previo. Quien se enfrió recibe algo distinto a quien sigue activo.",valor:5},
+          {letra:"C",texto:"Los mensajes incluyen contenido útil según el programa y la etapa del proceso: testimonios, fechas clave, becas y respuestas a dudas frecuentes. Es el mismo para todos los que consultaron ese programa.",valor:4},
+          {letra:"D",texto:"El contenido se adapta además al perfil y al comportamiento de cada aspirante: quien se enfrió recibe algo distinto de quien sigue activo, de forma automática.",valor:5},
         ]
       },
       {
@@ -229,8 +229,8 @@ export const ETAPAS_DATA = [
         opciones:[
           {letra:"A",texto:"Si el aspirante no se inscribe en el momento, se lo da por perdido. No hay proceso para mantener el vínculo con quienes difieren su decisión.",valor:1},
           {letra:"B",texto:"Algunos asesores hacen seguimiento esporádico de aspirantes que no se inscribieron, pero sin proceso sistematizado ni criterio de cuándo y cómo retomarlos.",valor:2},
-          {letra:"C",texto:"Tenemos un proceso diferenciado para aspirantes con decisión diferida: se los clasifica, se mantiene contacto espaciado con contenido útil y se los reactiva antes del próximo período.",valor:4},
-          {letra:"D",texto:"Los aspirantes diferidos entran a una ruta de largo plazo con mensajes adaptados a su momento y reactivación automática antes de cada nuevo ciclo, retomando desde donde quedó la conversación.",valor:5},
+          {letra:"C",texto:"Tenemos un proceso para quienes difieren la decisión: el equipo los clasifica, mantiene un contacto espaciado con contenido útil y los vuelve a contactar antes del próximo período.",valor:4},
+          {letra:"D",texto:"Los aspirantes diferidos entran a una ruta automática de largo plazo, con mensajes según su momento, que los reactiva antes de cada ciclo retomando la conversación donde quedó.",valor:5},
         ]
       },
     ]
@@ -246,8 +246,8 @@ export const ETAPAS_DATA = [
         opciones:[
           {letra:"A",texto:"El proceso tiene muchos pasos, requiere documentación extensa y al menos una instancia presencial sin alternativa digital.",valor:1},
           {letra:"B",texto:"La mayoría es digital, pero hay al menos un paso que requiere presencia física, impresión de documentos o validación manual que no puede hacerse de otra forma.",valor:2},
-          {letra:"C",texto:"El proceso es mayormente digital y se puede completar desde cualquier dispositivo. Solo quedan excepciones puntuales justificadas.",valor:4},
-          {letra:"D",texto:"Inscribirse es 100% digital desde cualquier dispositivo, con carga de documentos en línea, validación automática y confirmación inmediata de cada paso.",valor:5},
+          {letra:"C",texto:"Todo el trámite se puede hacer en línea, también desde el celular. Lo presencial queda solo para casos excepcionales.",valor:4},
+          {letra:"D",texto:"Inscribirse es 100% digital y sin esperas: carga de documentos en línea, validación automática y confirmación inmediata de cada paso.",valor:5},
         ]
       },
       {
@@ -256,8 +256,8 @@ export const ETAPAS_DATA = [
         opciones:[
           {letra:"A",texto:"No hay visibilidad del estado. El aspirante tiene que llamar o escribir para saber si su trámite avanzó o si falta algo.",valor:1},
           {letra:"B",texto:"Recibe alguna notificación por correo, pero no hay una vista clara del estado del proceso ni alertas cuando hay algo pendiente o cuando los plazos se acercan.",valor:2},
-          {letra:"C",texto:"El aspirante puede consultar el estado de su inscripción y recibe notificaciones cuando hay algo pendiente o cuando se completa un paso. Los tiempos de procesamiento están comunicados.",valor:4},
-          {letra:"D",texto:"Trazabilidad completa en tiempo real: el aspirante ve exactamente en qué paso está, qué falta y recibe recordatorios automáticos antes de que venzan los plazos.",valor:5},
+          {letra:"C",texto:"El aspirante puede consultar el estado de su trámite y recibe un aviso cuando completa un paso o le falta algo. Los tiempos de procesamiento están comunicados.",valor:4},
+          {letra:"D",texto:"El aspirante ve en tiempo real en qué paso está y qué le falta, y el sistema le recuerda automáticamente cada pendiente antes de que venza el plazo.",valor:5},
         ]
       },
       {
@@ -266,7 +266,7 @@ export const ETAPAS_DATA = [
         opciones:[
           {letra:"A",texto:"No hay canal específico de soporte. El aspirante tiene que llamar al número general, esperar que lo deriven, y el equipo no siempre tiene la información para resolver.",valor:1},
           {letra:"B",texto:"Hay un canal de soporte disponible, pero los tiempos son lentos o el equipo no siempre puede resolver los problemas más frecuentes del proceso.",valor:2},
-          {letra:"C",texto:"Contamos con un canal dedicado para inscripciones con tiempos de respuesta rápidos y personas capacitadas. El sistema detecta cuando alguien lleva tiempo sin avanzar.",valor:4},
+          {letra:"C",texto:"Contamos con un canal dedicado para inscripciones, con tiempos de respuesta rápidos y personas capacitadas para resolver los problemas más frecuentes.",valor:4},
           {letra:"D",texto:"El soporte es proactivo: el sistema detecta cuando un aspirante lleva tiempo sin avanzar y lo contacta antes de que abandone. Ningún aspirante queda trabado sin intervención.",valor:5},
         ]
       },
@@ -304,7 +304,7 @@ export const ETAPAS_DATA = [
           {letra:"A",texto:"No hay comunicación estructurada pre-inicio. El estudiante tiene que buscar por su cuenta los horarios, los accesos a plataformas o los materiales necesarios.",valor:1},
           {letra:"B",texto:"Enviamos uno o dos correos generales antes del inicio, pero sin secuencia planificada ni contenido diferenciado por programa, modalidad o perfil del estudiante.",valor:2},
           {letra:"C",texto:"Tenemos una secuencia de comunicaciones pre-inicio con contenido progresivo: accesos a la plataforma, presentación de docentes, horarios confirmados y respuestas a las dudas más frecuentes.",valor:4},
-          {letra:"D",texto:"La comunicación pre-inicio está automatizada y personalizada por programa, modalidad y perfil. Incluye guía práctica del primer día, checklist personalizado y contacto proactivo 24 horas antes del inicio.",valor:5},
+          {letra:"D",texto:"La comunicación pre-inicio está automatizada y personalizada por programa, modalidad y perfil, y se ajusta según lo que cada estudiante ya abrió o completó.",valor:5},
         ]
       },
       {
@@ -323,8 +323,8 @@ export const ETAPAS_DATA = [
         opciones:[
           {letra:"A",texto:"El estudiante tiene que descubrir por su cuenta cómo llegar, dónde ir, cómo acceder a los sistemas y qué traer. No hay preparación práctica previa al inicio.",valor:1},
           {letra:"B",texto:"Se comparte alguna información antes del inicio (horarios, link o aula), pero de forma parcial y sin anticipar las dudas más frecuentes del primer día.",valor:2},
-          {letra:"C",texto:"El estudiante recibe antes del inicio todo lo necesario: accesos a plataformas, presentación de docentes, guía del primer día y un canal activo para resolver dudas de último momento.",valor:4},
-          {letra:"D",texto:"La preparación pre-inicio elimina toda fricción del primer día: simulacros de acceso, video de bienvenida del docente, checklist personalizado y contacto proactivo la noche anterior.",valor:5},
+          {letra:"C",texto:"Antes del inicio el estudiante ya probó sus accesos, sabe dónde y cuándo es su primera clase, y tiene un canal activo para resolver dudas de último momento.",valor:4},
+          {letra:"D",texto:"El primer día está acompañado de punta a punta: simulacro de acceso, video de bienvenida del docente, checklist personalizado y un contacto proactivo la noche anterior.",valor:5},
         ]
       },
     ]

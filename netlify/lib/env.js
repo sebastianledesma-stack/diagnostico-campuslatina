@@ -9,6 +9,9 @@ export const env = {
   // Contacto comercial: Reply-To del mail al directivo y botón "Hablemos".
   CONTACT_EMAIL: process.env.CONTACT_EMAIL || process.env.VITE_CONTACT_EMAIL || "",
   SITE_URL: (process.env.SITE_URL || process.env.URL || "").replace(/\/$/, ""),
+  // Link público para agendar la reunión de 45 min (Google Calendar, Calendly…).
+  // Sin él, el botón abre un mail a CONTACT_EMAIL pidiendo la reunión.
+  AGENDA_URL: process.env.AGENDA_URL || process.env.VITE_AGENDA_URL || "",
   // Emails con acceso a /admin, separados por coma.
   ADMIN_EMAILS: list(process.env.ADMIN_EMAILS),
 };

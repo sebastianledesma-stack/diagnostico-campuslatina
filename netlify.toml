@@ -32,6 +32,12 @@
   to = "/index.html"
   status = 200
 
+# Diagnósticos compartidos por link secreto: también los resuelve React Router.
+[[redirects]]
+  from = "/d/*"
+  to = "/index.html"
+  status = 200
+
 [[headers]]
   for = "/*"
   [headers.values]
@@ -49,6 +55,13 @@
   for = "/admin*"
   [headers.values]
     X-Robots-Tag = "noindex, nofollow"
+
+# Links privados de cada diagnóstico: fuera de buscadores y sin filtrar la URL a otros sitios.
+[[headers]]
+  for = "/d/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Referrer-Policy = "no-referrer"
 
 [[headers]]
   for = "/api/*"
