@@ -60,7 +60,7 @@ async function crear(req) {
     ...row,
     estado: "en_curso",
     clave_hash: hashClave(clave),
-    target: esTarget(row.alumnos_actuales),
+    target: esTarget(row.alumnos_actuales, row.alumnos_meta),
     respuestas: {},
   };
   const { data, error } = await supabaseAdmin().from("diagnosticos").insert(nuevo).select("*").single();

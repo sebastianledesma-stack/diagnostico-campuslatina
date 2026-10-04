@@ -187,7 +187,7 @@ function Register({onNext}){
               <LabelField label="Nombre de la universidad o institución" required htmlFor="f-universidad"/>
               <input id="f-universidad" required autoComplete="organization" value={form.universidad} onChange={e=>set("universidad",e.target.value)} placeholder="Ej: Universidad Nacional de Córdoba" style={campo}/>
             </div>
-            {[["alumnos_actuales","Estudiantes que tiene hoy"],["alumnos_meta","Estudiantes que quiere tener en 3 años"]].map(([k,l])=>(
+            {[["alumnos_actuales","Estudiantes que tiene hoy"],["alumnos_meta","Estudiantes que quiere tener en 3 a 5 años"]].map(([k,l])=>(
               <div key={k}>
                 <LabelField label={l} required htmlFor={`f-${k}`}/>
                 <div style={{position:"relative"}}>
@@ -350,7 +350,6 @@ function StageIntro({etapa,onStart,etapasScores,respondidas,onTablero,onInvitar}
         </div>
         <div style={{background:WHITE,border:`1px solid ${LINE}`,borderRadius:14,padding:"16px 18px",marginBottom:14}}>
           <p style={{fontSize:16,color:NAVY,lineHeight:1.6,margin:0,fontWeight:500}}>{etapa.resumen}</p>
-          <p style={{fontSize:15,color:MUTED,lineHeight:1.6,margin:"10px 0 0"}}>{etapa.contexto}</p>
         </div>
         <p style={{display:"flex",gap:10,alignItems:"flex-start",fontSize:15,color:TEXT,lineHeight:1.55,margin:0,padding:"0 2px"}}>
           <span aria-hidden="true" style={{fontSize:18,lineHeight:1.3}}>📝</span>
@@ -435,7 +434,10 @@ function Question({preguntaIdx,etapa,pregunta,selected,onSelect,onNext,onBack,is
                 <span aria-hidden="true" style={{width:32,height:32,borderRadius:"50%",border:`2px solid ${isSel?EMERALD:"#9A98A0"}`,background:isSel?EMERALD:"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontFamily:"'Space Mono',monospace",fontSize:14,color:isSel?NAVY_DK:MUTED,fontWeight:700,transition:"all .15s"}}>
                   {isSel?"✓":op.letra}
                 </span>
-                <span style={{fontSize:16,color:isSel?NAVY:TEXT,lineHeight:1.55,paddingTop:4}}>{op.texto}</span>
+                <span style={{fontSize:16,color:isSel?NAVY:TEXT,lineHeight:1.5,paddingTop:4}}>
+                  <strong style={{display:"block",color:NAVY,fontWeight:700}}>{op.etiqueta}</strong>
+                  {op.texto}
+                </span>
               </button>
             );
           })}

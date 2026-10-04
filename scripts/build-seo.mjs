@@ -181,7 +181,7 @@ ${e.preguntas.map((p, k) => `
 <section class="card">
   <h3>${k + 1}. ${esc(p.texto)}</h3>
   <p class="muted">${esc(p.ayuda)}</p>
-  ${p.opciones.map((o) => `<div class="opcion"><b>${NIVEL_POR_LETRA[o.letra]}</b><span>${esc(o.texto)}</span></div>`).join("")}
+  ${p.opciones.map((o) => `<div class="opcion"><b>${NIVEL_POR_LETRA[o.letra]}</b><span><strong>${esc(o.etiqueta)}</strong> ${esc(o.texto)}</span></div>`).join("")}
 </section>`).join("")}
 
 ${lecturas(notasDeEtapa(e.id), "Lecturas relacionadas")}
@@ -203,7 +203,7 @@ ${ctaBox(`¿Cómo está su universidad en ${e.name.toLowerCase()}?`)}
       ] },
     ],
   }));
-  md.push(`## Etapa ${e.num}: ${e.name} — ${e.pregunta}\nURL: ${url(path)}\n\n${e.resumen}\n\n${e.contexto}\n\n### Dónde se pierden inscriptos\n${fr.map((f) => `- ${f.texto}`).join("\n")}\n\n### Qué hacer (3 acciones por impacto)\n${recs.map((r) => `- ${r.texto} (+${r.impacto.toFixed(1)} pts: ${r.accion})`).join("\n")}\n\n### Preguntas del diagnóstico\n${e.preguntas.map((p, k) => `${k + 1}. ${p.texto} — ${p.ayuda}\n${p.opciones.map((o) => `   - ${NIVEL_POR_LETRA[o.letra]}: ${o.texto}`).join("\n")}`).join("\n")}\n`);
+  md.push(`## Etapa ${e.num}: ${e.name} — ${e.pregunta}\nURL: ${url(path)}\n\n${e.resumen}\n\n${e.contexto}\n\n### Dónde se pierden inscriptos\n${fr.map((f) => `- ${f.texto}`).join("\n")}\n\n### Qué hacer (3 acciones por impacto)\n${recs.map((r) => `- ${r.texto} (+${r.impacto.toFixed(1)} pts: ${r.accion})`).join("\n")}\n\n### Preguntas del diagnóstico\n${e.preguntas.map((p, k) => `${k + 1}. ${p.texto} — ${p.ayuda}\n${p.opciones.map((o) => `   - ${NIVEL_POR_LETRA[o.letra]}: ${o.etiqueta} ${o.texto}`).join("\n")}`).join("\n")}\n`);
 });
 
 // ── Guía (página pilar) ───────────────────────────────────────

@@ -153,7 +153,7 @@ export function mailInterno(d, { adminUrl } = {}) {
     ${row("📧", "Email", `<a href="mailto:${esc(d.email)}" style="color:${NAVY};">${esc(d.email)}</a>`)}
     ${row("📱", "WhatsApp", waNum ? `<a href="https://wa.me/${waNum}" style="color:${NAVY};">${esc(d.whatsapp)}</a>` : esc(d.whatsapp))}
     ${row("🎓", "Alumnos hoy", esc(textoRango(d.alumnos_actuales)))}
-    ${row("📈", "Meta 3 años", esc(textoRango(d.alumnos_meta)))}
+    ${row("📈", "Meta 3–5 años", esc(textoRango(d.alumnos_meta)))}
     ${row("🎯", "Calificación", d.target ? "<strong>Target: se le ofreció la reunión de 45 min</strong>" : "No target: se le ofreció escribir por mail")}
     ${colegas.length ? row("👥", "Colegas", esc(colegas.join(", "))) : ""}
   </table>
@@ -175,7 +175,7 @@ export function mailInterno(d, { adminUrl } = {}) {
     `👤 ${d.nombre}${d.cargo ? ` — ${d.cargo}` : ""}`,
     `📧 ${d.email}`,
     `📱 ${d.whatsapp}`,
-    `🎓 Alumnos hoy: ${textoRango(d.alumnos_actuales)} · Meta a 3 años: ${textoRango(d.alumnos_meta)}`,
+    `🎓 Alumnos hoy: ${textoRango(d.alumnos_actuales)} · Meta a 3–5 años: ${textoRango(d.alumnos_meta)}`,
     `🎯 ${d.target ? "TARGET (reunión de 45 min)" : "No target (contacto por mail)"}`,
     colegas.length ? `👥 Colegas: ${colegas.join(", ")}` : "",
     ``,

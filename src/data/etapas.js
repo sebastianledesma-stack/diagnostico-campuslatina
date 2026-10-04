@@ -7,42 +7,42 @@ export const ETAPAS_DATA = [
     preguntas:[
       {
         texto:"¿Cómo llegan sus aspirantes a conocer su universidad?",
-        ayuda:"Piense en qué tan activa es su presencia en los canales donde buscan: los que ya usa y los que todavía no aprovecha (publicidad digital, embajadores, alianzas con colegios o empresas).",
+        ayuda:"Publicidad, alianzas con colegios, embajadores y recomendaciones.",
         opciones:[
-          {letra:"A",texto:"Nos llegan principalmente por recomendación espontánea o ferias. No invertimos en publicidad digital ni tenemos alianzas o embajadores activos.",valor:1},
-          {letra:"B",texto:"Hacemos algo de publicidad digital en temporada, tenemos alguna alianza con colegios y algunos estudiantes recomiendan, pero cada acción funciona por separado y sin coordinación ni medición.",valor:2},
-          {letra:"C",texto:"Combinamos canales propios, pauta digital planificada y alianzas o embajadores activos. Sabemos cuáles son nuestros canales principales y los gestionamos con responsables definidos.",valor:4},
-          {letra:"D",texto:"Operamos una estrategia integrada: pauta optimizada con datos, red de alianzas y embajadores con metas propias, y el presupuesto de cada canal se ajusta según los aspirantes que genera.",valor:5},
+          {letra:"A",etiqueta:"Solo boca a boca y ferias.",texto:"Sin publicidad digital, alianzas ni embajadores.",valor:1},
+          {letra:"B",etiqueta:"Acciones sueltas.",texto:"Algo de publicidad y alianzas, sin coordinación ni medición.",valor:2},
+          {letra:"C",etiqueta:"Canales planificados.",texto:"Pauta, alianzas y embajadores, cada canal con un responsable.",valor:4},
+          {letra:"D",etiqueta:"Estrategia integrada y medida.",texto:"El presupuesto de cada canal se ajusta según los aspirantes que trae.",valor:5},
         ]
       },
       {
         texto:"¿Su universidad trabaja para aparecer cuando alguien busca dónde estudiar?",
-        ayuda:"En Google, en YouTube o cuando le pregunta a una inteligencia artificial como ChatGPT o Gemini.",
+        ayuda:"En Google y en las respuestas de asistentes de IA como ChatGPT.",
         opciones:[
-          {letra:"A",texto:"Tenemos un sitio web, pero nadie trabaja el posicionamiento en buscadores ni nos preocupa cómo aparecemos en respuestas de IA.",valor:1},
-          {letra:"B",texto:"Hacemos algo de SEO básico, pero no hay estrategia definida ni medimos si estamos apareciendo donde nuestros aspirantes realmente buscan.",valor:2},
-          {letra:"C",texto:"Tenemos una estrategia activa de SEO con contenidos planificados, palabras clave definidas y seguimiento de posicionamiento en buscadores.",valor:4},
-          {letra:"D",texto:"Además del SEO trabajamos el GEO (posicionamiento en respuestas de IA) y medimos nuestra visibilidad en ambos entornos para capturar al aspirante antes de que llegue a la competencia.",valor:5},
+          {letra:"A",etiqueta:"Nadie se ocupa.",texto:"Hay sitio web, pero no se trabaja el posicionamiento.",valor:1},
+          {letra:"B",etiqueta:"SEO básico, sin estrategia.",texto:"No medimos si aparecemos donde buscan los aspirantes.",valor:2},
+          {letra:"C",etiqueta:"Estrategia de SEO activa.",texto:"Contenidos planificados, palabras clave y seguimiento de posiciones.",valor:4},
+          {letra:"D",etiqueta:"SEO y presencia en IA.",texto:"Medimos la visibilidad en buscadores y en respuestas de IA.",valor:5},
         ]
       },
       {
         texto:"¿Sabe de dónde viene cada aspirante?",
-        ayuda:"Con precisión, para cada persona que consulta o se inscribe, y si usa esa información para mejorar sus canales.",
+        ayuda:"Qué canal, campaña o persona lo trajo.",
         opciones:[
-          {letra:"A",texto:"No tenemos esa información de forma sistemática. A veces preguntamos pero no lo registramos ni lo analizamos.",valor:1},
-          {letra:"B",texto:"Tenemos una pregunta de '¿cómo nos conociste?' en algún formulario, pero los datos quedan dispersos y nadie los usa para tomar decisiones.",valor:2},
-          {letra:"C",texto:"Registramos el origen de cada aspirante en un sistema centralizado y usamos esa información para ajustar la inversión en canales.",valor:4},
-          {letra:"D",texto:"Contamos con trazabilidad completa desde el primer contacto hasta la inscripción: qué canal, qué campaña, qué embajador o alianza generó cada aspirante, y optimizamos en base a eso.",valor:5},
+          {letra:"A",etiqueta:"No lo sabemos.",texto:"A veces se pregunta, pero no se registra.",valor:1},
+          {letra:"B",etiqueta:"Datos sueltos.",texto:"Hay un \"¿cómo nos conoció?\", pero nadie usa esos datos.",valor:2},
+          {letra:"C",etiqueta:"Registrado y usado.",texto:"El origen queda en un sistema y guía la inversión en canales.",valor:4},
+          {letra:"D",etiqueta:"Trazabilidad completa.",texto:"Del primer contacto a la inscripción, y se optimiza con eso.",valor:5},
         ]
       },
       {
         texto:"Cuando un aspirante encuentra a su universidad, ¿tiene claro cuál es el paso siguiente?",
-        ayuda:"En redes, buscadores o cualquier canal: un paso claro, fácil y específico que lo invite a avanzar.",
+        ayuda:"En redes, el sitio web o cualquier otro punto de contacto.",
         opciones:[
-          {letra:"A",texto:"No hay una llamada a la acción clara. El aspirante llega a un perfil o página y tiene que descubrir por su cuenta qué hacer después.",valor:1},
-          {letra:"B",texto:"Hay botones genéricos ('conocé más', 'contactanos'), pero no están diseñados según el canal ni el perfil del aspirante, y no medimos cuántos hacen clic.",valor:2},
-          {letra:"C",texto:"Cada canal tiene una llamada a la acción definida que lleva a un paso concreto: completar un formulario, ver un programa específico o agendar una charla.",valor:4},
-          {letra:"D",texto:"Las llamadas a la acción están personalizadas por canal y perfil, con destinos específicos y seguimiento de cuántos aspirantes avanzan desde cada punto de contacto.",valor:5},
+          {letra:"A",etiqueta:"No hay un paso claro.",texto:"Tiene que descubrir solo qué hacer después.",valor:1},
+          {letra:"B",etiqueta:"Botones genéricos.",texto:"\"Más información\" o \"Contacto\", sin medir quién avanza.",valor:2},
+          {letra:"C",etiqueta:"Un paso concreto por canal.",texto:"Formulario, programa o charla, según dónde llegó.",valor:4},
+          {letra:"D",etiqueta:"Personalizado y medido.",texto:"Según canal y perfil, y se mide cuántos avanzan.",valor:5},
         ]
       },
     ]
@@ -54,42 +54,42 @@ export const ETAPAS_DATA = [
     preguntas:[
       {
         texto:"¿Qué tan fácil es entender y comparar su oferta?",
-        ayuda:"Qué programas ofrece, a quién están dirigidos, qué los diferencia de otras instituciones y cómo se comparan entre sí.",
+        ayuda:"Carreras, duración, modalidad, salida laboral y diferencial.",
         opciones:[
-          {letra:"A",texto:"La información existe pero está dispersa o es técnica. No hay forma de comparar programas y el diferencial institucional no está claro.",valor:1},
-          {letra:"B",texto:"Tenemos descripciones de cada programa, pero son similares entre sí y no explican con claridad por qué elegir uno u otro ni por qué elegirnos a nosotros.",valor:2},
-          {letra:"C",texto:"Cada programa tiene una página clara con duración, modalidad, salida laboral y diferencial. El aspirante puede entender la oferta sin necesidad de consultar.",valor:4},
-          {letra:"D",texto:"La oferta está segmentada por perfil de aspirante y tiene herramientas interactivas para comparar programas, con información actualizada y relevante para tomar una decisión.",valor:5},
+          {letra:"A",etiqueta:"Difícil.",texto:"Información dispersa o técnica, sin un diferencial claro.",valor:1},
+          {letra:"B",etiqueta:"Hay información, pero no convence.",texto:"Programas parecidos entre sí, sin explicar por qué elegirlos.",valor:2},
+          {letra:"C",etiqueta:"Clara por programa.",texto:"Se entiende la oferta sin tener que consultar.",valor:4},
+          {letra:"D",etiqueta:"Comparable y por perfil.",texto:"Herramientas para comparar programas según cada tipo de aspirante.",valor:5},
         ]
       },
       {
         texto:"¿Qué tan buena es la experiencia cuando un aspirante investiga su universidad?",
-        ayuda:"En su sitio web y redes, y también en los lugares donde se comparan opciones: Google, portales educativos o foros.",
+        ayuda:"El sitio web, Google, portales educativos y reseñas.",
         opciones:[
-          {letra:"A",texto:"El sitio tiene mucha información pero es difícil de navegar. No monitoreamos reseñas ni estamos presentes en espacios de comparación.",valor:1},
-          {letra:"B",texto:"Tenemos un sitio funcional y algo de presencia en portales, pero no hay landings específicas por programa ni gestionamos activamente lo que dicen de nosotros en espacios externos.",valor:2},
-          {letra:"C",texto:"Contamos con landings por programa, gestionamos nuestro perfil en Google y portales educativos, y respondemos reseñas. La experiencia digital está pensada para el aspirante.",valor:4},
-          {letra:"D",texto:"La experiencia digital es integral: landings optimizadas, reputación gestionada activamente en todos los espacios de comparación, y medimos qué páginas y fuentes llevan a los aspirantes a contactarnos.",valor:5},
+          {letra:"A",etiqueta:"Confusa.",texto:"Sitio difícil de navegar; no se siguen las reseñas.",valor:1},
+          {letra:"B",etiqueta:"Funcional, sin gestión externa.",texto:"Sitio correcto, sin páginas por programa ni manejo de reseñas.",valor:2},
+          {letra:"C",etiqueta:"Pensada para el aspirante.",texto:"Páginas por programa, perfil de Google cuidado y reseñas respondidas.",valor:4},
+          {letra:"D",etiqueta:"Gestionada y medida.",texto:"Además, se mide qué páginas y fuentes llevan a contactarnos.",valor:5},
         ]
       },
       {
         texto:"¿Muestra evidencia concreta de que estudiar ahí es una buena decisión?",
-        ayuda:"Testimonios reales, datos de inserción laboral, rankings o casos de egresados que ayuden al aspirante a confiar.",
+        ayuda:"Testimonios, datos de empleo de egresados y casos de éxito.",
         opciones:[
-          {letra:"A",texto:"No contamos con testimonios actualizados ni datos de empleabilidad. La credibilidad descansa en la trayectoria o el nombre de la institución.",valor:1},
-          {letra:"B",texto:"Tenemos algunos testimonios, pero son genéricos o están desactualizados, y no están ubicados donde el aspirante toma decisiones.",valor:2},
-          {letra:"C",texto:"Mostramos testimonios reales y datos de inserción laboral en las páginas de los programas, de forma actualizada y verificable.",valor:4},
-          {letra:"D",texto:"Tenemos una estrategia activa de prueba social: casos de éxito por carrera, datos de empleabilidad verificables y eventos presenciales y virtuales donde los aspirantes conocen a estudiantes y egresados.",valor:5},
+          {letra:"A",etiqueta:"No hay evidencia.",texto:"Solo el nombre y la trayectoria de la institución.",valor:1},
+          {letra:"B",etiqueta:"Poca o desactualizada.",texto:"Algunos testimonios genéricos, lejos de donde se decide.",valor:2},
+          {letra:"C",etiqueta:"Real y visible.",texto:"Testimonios y datos de empleo actualizados en cada programa.",valor:4},
+          {letra:"D",etiqueta:"Estrategia de prueba social.",texto:"Casos por carrera, datos verificables y eventos con egresados.",valor:5},
         ]
       },
       {
         texto:"Mientras el aspirante explora, ¿algo lo orienta hacia el próximo paso?",
-        ayuda:"En su sitio, redes o materiales: algo que lo guíe activamente, o si lo deja explorar solo.",
+        ayuda:"Chat, botones de contacto o formularios en el momento justo.",
         opciones:[
-          {letra:"A",texto:"No hay ninguna guía activa. El aspirante navega solo y si no encuentra lo que busca, se va sin dejar rastro.",valor:1},
-          {letra:"B",texto:"Hay elementos de navegación básicos, pero no están diseñados para guiar al aspirante hacia una acción concreta ni para capturar su interés.",valor:2},
-          {letra:"C",texto:"Contamos con chat de consulta visible, botones de contacto en páginas clave y formularios de interés que orientan al aspirante hacia el siguiente paso.",valor:4},
-          {letra:"D",texto:"La experiencia tiene guía activa e inteligente: el sistema detecta el comportamiento del aspirante y le ofrece el paso más relevante según su recorrido y perfil.",valor:5},
+          {letra:"A",etiqueta:"Nada.",texto:"Navega solo y, si no encuentra lo que busca, se va.",valor:1},
+          {letra:"B",etiqueta:"Solo navegación básica.",texto:"Menús y enlaces, sin invitarlo a una acción concreta.",valor:2},
+          {letra:"C",etiqueta:"Contacto visible.",texto:"Chat, botones y formularios en las páginas clave.",valor:4},
+          {letra:"D",etiqueta:"Guía según su recorrido.",texto:"El sitio le ofrece el paso más relevante según lo que miró.",valor:5},
         ]
       },
     ]
@@ -101,42 +101,42 @@ export const ETAPAS_DATA = [
     preguntas:[
       {
         texto:"¿Qué tan fácil es contactar a su universidad?",
-        ayuda:"Desde cualquier dispositivo y por el canal que el aspirante prefiera. Considere también cuántos canales activos y gestionados tiene.",
+        ayuda:"Por el canal que prefiera el aspirante y desde el celular.",
         opciones:[
-          {letra:"A",texto:"Solo tenemos formulario web y teléfono, no siempre activos fuera del horario de oficina. El proceso no está pensado para quien llega desde el celular.",valor:1},
-          {letra:"B",texto:"Tenemos formulario, correo y algún canal adicional, pero no todos están activos de forma consistente ni son fáciles de encontrar desde redes sociales.",valor:2},
-          {letra:"C",texto:"Ofrecemos al menos tres canales activos y visibles (WhatsApp, formulario, teléfono o chat), con confirmación inmediata de que el mensaje fue recibido.",valor:4},
-          {letra:"D",texto:"El primer contacto es fluido desde cualquier canal o dispositivo. Todos los canales están integrados en un mismo sistema y tienen tiempos de respuesta garantizados.",valor:5},
+          {letra:"A",etiqueta:"Pocos canales, en horario de oficina.",texto:"Formulario y teléfono; incómodo desde el celular.",valor:1},
+          {letra:"B",etiqueta:"Varios canales, desparejos.",texto:"No todos responden siempre ni son fáciles de encontrar.",valor:2},
+          {letra:"C",etiqueta:"Tres o más canales activos.",texto:"WhatsApp, formulario, teléfono o chat, con confirmación de recepción.",valor:4},
+          {letra:"D",etiqueta:"Todo integrado.",texto:"Todos los canales en un mismo sistema, con tiempos garantizados.",valor:5},
         ]
       },
       {
         texto:"¿Cuánto tarda su universidad en responder una consulta?",
-        ayuda:"Desde que el aspirante consulta o deja sus datos, y si la respuesta llega por el mismo canal que usó.",
+        ayuda:"Desde que el aspirante escribe o deja sus datos.",
         opciones:[
-          {letra:"A",texto:"La respuesta puede tardar más de un día y depende de quién esté disponible. No hay protocolo de tiempos ni seguimiento de consultas sin respuesta.",valor:1},
-          {letra:"B",texto:"Intentamos responder el mismo día, pero los tiempos varían según el canal, la carga del equipo o el horario en que llegó la consulta.",valor:2},
-          {letra:"C",texto:"Tenemos tiempos máximos de respuesta definidos por canal (ej: menos de 2 horas por WhatsApp) y un protocolo que se cumple de forma consistente.",valor:4},
-          {letra:"D",texto:"La primera respuesta es inmediata o en minutos, con automatización que activa el contacto al instante y deriva a un asesor cuando la consulta lo requiere.",valor:5},
+          {letra:"A",etiqueta:"Sin tiempo definido.",texto:"Puede tardar más de un día, según quién esté.",valor:1},
+          {letra:"B",etiqueta:"El mismo día, si se puede.",texto:"Varía según el canal, la carga y el horario.",valor:2},
+          {letra:"C",etiqueta:"Menos de 2 horas, con protocolo.",texto:"Hay un tiempo máximo por canal y se cumple.",valor:4},
+          {letra:"D",etiqueta:"En minutos, automático.",texto:"Respuesta inmediata y un asesor sigue cuando hace falta.",valor:5},
         ]
       },
       {
         texto:"¿Qué tan buena es la primera respuesta que recibe el aspirante?",
-        ayuda:"Si es relevante, personalizada y motivadora según el programa consultado y el perfil del aspirante.",
+        ayuda:"Si responde lo que preguntó y lo invita a seguir.",
         opciones:[
-          {letra:"A",texto:"La respuesta es un mensaje genérico o un PDF con toda la oferta, sin importar qué preguntó el aspirante ni qué programa consultó.",valor:1},
-          {letra:"B",texto:"La respuesta intenta ser relevante, pero depende del criterio de quien responde. No hay guía ni plantilla por programa ni componente que genere entusiasmo.",valor:2},
-          {letra:"C",texto:"Contamos con plantillas de respuesta por programa que incluyen el programa consultado, un elemento motivacional y un paso siguiente concreto.",valor:4},
-          {letra:"D",texto:"La primera respuesta sale de forma automática, personalizada según el programa, el canal y lo que preguntó el aspirante, y un asesor la continúa con todo el contexto.",valor:5},
+          {letra:"A",etiqueta:"Genérica.",texto:"Un mensaje estándar o un PDF con toda la oferta.",valor:1},
+          {letra:"B",etiqueta:"Depende de quién responda.",texto:"Sin guía ni plantillas por programa.",valor:2},
+          {letra:"C",etiqueta:"Plantillas por programa.",texto:"Responde lo consultado y propone un paso siguiente.",valor:4},
+          {letra:"D",etiqueta:"Automática y personalizada.",texto:"Según programa y canal; un asesor continúa con el contexto.",valor:5},
         ]
       },
       {
         texto:"¿Cada primer contacto queda registrado para hacerle seguimiento?",
-        ayuda:"En un sistema que permita ver el historial y garantizar que nadie se pierda.",
+        ayuda:"En un sistema donde nadie se pierda.",
         opciones:[
-          {letra:"A",texto:"Los contactos llegan a distintos lugares (bandeja de correo, celular del asesor, planilla) y no hay un sistema centralizado ni forma de saber si alguien no fue respondido.",valor:1},
-          {letra:"B",texto:"Registramos contactos en alguna herramienta, pero el registro no es completo ni sistemático — depende de que cada asesor lo cargue manualmente.",valor:2},
-          {letra:"C",texto:"Contamos con un CRM o sistema centralizado donde se registra cada contacto con sus datos, el programa de interés, el canal de origen y el estado del seguimiento.",valor:4},
-          {letra:"D",texto:"Cada contacto se registra automáticamente con historial completo de interacciones, canal, programa y estado. Ningún aspirante puede perderse sin que el sistema genere una alerta.",valor:5},
+          {letra:"A",etiqueta:"Disperso.",texto:"Correo, celulares y planillas; no sabemos a quién falta responder.",valor:1},
+          {letra:"B",etiqueta:"Registro manual e incompleto.",texto:"Depende de que cada asesor lo cargue.",valor:2},
+          {letra:"C",etiqueta:"CRM centralizado.",texto:"Cada contacto con programa, canal de origen y estado.",valor:4},
+          {letra:"D",etiqueta:"Registro automático con alertas.",texto:"Historial completo; el sistema avisa si alguien queda sin atender.",valor:5},
         ]
       },
     ]
@@ -148,42 +148,42 @@ export const ETAPAS_DATA = [
     preguntas:[
       {
         texto:"Después del primer contacto, ¿hay una secuencia de seguimiento definida?",
-        ayuda:"Con cadencia, contenido y canales planificados, o si depende de la iniciativa de cada asesor.",
+        ayuda:"Cuántos contactos, cuándo, por qué canal y con qué contenido.",
         opciones:[
-          {letra:"A",texto:"No hay proceso definido. Si el aspirante no vuelve a escribir, no se lo contacta. El seguimiento depende de que el asesor se acuerde.",valor:1},
-          {letra:"B",texto:"Hay una práctica general de hacer uno o dos contactos adicionales, pero sin secuencia, sin contenido planificado y sin criterio de cuándo insistir o dejar de contactar.",valor:2},
-          {letra:"C",texto:"Contamos con una secuencia de seguimiento definida: se sabe cuántos contactos hacer, en qué momento, por qué canal y con qué contenido en cada paso.",valor:4},
-          {letra:"D",texto:"El seguimiento está automatizado y se adapta según el comportamiento del aspirante: si abrió un correo, visitó una página o no respondió, el sistema ajusta el próximo contacto.",valor:5},
+          {letra:"A",etiqueta:"No hay seguimiento.",texto:"Si no vuelve a escribir, no se lo contacta.",valor:1},
+          {letra:"B",etiqueta:"Uno o dos intentos sueltos.",texto:"Sin secuencia ni criterio de cuándo insistir.",valor:2},
+          {letra:"C",etiqueta:"Secuencia definida.",texto:"Se sabe qué contacto hacer, cuándo y por qué canal.",valor:4},
+          {letra:"D",etiqueta:"Automática y adaptable.",texto:"El próximo contacto cambia según lo que hizo el aspirante.",valor:5},
         ]
       },
       {
         texto:"¿Qué recibe el aspirante mientras decide?",
-        ayuda:"Información útil y progresiva que lo ayude a avanzar, o mensajes genéricos que no aportan nada nuevo.",
+        ayuda:"El contenido de los mensajes, no solo la cantidad.",
         opciones:[
-          {letra:"A",texto:"Recibe mensajes del tipo '¿pudiste revisar la información?' o 'las inscripciones están abiertas', sin contenido que lo ayude a decidir ni que reactive su interés.",valor:1},
-          {letra:"B",texto:"Recibe algo de información sobre el programa de interés, pero los mensajes son iguales para todos sin importar en qué momento del proceso están ni si ya se enfrió.",valor:2},
-          {letra:"C",texto:"Los mensajes incluyen contenido útil según el programa y la etapa del proceso: testimonios, fechas clave, becas y respuestas a dudas frecuentes. Es el mismo para todos los que consultaron ese programa.",valor:4},
-          {letra:"D",texto:"El contenido se adapta además al perfil y al comportamiento de cada aspirante: quien se enfrió recibe algo distinto de quien sigue activo, de forma automática.",valor:5},
+          {letra:"A",etiqueta:"Solo recordatorios.",texto:"\"¿Pudo ver la información?\" o \"Inscripciones abiertas\".",valor:1},
+          {letra:"B",etiqueta:"Lo mismo para todos.",texto:"Información del programa, igual para cualquier aspirante.",valor:2},
+          {letra:"C",etiqueta:"Contenido útil por programa.",texto:"Testimonios, fechas, becas y respuestas a dudas frecuentes.",valor:4},
+          {letra:"D",etiqueta:"Según su comportamiento.",texto:"Quien se enfrió recibe algo distinto de quien sigue activo.",valor:5},
         ]
       },
       {
         texto:"¿El acompañamiento cambia según el perfil del aspirante?",
-        ayuda:"Por ejemplo, si es distinto para un joven de primer ingreso, un adulto que trabaja o un profesional que busca un posgrado.",
+        ayuda:"Por ejemplo, alguien que termina el secundario y un adulto que trabaja.",
         opciones:[
-          {letra:"A",texto:"No. Todos los aspirantes reciben el mismo proceso y los mismos mensajes, sin importar su perfil, programa o situación personal.",valor:1},
-          {letra:"B",texto:"Los asesores intentan adaptar el tono según la conversación, pero por intuición propia. No hay materiales ni protocolos diferenciados por tipo de aspirante.",valor:2},
-          {letra:"C",texto:"Tenemos al menos dos perfiles de acompañamiento diferenciados — como ingreso directo vs adulto que trabaja — con mensajes y argumentos distintos para cada uno.",valor:4},
-          {letra:"D",texto:"El acompañamiento está segmentado por perfil, programa y momento del proceso, con rutas de comunicación distintas que se activan de forma automática.",valor:5},
+          {letra:"A",etiqueta:"Igual para todos.",texto:"Mismo proceso y mismos mensajes para cualquier perfil.",valor:1},
+          {letra:"B",etiqueta:"Según el asesor.",texto:"Cada uno adapta el tono por intuición.",valor:2},
+          {letra:"C",etiqueta:"Dos o más perfiles definidos.",texto:"Con mensajes y argumentos distintos para cada uno.",valor:4},
+          {letra:"D",etiqueta:"Rutas automáticas por perfil.",texto:"Según perfil, programa y momento del proceso.",valor:5},
         ]
       },
       {
         texto:"¿Los asesores tienen lo necesario para hacer bien su trabajo?",
-        ayuda:"Herramientas, métricas y supervisión, y algún mecanismo para detectar y reactivar a quienes dejan de responder.",
+        ayuda:"Herramientas, metas y forma de detectar a quien se enfría.",
         opciones:[
-          {letra:"A",texto:"Cada asesor trabaja a su manera, sin herramientas compartidas, sin métricas y sin supervisión. Si un aspirante se enfría, simplemente desaparece sin que nadie lo note.",valor:1},
-          {letra:"B",texto:"Hay reuniones periódicas y alguna herramienta básica, pero no hay métricas claras por asesor ni un proceso para detectar y reactivar aspirantes que dejan de responder.",valor:2},
-          {letra:"C",texto:"Los asesores trabajan con un sistema centralizado y metas definidas. Hay un protocolo de reactivación para aspirantes inactivos con contenido diferente al habitual.",valor:4},
-          {letra:"D",texto:"El equipo opera con dashboards en tiempo real, metas individuales y grupales, y un sistema que detecta automáticamente cuando un aspirante se enfría y activa la reactivación.",valor:5},
+          {letra:"A",etiqueta:"Cada uno a su manera.",texto:"Sin herramientas comunes, metas ni supervisión.",valor:1},
+          {letra:"B",etiqueta:"Reuniones y poco más.",texto:"Sin métricas por asesor ni forma de reactivar a quien se enfría.",valor:2},
+          {letra:"C",etiqueta:"Sistema y metas.",texto:"Hay un protocolo para reactivar aspirantes inactivos.",valor:4},
+          {letra:"D",etiqueta:"Tableros y alertas en tiempo real.",texto:"El sistema detecta quién se enfría y activa la reactivación.",valor:5},
         ]
       },
     ]
@@ -195,42 +195,42 @@ export const ETAPAS_DATA = [
     preguntas:[
       {
         texto:"¿El aspirante puede conocer costos y beneficios sin tener que preguntar?",
-        ayuda:"El costo del programa, las formas de pago, las becas y los diferenciales frente a otras instituciones, sin preguntar y esperar.",
+        ayuda:"Arancel, cuotas, becas y por qué elegirlos.",
         opciones:[
-          {letra:"A",texto:"El costo no está publicado y los diferenciales no están sistematizados. Para saber cualquiera de las dos cosas, el aspirante tiene que consultar y esperar días.",valor:1},
-          {letra:"B",texto:"El costo general está disponible, pero las condiciones de pago, becas y los argumentos frente a la competencia requieren una consulta adicional y no siempre se responden con claridad.",valor:2},
-          {letra:"C",texto:"El costo, las cuotas, las becas y los principales diferenciales frente a otras opciones están publicados de forma clara. El aspirante puede comparar sin necesidad de contactar.",valor:4},
-          {letra:"D",texto:"El aspirante puede simular costos, calcular cuotas y conocer los diferenciales con análisis actualizado de la competencia, de forma autónoma y desde cualquier dispositivo.",valor:5},
+          {letra:"A",etiqueta:"Hay que consultar.",texto:"Costos y diferenciales no publicados; la respuesta tarda días.",valor:1},
+          {letra:"B",etiqueta:"Solo el costo general.",texto:"Cuotas, becas y diferenciales requieren consultar.",valor:2},
+          {letra:"C",etiqueta:"Todo publicado.",texto:"Costos, cuotas, becas y diferenciales, claros y comparables.",valor:4},
+          {letra:"D",etiqueta:"Simulador propio.",texto:"Calcula cuotas y becas por su cuenta, desde cualquier dispositivo.",valor:5},
         ]
       },
       {
         texto:"¿Hay algo que reduzca el miedo del aspirante a equivocarse?",
-        ayuda:"Mecanismos concretos como garantías, pruebas gratuitas, opciones de cambio o testimonios de perfiles similares.",
+        ayuda:"Clases de prueba, cambio de carrera o testimonios de perfiles similares.",
         opciones:[
-          {letra:"A",texto:"No hay ningún mecanismo formal. El aspirante decide asumiendo toda la incertidumbre y el riesgo por su cuenta.",valor:1},
-          {letra:"B",texto:"Se mencionan informalmente algunas flexibilidades o garantías, pero no están comunicadas de forma clara ni forman parte del proceso de cierre.",valor:2},
-          {letra:"C",texto:"Contamos con mecanismos concretos y comunicados: clases de prueba, período de adaptación, opciones de cambio de programa o testimonios de egresados con perfiles similares.",valor:4},
-          {letra:"D",texto:"La reducción del riesgo es parte activa de la estrategia de cierre: cada perfil recibe argumentos y garantías específicas respaldados por datos reales de experiencia de estudiantes anteriores.",valor:5},
+          {letra:"A",etiqueta:"Nada.",texto:"El aspirante asume solo toda la incertidumbre.",valor:1},
+          {letra:"B",etiqueta:"Solo de palabra.",texto:"Algunas flexibilidades, pero no se comunican con claridad.",valor:2},
+          {letra:"C",etiqueta:"Mecanismos concretos y comunicados.",texto:"Clase de prueba, período de adaptación o cambio de programa.",valor:4},
+          {letra:"D",etiqueta:"Garantías por perfil, con datos.",texto:"Argumentos respaldados por la experiencia de estudiantes similares.",valor:5},
         ]
       },
       {
         texto:"Cuando el aspirante decide inscribirse, ¿sabe exactamente qué hacer?",
-        ayuda:"Qué pasos seguir, en qué plazo y con qué documentos, o si tiene que preguntarlo.",
+        ayuda:"Pasos, documentos, plazos y fecha de inicio.",
         opciones:[
-          {letra:"A",texto:"El proceso siguiente no está claro. El aspirante tiene que preguntar qué hacer después de decidir y las respuestas no siempre son consistentes entre asesores.",valor:1},
-          {letra:"B",texto:"El asesor explica los pasos en la conversación, pero no hay un material de apoyo claro que el aspirante pueda consultar después por su cuenta.",valor:2},
-          {letra:"C",texto:"Existe un resumen claro del proceso de inscripción — pasos, documentos, plazos, fecha de inicio — que se comparte en el momento en que el aspirante manifiesta su decisión.",valor:4},
-          {letra:"D",texto:"El aspirante recibe automáticamente un resumen personalizado del proceso según su programa y modalidad, con recordatorios de cada paso hasta completar la inscripción.",valor:5},
+          {letra:"A",etiqueta:"No está claro.",texto:"Tiene que preguntar y las respuestas varían según el asesor.",valor:1},
+          {letra:"B",etiqueta:"Se lo explican, sin material.",texto:"El asesor cuenta los pasos, pero no queda nada escrito.",valor:2},
+          {letra:"C",etiqueta:"Resumen escrito.",texto:"Pasos, documentos y plazos apenas manifiesta su decisión.",valor:4},
+          {letra:"D",etiqueta:"Guía personalizada con recordatorios.",texto:"Según su programa, con aviso de cada paso hasta terminar.",valor:5},
         ]
       },
       {
         texto:"¿Hay un proceso distinto para quien decide hoy y para quien necesita más tiempo?",
-        ayuda:"Por ejemplo, para quien está listo para inscribirse ahora y para quien prefiere hacerlo en el próximo ciclo.",
+        ayuda:"Quien no se inscribe ahora, pero podría hacerlo el próximo ciclo.",
         opciones:[
-          {letra:"A",texto:"Si el aspirante no se inscribe en el momento, se lo da por perdido. No hay proceso para mantener el vínculo con quienes difieren su decisión.",valor:1},
-          {letra:"B",texto:"Algunos asesores hacen seguimiento esporádico de aspirantes que no se inscribieron, pero sin proceso sistematizado ni criterio de cuándo y cómo retomarlos.",valor:2},
-          {letra:"C",texto:"Tenemos un proceso para quienes difieren la decisión: el equipo los clasifica, mantiene un contacto espaciado con contenido útil y los vuelve a contactar antes del próximo período.",valor:4},
-          {letra:"D",texto:"Los aspirantes diferidos entran a una ruta automática de largo plazo, con mensajes según su momento, que los reactiva antes de cada ciclo retomando la conversación donde quedó.",valor:5},
+          {letra:"A",etiqueta:"Se lo da por perdido.",texto:"No se mantiene el vínculo.",valor:1},
+          {letra:"B",etiqueta:"Seguimiento esporádico.",texto:"Algunos asesores lo retoman, sin criterio común.",valor:2},
+          {letra:"C",etiqueta:"Proceso manual definido.",texto:"El equipo los clasifica y los recontacta antes del próximo ciclo.",valor:4},
+          {letra:"D",etiqueta:"Ruta automática de largo plazo.",texto:"Mensajes según su momento y reactivación antes de cada ciclo.",valor:5},
         ]
       },
     ]
@@ -242,42 +242,42 @@ export const ETAPAS_DATA = [
     preguntas:[
       {
         texto:"¿Se puede completar la inscripción sin trámites presenciales?",
-        ayuda:"Cuántos pasos requiere, qué tan digitalizados están y si se puede hacer todo desde el celular o la computadora, sin ir en persona ni imprimir documentos.",
+        ayuda:"Desde el celular, sin imprimir ni ir a la sede.",
         opciones:[
-          {letra:"A",texto:"El proceso tiene muchos pasos, requiere documentación extensa y al menos una instancia presencial sin alternativa digital.",valor:1},
-          {letra:"B",texto:"La mayoría es digital, pero hay al menos un paso que requiere presencia física, impresión de documentos o validación manual que no puede hacerse de otra forma.",valor:2},
-          {letra:"C",texto:"Todo el trámite se puede hacer en línea, también desde el celular. Lo presencial queda solo para casos excepcionales.",valor:4},
-          {letra:"D",texto:"Inscribirse es 100% digital y sin esperas: carga de documentos en línea, validación automática y confirmación inmediata de cada paso.",valor:5},
+          {letra:"A",etiqueta:"Presencial y extensa.",texto:"Muchos pasos y documentos, con al menos una visita obligatoria.",valor:1},
+          {letra:"B",etiqueta:"Casi digital.",texto:"Queda al menos un paso presencial o una validación manual.",valor:2},
+          {letra:"C",etiqueta:"Todo en línea.",texto:"También desde el celular; lo presencial es la excepción.",valor:4},
+          {letra:"D",etiqueta:"Digital y sin esperas.",texto:"Validación automática y confirmación inmediata de cada paso.",valor:5},
         ]
       },
       {
         texto:"Durante la inscripción, ¿el aspirante sabe en qué punto está?",
-        ayuda:"En qué paso está, qué le falta completar, cuánto tiempo tiene y qué pasó con su trámite una vez enviado.",
+        ayuda:"Qué hizo, qué le falta y cuándo vence cada plazo.",
         opciones:[
-          {letra:"A",texto:"No hay visibilidad del estado. El aspirante tiene que llamar o escribir para saber si su trámite avanzó o si falta algo.",valor:1},
-          {letra:"B",texto:"Recibe alguna notificación por correo, pero no hay una vista clara del estado del proceso ni alertas cuando hay algo pendiente o cuando los plazos se acercan.",valor:2},
-          {letra:"C",texto:"El aspirante puede consultar el estado de su trámite y recibe un aviso cuando completa un paso o le falta algo. Los tiempos de procesamiento están comunicados.",valor:4},
-          {letra:"D",texto:"El aspirante ve en tiempo real en qué paso está y qué le falta, y el sistema le recuerda automáticamente cada pendiente antes de que venza el plazo.",valor:5},
+          {letra:"A",etiqueta:"No lo sabe.",texto:"Tiene que llamar o escribir para saber si avanzó.",valor:1},
+          {letra:"B",etiqueta:"Algún correo suelto.",texto:"Sin una vista del estado ni aviso de pendientes.",valor:2},
+          {letra:"C",etiqueta:"Puede consultar su estado.",texto:"Y recibe un aviso cuando completa un paso o le falta algo.",valor:4},
+          {letra:"D",etiqueta:"Estado en tiempo real.",texto:"Con recordatorios automáticos antes de cada vencimiento.",valor:5},
         ]
       },
       {
         texto:"Si surge un problema en la inscripción, ¿el aspirante tiene a quién recurrir?",
-        ayuda:"Un error, un documento rechazado o una duda de último momento, y si la ayuda llega de forma rápida y efectiva.",
+        ayuda:"Durante el trámite de inscripción.",
         opciones:[
-          {letra:"A",texto:"No hay canal específico de soporte. El aspirante tiene que llamar al número general, esperar que lo deriven, y el equipo no siempre tiene la información para resolver.",valor:1},
-          {letra:"B",texto:"Hay un canal de soporte disponible, pero los tiempos son lentos o el equipo no siempre puede resolver los problemas más frecuentes del proceso.",valor:2},
-          {letra:"C",texto:"Contamos con un canal dedicado para inscripciones, con tiempos de respuesta rápidos y personas capacitadas para resolver los problemas más frecuentes.",valor:4},
-          {letra:"D",texto:"El soporte es proactivo: el sistema detecta cuando un aspirante lleva tiempo sin avanzar y lo contacta antes de que abandone. Ningún aspirante queda trabado sin intervención.",valor:5},
+          {letra:"A",etiqueta:"Al número general.",texto:"Lo derivan y no siempre pueden resolverlo.",valor:1},
+          {letra:"B",etiqueta:"Hay soporte, pero lento.",texto:"No siempre resuelve los problemas frecuentes.",valor:2},
+          {letra:"C",etiqueta:"Canal dedicado y rápido.",texto:"Con personas capacitadas para inscripciones.",valor:4},
+          {letra:"D",etiqueta:"Soporte proactivo.",texto:"Se detecta a quien se trabó y se lo contacta antes de que abandone.",valor:5},
         ]
       },
       {
         texto:"¿La inscripción hace sentir al aspirante que está tomando una gran decisión?",
-        ayuda:"Si su universidad hace algo para que sienta que es la mejor decisión de su vida, o si el trámite es puramente administrativo y burocrático.",
+        ayuda:"Más allá del trámite: si genera entusiasmo por lo que viene.",
         opciones:[
-          {letra:"A",texto:"El proceso es 100% administrativo. No hay ningún mensaje, gesto ni contenido que refuerce la decisión o genere anticipación positiva por lo que viene.",valor:1},
-          {letra:"B",texto:"Hay algún mensaje de bienvenida al inicio, pero desaparece rápido y el resto es puro trámite sin elementos que sostengan el entusiasmo.",valor:2},
-          {letra:"C",texto:"Durante el proceso incluimos al menos un elemento que refuerza la decisión: un mensaje motivador, un testimonio o una vista previa de lo que viene después.",valor:4},
-          {letra:"D",texto:"La experiencia de inscripción está diseñada para ser eficiente y emocionalmente positiva: cada paso celebra el avance y construye anticipación hacia el inicio.",valor:5},
+          {letra:"A",etiqueta:"Puro trámite.",texto:"Nada refuerza la decisión.",valor:1},
+          {letra:"B",etiqueta:"Una bienvenida y nada más.",texto:"El entusiasmo se pierde en el resto del trámite.",valor:2},
+          {letra:"C",etiqueta:"Algún refuerzo en el camino.",texto:"Un mensaje, un testimonio o un adelanto de lo que viene.",valor:4},
+          {letra:"D",etiqueta:"Diseñada para entusiasmar.",texto:"Cada paso celebra el avance y anticipa el inicio.",valor:5},
         ]
       },
     ]
@@ -289,42 +289,42 @@ export const ETAPAS_DATA = [
     preguntas:[
       {
         texto:"¿Qué pasa en las horas y días después de confirmar la inscripción?",
-        ayuda:"Si su universidad celebra la decisión y genera anticipación por lo que viene.",
+        ayuda:"Entre la inscripción y el primer día de clases.",
         opciones:[
-          {letra:"A",texto:"Después de confirmar la inscripción hay silencio. El estudiante recibe quizás un correo de confirmación técnico y nada más hasta que empieza el ciclo.",valor:1},
-          {letra:"B",texto:"Enviamos un correo de bienvenida genérico, pero no hay secuencia planificada ni ningún gesto que refuerce que tomaron la mejor decisión.",valor:2},
-          {letra:"C",texto:"Contamos con una comunicación de bienvenida personalizada por programa que se envía de forma inmediata, celebra la decisión y anticipa los próximos pasos con entusiasmo.",valor:4},
-          {letra:"D",texto:"La bienvenida es una experiencia diseñada: mensaje personalizado, presentación del equipo docente, acceso anticipado a la plataforma y un contacto humano que refuerza el vínculo antes del primer día.",valor:5},
+          {letra:"A",etiqueta:"Silencio.",texto:"Un correo técnico de confirmación y nada más.",valor:1},
+          {letra:"B",etiqueta:"Bienvenida genérica.",texto:"Un correo igual para todos, sin seguimiento.",valor:2},
+          {letra:"C",etiqueta:"Bienvenida personalizada.",texto:"Inmediata, por programa, celebrando la decisión.",valor:4},
+          {letra:"D",etiqueta:"Experiencia de bienvenida.",texto:"Contacto humano, docentes presentados y acceso anticipado a la plataforma.",valor:5},
         ]
       },
       {
         texto:"Antes del primer día, ¿el estudiante recibe todo lo que necesita saber?",
-        ayuda:"Información clara, progresiva y útil entre la inscripción y el inicio de clases, para arrancar con confianza.",
+        ayuda:"Horarios, accesos, materiales y dudas frecuentes.",
         opciones:[
-          {letra:"A",texto:"No hay comunicación estructurada pre-inicio. El estudiante tiene que buscar por su cuenta los horarios, los accesos a plataformas o los materiales necesarios.",valor:1},
-          {letra:"B",texto:"Enviamos uno o dos correos generales antes del inicio, pero sin secuencia planificada ni contenido diferenciado por programa, modalidad o perfil del estudiante.",valor:2},
-          {letra:"C",texto:"Tenemos una secuencia de comunicaciones pre-inicio con contenido progresivo: accesos a la plataforma, presentación de docentes, horarios confirmados y respuestas a las dudas más frecuentes.",valor:4},
-          {letra:"D",texto:"La comunicación pre-inicio está automatizada y personalizada por programa, modalidad y perfil, y se ajusta según lo que cada estudiante ya abrió o completó.",valor:5},
+          {letra:"A",etiqueta:"Tiene que buscarlo solo.",texto:"No hay comunicación previa al inicio.",valor:1},
+          {letra:"B",etiqueta:"Uno o dos correos generales.",texto:"Iguales para todos los programas.",valor:2},
+          {letra:"C",etiqueta:"Secuencia planificada.",texto:"Contenido progresivo por programa y modalidad.",valor:4},
+          {letra:"D",etiqueta:"Automática y personalizada.",texto:"Se ajusta a lo que cada estudiante ya abrió o completó.",valor:5},
         ]
       },
       {
         texto:"¿Detecta a los inscriptos que se están enfriando antes de que empiece el ciclo?",
-        ayuda:"Algún mecanismo para identificarlos y actuar antes de que desaparezcan.",
+        ayuda:"Quienes no abren mensajes ni entran a la plataforma.",
         opciones:[
-          {letra:"A",texto:"No. Solo nos enteramos de que alguien no va a empezar cuando no aparece el primer día. No hay sistema de alerta ni seguimiento pre-inicio.",valor:1},
-          {letra:"B",texto:"Algunos asesores notan cuando un inscripto no responde, pero no hay un proceso sistemático para identificar señales de riesgo ni un protocolo de acción.",valor:2},
-          {letra:"C",texto:"Monitoreamos indicadores básicos de compromiso pre-inicio (apertura de correos, acceso a plataforma) y tenemos un protocolo para contactar a quienes no muestran actividad.",valor:4},
-          {letra:"D",texto:"Contamos con un sistema automatizado que detecta señales de enfriamiento y activa alertas para que un asesor intervenga con argumentos preparados antes de que el estudiante desaparezca.",valor:5},
+          {letra:"A",etiqueta:"No.",texto:"Nos enteramos cuando no aparece el primer día.",valor:1},
+          {letra:"B",etiqueta:"Solo si un asesor lo nota.",texto:"Sin señales definidas ni protocolo de acción.",valor:2},
+          {letra:"C",etiqueta:"Indicadores y protocolo.",texto:"Se contacta a quien no muestra actividad.",valor:4},
+          {letra:"D",etiqueta:"Alertas automáticas.",texto:"Un asesor interviene apenas aparecen señales de riesgo.",valor:5},
         ]
       },
       {
         texto:"¿El estudiante llega al primer día preparado y con ganas de empezar?",
-        ayuda:"Si recibe todo lo que necesita, de forma práctica, clara y personalizada, para empezar sin sorpresas ni confusión.",
+        ayuda:"Sabe dónde ir, cómo entrar a los sistemas y qué traer.",
         opciones:[
-          {letra:"A",texto:"El estudiante tiene que descubrir por su cuenta cómo llegar, dónde ir, cómo acceder a los sistemas y qué traer. No hay preparación práctica previa al inicio.",valor:1},
-          {letra:"B",texto:"Se comparte alguna información antes del inicio (horarios, link o aula), pero de forma parcial y sin anticipar las dudas más frecuentes del primer día.",valor:2},
-          {letra:"C",texto:"Antes del inicio el estudiante ya probó sus accesos, sabe dónde y cuándo es su primera clase, y tiene un canal activo para resolver dudas de último momento.",valor:4},
-          {letra:"D",texto:"El primer día está acompañado de punta a punta: simulacro de acceso, video de bienvenida del docente, checklist personalizado y un contacto proactivo la noche anterior.",valor:5},
+          {letra:"A",etiqueta:"Lo descubre solo.",texto:"No hay preparación práctica para el primer día.",valor:1},
+          {letra:"B",etiqueta:"Información parcial.",texto:"Horario y aula, sin anticipar las dudas típicas.",valor:2},
+          {letra:"C",etiqueta:"Preparado.",texto:"Probó sus accesos, sabe dónde ir y tiene a quién preguntar.",valor:4},
+          {letra:"D",etiqueta:"Acompañado de punta a punta.",texto:"Simulacro de acceso, video del docente y contacto la noche anterior.",valor:5},
         ]
       },
     ]

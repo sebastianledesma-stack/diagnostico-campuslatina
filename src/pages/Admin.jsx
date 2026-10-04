@@ -259,7 +259,7 @@ function Metricas({ rows: todasLasFilas }) {
 // ── CSV ──────────────────────────────────────────────────
 function exportarCSV(rows) {
   const preguntas = ETAPAS_DATA.flatMap((e) => e.preguntas.map((_, i) => `${e.id}_${i}`));
-  const headers = ["id", "fecha", "estado", "etapas_listas", "universidad", "pais", "alumnos_hoy", "alumnos_meta_3_anios", "target", "nombre", "cargo", "email", "whatsapp", "colegas", "score_global", "nivel",
+  const headers = ["id", "fecha", "estado", "etapas_listas", "universidad", "pais", "alumnos_hoy", "alumnos_meta_3a5_anios", "target", "nombre", "cargo", "email", "whatsapp", "colegas", "score_global", "nivel",
     ...ETAPAS_DATA.map((e) => `score_${e.id}`), "mail_enviado", "notif_enviada", ...preguntas];
   const cell = (v) => {
     const s = v == null ? "" : String(v);
@@ -344,7 +344,7 @@ function Detalle({ d, onClose }) {
             <span style={mono(8)}>Calificación</span>
             <div style={{ fontSize: 14, marginTop: 8, lineHeight: 1.8 }}>
               🎓 Alumnos hoy: <strong>{textoRango(d.alumnos_actuales)}</strong><br />
-              📈 Meta a 3 años: <strong>{textoRango(d.alumnos_meta)}</strong><br />
+              📈 Meta a 3–5 años: <strong>{textoRango(d.alumnos_meta)}</strong><br />
               🎯 {d.target ? <strong>Target: se le ofrece la reunión de 45 min</strong> : d.alumnos_actuales ? "No target: se le ofrece escribir por mail" : "Sin datos (diagnóstico anterior a la calificación)"}
             </div>
             {(d.colaboradores || []).length > 0 && (
@@ -390,7 +390,7 @@ function Detalle({ d, onClose }) {
                       <div style={{ fontSize: 12, color: MUTED, lineHeight: 1.5 }}>{p.texto}</div>
                       <div style={{ display: "flex", gap: 8, marginTop: 6, alignItems: "flex-start" }}>
                         <span style={{ flexShrink: 0, width: 22, height: 22, borderRadius: "50%", background: op ? getNivel(op.valor).color : SLATE, color: WHITE, fontFamily: "'Space Mono',monospace", fontSize: 10, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{letra || "?"}</span>
-                        <span style={{ fontSize: 13, color: NAVY, lineHeight: 1.5 }}>{op ? op.texto : "Sin respuesta"}</span>
+                        <span style={{ fontSize: 13, color: NAVY, lineHeight: 1.5 }}>{op ? <><strong>{op.etiqueta}</strong> {op.texto}</> : "Sin respuesta"}</span>
                       </div>
                     </div>
                   );
