@@ -4,6 +4,8 @@
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function pedir(url, { method = "GET", body, intentos = 3 } = {}) {
+  // Sin clave el pedido nunca puede funcionar: mejor un error claro que un "no encontrado".
+  if (/\/api\/d\/(undefined|null)(\/|$)/.test(url)) throw Object.assign(new Error("Perdimos el link del diagnóstico. Recargue la página."), { status: 400 });
   let ultimo;
   for (let i = 1; i <= intentos; i++) {
     try {

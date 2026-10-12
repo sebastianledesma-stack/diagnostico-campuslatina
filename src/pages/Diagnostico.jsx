@@ -60,6 +60,8 @@ function RadarChart({scores}){
 
 // ── WELCOME ──────────────────────────────────────────────
 function Welcome({onStart}){
+  const [enCurso,setEnCurso]=useState(null);
+  useEffect(()=>{try{setEnCurso(JSON.parse(localStorage.getItem("diag-en-curso")||"null"));}catch{/* nada que retomar */}},[]);
   // Responsive con CSS (clases wl-* en index.html), no con JavaScript: así el HTML prerenderizado
   // es uno solo para celular y escritorio (sin contenido duplicado para buscadores).
   // Precarga el selector de teléfono (pesado) mientras se lee la bienvenida.
@@ -92,6 +94,12 @@ function Welcome({onStart}){
             En 10 minutos, descubra en qué momento su universidad pierde aspirantes — desde la primera búsqueda en Google hasta el primer día de clases — y qué resolver primero.
           </p>
         </div>
+        {enCurso?.clave&&(
+          <a href={`/d/${enCurso.clave}`} style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,maxWidth:420,minHeight:TOUCH,marginBottom:14,padding:"10px 16px",borderRadius:12,background:"rgba(255,255,255,.08)",border:"1px solid rgba(0,200,150,.4)",color:WHITE,textDecoration:"none",fontSize:15}}>
+            <span>Tiene un diagnóstico en curso{enCurso.universidad?<> de <strong>{enCurso.universidad}</strong></>:null}</span>
+            <span style={{color:EMERALD,fontWeight:700,whiteSpace:"nowrap"}}>Continuar →</span>
+          </a>
+        )}
         <div className="wl-cta">
           <button type="button" onClick={onStart} style={{...btn,marginBottom:32}}>Descubrir dónde se pierden inscriptos{"\u00A0"}→</button>
         </div>
@@ -973,7 +981,11 @@ function Report({registroData,respuestas,envio}){
 // "/"           bienvenida → formulario → crea el diagnóstico y pasa a /d/<clave>
 // "/d/<clave>"  tablero de 7 etapas → cada etapa se guarda al terminarla → informe con las 7
 export default function Diagnostico(){
-  const {clave}=useParams();
+  const {clave:claveUrl}=useParams();
+  // La clave sale del link; si el navegador vuelve a "/" (botón Atrás) con un diagnóstico abierto,
+  // se conserva y se restaura la URL. Antes, todo lo que se guardaba iba a un diagnóstico "inexistente".
+  const [claveActual,setClaveActual]=useState(claveUrl||null);
+  const clave=claveUrl||claveActual;
   const navigate=useNavigate();
   const [params]=useSearchParams();
   const [diag,setDiag]=useState(null);           // vista del servidor (respuestas guardadas, quién respondió)
@@ -1006,6 +1018,17 @@ export default function Diagnostico(){
     }catch(err){setEstado(err.status===404?"no-encontrado":"error");}
   },[clave]);
   useEffect(()=>{cargar();},[cargar]);
+  useEffect(()=>{if(claveUrl&&claveUrl!==claveActual)setClaveActual(claveUrl);},[claveUrl,claveActual]);
+  useEffect(()=>{
+    if(!claveUrl&&claveActual&&!["welcome","register"].includes(estado))navigate(`/d/${claveActual}`,{replace:true});
+  },[claveUrl,claveActual,estado,navigate]);
+  // Recordar el diagnóstico en curso de este navegador, para ofrecer retomarlo desde la portada.
+  useEffect(()=>{
+    try{
+      if(clave&&diag?.estado==="en_curso")localStorage.setItem("diag-en-curso",JSON.stringify({clave,universidad:diag.universidad}));
+      if(clave&&diag?.estado==="completo"){const g=JSON.parse(localStorage.getItem("diag-en-curso")||"null");if(g?.clave===clave)localStorage.removeItem("diag-en-curso");}
+    }catch{/* sin almacenamiento: no se ofrece retomar */}
+  },[clave,diag?.estado,diag?.universidad]);
 
   // El nombre de quien responde: el del formulario, el de la invitación o el que escriba.
   useEffect(()=>{
@@ -1024,6 +1047,7 @@ export default function Diagnostico(){
     guardarQuien(d.clave,form.nombre);
     setQuien(form.nombre);
     setDiag(d);
+    setClaveActual(d.clave);
     setEstado("tablero");
     navigate(`/d/${d.clave}`);
   };
@@ -1071,7 +1095,7 @@ export default function Diagnostico(){
       if(prox){setAviso(`Etapa ${e.num} guardada.`);setPos({etapa:prox.num-1,pregunta:0,showIntro:true});}
       else{setAviso(`¡Listo! Sus etapas quedaron guardadas.`);setEstado("tablero");}
     }catch(err){
-      setErrorGuardar(err.status===409?"Este diagnóstico ya se completó.":"No pudimos guardar la etapa. Revise su conexión y vuelva a intentar: sus respuestas no se perdieron.");
+      setErrorGuardar(err.status===409?"Este diagnóstico ya se completó.":err.status===404||err.status===400?"No encontramos este diagnóstico. Ábralo desde el link del mail y vuelva a responder esta etapa.":"No pudimos guardar la etapa. Revise su conexión y vuelva a intentar: sus respuestas no se perdieron.");
       if(err.status===409)cargar();
     }finally{setGuardando(false);}
   };
