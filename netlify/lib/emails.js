@@ -1,8 +1,8 @@
 // Templates HTML de los mails (tablas + estilos inline para compatibilidad con clientes de correo).
 import { NAVY, NAVY_DK, EMERALD, SLATE, CREAM, EMERALD_TXT, SLATE_TXT, MUTED, nivelDarkColor } from "../../src/theme.js";
 import { ETAPAS_DATA } from "../../src/data/etapas.js";
-import { getNivel, etapasCriticas, topRecomendaciones, fmt1 } from "../../src/lib/scoring.js";
-import { AUTORIDAD } from "../../src/data/textos.js";
+import { getNivel, etapasCriticas, topRecomendaciones, sinAcciones as todoEnD, fmt1 } from "../../src/lib/scoring.js";
+import { AUTORIDAD, VALIDAR } from "../../src/data/textos.js";
 import { textoRango } from "../../src/data/calificacion.js";
 
 const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -42,6 +42,10 @@ function filaEtapa(e) {
 // Botón final del informe: reunión de 45 min si la universidad es target; si no, contacto por mail.
 export function ctaInforme(d, { contactoEmail, agendaUrl } = {}) {
   const asunto = (t) => encodeURIComponent(`${t} — ${d.universidad}`);
+  if (d.target && todoEnD(d.respuestas)) {
+    const href = agendaUrl || (contactoEmail ? `mailto:${contactoEmail}?subject=${asunto("Quiero comparar nuestros números")}` : null);
+    return { titulo: "Validemos su resultado con datos", texto: VALIDAR.reunion, boton: "Agendar la reunión →", href };
+  }
   if (d.target) {
     const href = agendaUrl || (contactoEmail ? `mailto:${contactoEmail}?subject=${asunto("Quiero agendar la reunión de 45 minutos")}` : null);
     return { titulo: "Revisemos su diagnóstico en 45 minutos", texto: "Una reunión por videollamada para recorrer sus resultados y definir por dónde empezar. Sin compromiso.", boton: "Agendar la reunión →", href };
@@ -56,7 +60,8 @@ export function mailInforme(d, { contactoEmail, agendaUrl } = {}) {
   const top = topRecomendaciones(d.scores || {}, 3, d.respuestas);
   // Si ya tiene cubiertas las acciones de arranque, no hay "3 acciones": se dice en una línea.
   const accionesTitulo = top.length === 1 ? "La acción para empezar" : `Las ${top.length} acciones para empezar`;
-  const sinAcciones = "Su proceso ya tiene las bases en las 7 etapas: el próximo salto es automatizar y medir.";
+  // Todo en D: no hay acciones; se propone validar con números reales.
+  const sinAcciones = `${VALIDAR.titulo}. ${VALIDAR.texto}`;
   const nombre = String(d.nombre || "").trim().split(/\s+/)[0];
   const critica = etapasCriticas(d.scores || {})[0];
   const subject = `${d.universidad}: dónde se están perdiendo inscriptos`;
@@ -80,7 +85,7 @@ export function mailInforme(d, { contactoEmail, agendaUrl } = {}) {
 
 <tr><td class="px" style="padding:28px 36px 8px;">
   <p style="font-size:15px;line-height:1.65;margin:0 0 12px;">Hola ${esc(nombre)},</p>
-  <p style="font-size:15px;line-height:1.65;margin:0 0 12px;">Gracias por completar el diagnóstico. <strong>El momento donde más inscriptos se pierden es ${esc(critica.name)}</strong> <span style="color:${MUTED};">(${esc(critica.pregunta)})</span>.</p>
+  <p style="font-size:15px;line-height:1.65;margin:0 0 12px;">Gracias por completar el diagnóstico. ${todoEnD(d.respuestas) ? "<strong>Las 7 etapas quedaron en el nivel más alto que mide el diagnóstico.</strong>" : `<strong>El momento donde más inscriptos se pierden es ${esc(critica.name)}</strong> <span style="color:${MUTED};">(${esc(critica.pregunta)})</span>.`}</p>
   <p style="font-size:15px;line-height:1.65;margin:0 0 12px;">El puntaje global es <strong>${f1(d.score_global)} de 5</strong>, nivel <strong style="color:${nivel.color};">${nivel.label}</strong>. ${top.length ? `Abajo ${top.length === 1 ? "está la acción" : `están las ${top.length} acciones`} para empezar.` : esc(sinAcciones)}</p>
   <p style="font-size:15px;line-height:1.65;margin:0;"><strong>El informe completo va adjunto en PDF</strong>, con el análisis de cada etapa y el plan de acción, listo para compartir con el equipo directivo.</p>
 </td></tr>
@@ -91,7 +96,8 @@ export function mailInforme(d, { contactoEmail, agendaUrl } = {}) {
 </td></tr>
 
 <tr><td class="px" style="padding:24px 36px 8px;">
-  ${top.length ? `<div style="font-family:${MONO};font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:${SLATE_TXT};margin-bottom:10px;">${accionesTitulo}</div>` : ""}
+  ${top.length ? `<div style="font-family:${MONO};font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:${SLATE_TXT};margin-bottom:10px;">${accionesTitulo}</div>` : `<div style="font-family:${MONO};font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:${SLATE_TXT};margin-bottom:8px;">Tres números para validarlo</div>
+  <ol style="margin:0 0 8px;padding-left:20px;font-size:14px;line-height:1.7;color:${NAVY};">${VALIDAR.metricas.map((m) => `<li>${esc(m)}</li>`).join("")}</ol>`}
   ${top.map(({ etapa, rec }, i) => `
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px;background:${CREAM};border-radius:10px;"><tr>
     <td style="width:34px;vertical-align:top;padding:14px 0 14px 14px;font-family:${SERIF};font-size:22px;color:${EMERALD_TXT};line-height:1;">${i + 1}</td>
@@ -115,13 +121,13 @@ export function mailInforme(d, { contactoEmail, agendaUrl } = {}) {
     `Hola ${nombre},`,
     ``,
     `Gracias por completar el diagnóstico del proceso de inscripción de ${d.universidad}.`,
-    `El momento donde más inscriptos se pierden es ${critica.name} (${critica.pregunta}).`,
+    todoEnD(d.respuestas) ? `Las 7 etapas quedaron en el nivel más alto que mide el diagnóstico.` : `El momento donde más inscriptos se pierden es ${critica.name} (${critica.pregunta}).`,
     `Puntaje global: ${f1(d.score_global)} de 5 · ${nivel.label}`,
     ``,
     `Las 7 etapas:`,
     ...etapas.map((e) => `  ${e.num}. ${e.name}: ${f1(e.score)} · ${getNivel(e.score).label}`),
     ``,
-    top.length ? `${accionesTitulo}:` : sinAcciones,
+    top.length ? `${accionesTitulo}:` : `${sinAcciones}\nTres números para validarlo:\n${VALIDAR.metricas.map((m, i) => `  ${i + 1}. ${m}`).join("\n")}`,
     ...top.map(({ etapa, rec }, i) => `  ${i + 1}. [${etapa.name}] ${rec.texto} (+${f1(rec.impacto)} pts)`),
     ``,
     `El informe completo va adjunto en PDF.`,
@@ -130,7 +136,7 @@ export function mailInforme(d, { contactoEmail, agendaUrl } = {}) {
     `— CampusLatina`,
   ].join("\n");
 
-  return { subject, html: layout({ preheader: `Donde más inscriptos se pierden: ${critica.name}. El informe completo va adjunto en PDF.`, body }), text };
+  return { subject, html: layout({ preheader: todoEnD(d.respuestas) ? "Su proceso está en el nivel más alto: el próximo paso es validarlo con datos." : `Donde más inscriptos se pierden: ${critica.name}. El informe completo va adjunto en PDF.`, body }), text };
 }
 
 // Aviso interno a CampusLatina con los datos del prospecto (formato de la spec, sección 6.2).
@@ -157,6 +163,7 @@ export function mailInterno(d, { adminUrl } = {}) {
     ${row("📱", "WhatsApp", waNum ? `<a href="https://wa.me/${waNum}" style="color:${NAVY};">${esc(d.whatsapp)}</a>` : esc(d.whatsapp))}
     ${row("🎓", "Alumnos hoy", esc(textoRango(d.alumnos_actuales)))}
     ${row("📈", "Meta 3–5 años", esc(textoRango(d.alumnos_meta)))}
+    ${Number(d.score_global) >= 4.5 ? row("🔎", "Puntaje alto", "<strong>Validar con datos:</strong> una autoevaluación tan alta suele ser optimista") : ""}
     ${row("🎯", "Calificación", d.target ? "<strong>Target: se le ofreció la reunión de 45 min</strong>" : "No target: se le ofreció escribir por mail")}
     ${colegas.length ? row("👥", "Colegas", esc(colegas.join(", "))) : ""}
   </table>
@@ -179,6 +186,7 @@ export function mailInterno(d, { adminUrl } = {}) {
     `📧 ${d.email}`,
     `📱 ${d.whatsapp}`,
     `🎓 Alumnos hoy: ${textoRango(d.alumnos_actuales)} · Meta a 3–5 años: ${textoRango(d.alumnos_meta)}`,
+    Number(d.score_global) >= 4.5 ? `🔎 Puntaje alto: validar con datos (una autoevaluación tan alta suele ser optimista)` : "",
     `🎯 ${d.target ? "TARGET (reunión de 45 min)" : "No target (contacto por mail)"}`,
     colegas.length ? `👥 Colegas: ${colegas.join(", ")}` : "",
     ``,

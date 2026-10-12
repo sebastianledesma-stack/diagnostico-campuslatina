@@ -38,7 +38,7 @@ function agendaHref(universidad){
 
 // Cierre del informe: reunión de 45 min si la universidad es target (src/data/calificacion.js);
 // si no, contacto por mail.
-export function ContactoCTA({universidad,target,ancho=680}){
+export function ContactoCTA({universidad,target,alto,ancho=680}){
   const href=target?agendaHref(universidad):contactoHref(universidad);
   return(
     <div style={{maxWidth:ancho,margin:"0 auto",padding:"4px 18px 18px"}}>
@@ -47,10 +47,13 @@ export function ContactoCTA({universidad,target,ancho=680}){
         <div style={{position:"relative"}}>
           <span style={{...monoStyle,color:EMERALD}}>CampusLatina</span>
           <div style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:WHITE,lineHeight:1.25,margin:"6px 0 8px"}}>
-            {target?<>Revisemos su diagnóstico <em style={{color:EMERALD}}>en 45 minutos</em></>:<>¿Quiere inscribir <em style={{color:EMERALD}}>más estudiantes</em> el próximo ciclo?</>}
+            {target&&alto?<>Validemos su resultado <em style={{color:EMERALD}}>con datos</em></>
+              :target?<>Revisemos su diagnóstico <em style={{color:EMERALD}}>en 45 minutos</em></>:<>¿Quiere inscribir <em style={{color:EMERALD}}>más estudiantes</em> el próximo ciclo?</>}
           </div>
           <p style={{fontSize:15,color:"rgba(255,255,255,.7)",lineHeight:1.65,margin:"0 0 16px",fontFamily:"'DM Sans',sans-serif"}}>
-            {target
+            {target&&alto
+              ?<>Comparemos sus números con lo que vemos en otras universidades, en una videollamada de 45 minutos. {AUTORIDAD}</>
+              :target
               ?<>Una videollamada para recorrer sus resultados y definir por dónde empezar. Sin compromiso. {AUTORIDAD}</>
               :<>{AUTORIDAD} Responda el mail con su informe o escríbanos, y lo revisamos juntos.</>}
           </p>

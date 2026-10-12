@@ -6,9 +6,9 @@ import { Document, Page, Text, View, StyleSheet, Font, renderToBuffer } from "@r
 import { NAVY, NAVY_DK, EMERALD, SLATE, CREAM, WHITE, EMERALD_TXT, ORANGE_TXT, SLATE_TXT, MUTED, nivelDarkColor } from "../../src/theme.js";
 import { ETAPAS_DATA } from "../../src/data/etapas.js";
 import { FRICCIONES } from "../../src/data/fricciones.js";
-import { getNivel, calcGlobalPotential, etapasCriticas, fmt1, r1, potencialEtapa, recsDeEtapa } from "../../src/lib/scoring.js";
+import { getNivel, calcGlobalPotential, etapasCriticas, fmt1, r1, potencialEtapa, accionesDeEtapa, sinAcciones } from "../../src/lib/scoring.js";
 import * as FONTS from "./fonts.generated.js";
-import { NIVEL_DESC, lecturaDiagnostico, AUTORIDAD } from "../../src/data/textos.js";
+import { NIVEL_DESC, lecturaDiagnostico, AUTORIDAD, VALIDAR } from "../../src/data/textos.js";
 
 const h = React.createElement;
 
@@ -115,16 +115,16 @@ function InformePDF({ d, contacto }) {
           ),
           h(Text, { style: { fontSize: 10.5, color: TEXT, lineHeight: 1.55, marginBottom: 3 } }, h(Text, { style: { fontWeight: 700, color: NAVY } }, "El momento del aspirante: "), e.resumen),
           h(Text, { style: { fontSize: 10.5, color: TEXT, lineHeight: 1.55, marginBottom: 6 } }, h(Text, { style: { fontWeight: 700, color: NAVY } }, "Qué mide esta etapa: "), e.contexto),
-          h(Text, { style: [s.mono, { color: SLATE_TXT, fontWeight: 700, marginBottom: 3 }] }, "Dónde se pierde valor"),
-          (FRICCIONES[e.id] || []).map((f, fi) => h(View, { key: fi, style: { flexDirection: "row", marginBottom: 2 } },
+          e.score < 5 ? h(Text, { style: [s.mono, { color: SLATE_TXT, fontWeight: 700, marginBottom: 3 }] }, "Dónde suele perderse valor") : null,
+          (e.score < 5 ? FRICCIONES[e.id] || [] : []).map((f, fi) => h(View, { key: fi, style: { flexDirection: "row", marginBottom: 2 } },
             h(Text, { style: { width: 10, fontSize: 10.5, color: ORANGE_TXT } }, "•"),
             h(Text, { style: { flex: 1, fontSize: 10.5, color: TEXT, lineHeight: 1.45 } }, f.texto),
           )),
           h(Text, { style: [s.mono, { color: SLATE_TXT, fontWeight: 700, marginTop: 5, marginBottom: 3 }] }, "Recomendaciones"),
-          recsDeEtapa(d.respuestas, e.id).every((r) => r.cubierta)
-            ? h(Text, { style: { fontSize: 10.5, color: TEXT, lineHeight: 1.45 } }, "Esta etapa ya tiene las bases resueltas. El próximo salto es automatizar y medir.")
+          accionesDeEtapa(d.respuestas, e.id).length === 0
+            ? h(Text, { style: { fontSize: 10.5, color: TEXT, lineHeight: 1.45 } }, "Esta etapa ya está en el nivel más alto que mide el diagnóstico.")
             : null,
-          recsDeEtapa(d.respuestas, e.id).filter((r) => !r.cubierta).map((r, ri) => h(View, { key: ri, style: { flexDirection: "row", marginBottom: 2 } },
+          accionesDeEtapa(d.respuestas, e.id).map((r, ri) => h(View, { key: ri, style: { flexDirection: "row", marginBottom: 2 } },
             h(Text, { style: { width: 12, fontSize: 10.5, fontWeight: 700, color: NAVY } }, `${ri + 1}.`),
             h(Text, { style: { flex: 1, fontSize: 10.5, color: TEXT, lineHeight: 1.45 } },
               r.texto, " ", h(Text, { style: { color: EMERALD_TXT } }, `(+${fmt1(r.impacto)}\u00A0pts)`)),
@@ -134,9 +134,14 @@ function InformePDF({ d, contacto }) {
         // CTA
         h(View, { wrap: false, style: { backgroundColor: NAVY_DK, borderRadius: 8, padding: 18, marginTop: 6 } },
           h(Text, { style: [s.mono, { color: EMERALD }] }, "CampusLatina"),
-          h(Text, { style: { fontFamily: "DM Serif Display", fontSize: 16, color: WHITE, marginTop: 5 } }, "¿Quiere inscribir más estudiantes el próximo ciclo?"),
+          h(Text, { style: { fontFamily: "DM Serif Display", fontSize: 16, color: WHITE, marginTop: 5 } },
+            sinAcciones(d.respuestas) ? VALIDAR.titulo : d.target ? "Revisemos su diagnóstico en 45 minutos" : "¿Quiere inscribir más estudiantes el próximo ciclo?"),
           h(Text, { style: { fontSize: 10.5, color: "#B8BCD8", lineHeight: 1.55, marginTop: 5 } },
-            `${AUTORIDAD} Responda el mail con este informe y lo revisamos juntos.`),
+            sinAcciones(d.respuestas)
+              ? `${VALIDAR.texto} Tres números para validarlo: ${VALIDAR.metricas.map((m) => m.replace(/\.$/, "").toLowerCase()).join("; ")}.${d.target ? ` ${VALIDAR.reunion}` : ""}`
+              : d.target
+                ? `Una videollamada para recorrer sus resultados y definir por dónde empezar. Sin compromiso. Responda el mail con este informe para coordinarla. ${AUTORIDAD}`
+                : `${AUTORIDAD} Responda el mail con este informe y lo revisamos juntos.`),
           contacto && h(Text, { style: { fontSize: 10, color: EMERALD, marginTop: 8, fontWeight: 700 } }, contacto),
         ),
       ),

@@ -41,11 +41,33 @@ export function recsDeEtapa(respuestas,eid){
   });
 }
 
-// Puntaje de una etapa sumando las acciones marcadas que no estén cubiertas (tope 5).
+// Todas las acciones posibles de una etapa:
+//  · "arranque": las acciones de recs.js para preguntas en A o B.
+//  · "nivel": para cada pregunta sin acción de arranque pendiente y por debajo de D, el texto de la
+//    opción siguiente (ya describe el paso que falta). Suma lo que sube la etapa con la regla del test:
+//    (valor siguiente − valor actual) / 4. Con todas las preguntas en D no queda ninguna acción.
+export function accionesDeEtapa(respuestas,eid){
+  const e=ETAPAS_DATA.find(x=>x.id===eid);
+  if(!e) return [];
+  const arranque=recsDeEtapa(respuestas,eid).filter(r=>!r.cubierta);
+  const items=arranque.map(r=>({...r,key:`${eid}-${r.ri}`,tipo:"arranque"}));
+  const conArranque=new Set(arranque.map(r=>r.q));
+  e.preguntas.forEach((p,q)=>{
+    if(conArranque.has(q)) return;
+    const actual=p.opciones.find(o=>o.letra===respuestas?.[`${eid}_${q}`]);
+    const sig=actual&&p.opciones[p.opciones.indexOf(actual)+1];
+    if(!sig) return;
+    items.push({key:`${eid}-n${q}`,tipo:"nivel",q,texto:`Pasar a «${sig.etiqueta.replace(/\.$/,"")}»: ${sig.texto}`,
+      pregunta:p.texto,impacto:(sig.valor-actual.valor)/e.preguntas.length,accion:`Próximo nivel (${actual.letra} → ${sig.letra})`});
+  });
+  return items;
+}
+
+// Puntaje de una etapa sumando las acciones marcadas (tope 5).
 // `checked` null = todas las pendientes. Un único cálculo para el potencial (solapas Etapas,
 // Resumen, PDF) y para la proyección de la solapa Acciones: marcar todo da el potencial.
 export function calcEtapaProjected(scores,checked,eid,respuestas){
-  const extra=recsDeEtapa(respuestas,eid).reduce((sum,r)=>!r.cubierta&&(!checked||checked[`${eid}-${r.ri}`])?sum+r.impacto:sum,0);
+  const extra=accionesDeEtapa(respuestas,eid).reduce((sum,a)=>!checked||checked[a.key]?sum+a.impacto:sum,0);
   return Math.min(5,parseFloat(((scores?.[eid]||0)+extra).toFixed(2)));
 }
 export const potencialEtapa=(scores,eid,respuestas)=>calcEtapaProjected(scores,null,eid,respuestas);
@@ -67,10 +89,13 @@ export function etapasCriticas(scores){
 }
 
 // Top 3 recomendaciones prioritarias: la de mayor impacto de cada etapa, empezando por las más
-// bajas y salteando las acciones que la universidad ya tiene cubiertas.
+// bajas (de arranque o de próximo nivel). Vacío solo si todas las preguntas están en D.
 export function topRecomendaciones(scores,n=3,respuestas){
   return etapasCriticas(scores).map(e=>{
-    const rec=recsDeEtapa(respuestas,e.id).filter(r=>!r.cubierta).sort((a,b)=>b.impacto-a.impacto)[0];
+    const rec=accionesDeEtapa(respuestas,e.id).sort((a,b)=>b.impacto-a.impacto)[0];
     return rec&&{etapa:e,rec};
   }).filter(Boolean).slice(0,n);
 }
+
+// Sin ninguna acción posible (todas las preguntas en D): la conversación pasa a validar con datos.
+export const sinAcciones=(respuestas)=>ETAPAS_DATA.every(e=>accionesDeEtapa(respuestas,e.id).length===0);
