@@ -6,8 +6,7 @@ import { Document, Page, Text, View, StyleSheet, Font, renderToBuffer } from "@r
 import { NAVY, NAVY_DK, EMERALD, SLATE, CREAM, WHITE, EMERALD_TXT, ORANGE_TXT, SLATE_TXT, MUTED, nivelDarkColor } from "../../src/theme.js";
 import { ETAPAS_DATA } from "../../src/data/etapas.js";
 import { FRICCIONES } from "../../src/data/fricciones.js";
-import { RECS } from "../../src/data/recs.js";
-import { getNivel, calcGlobalPotential, etapasCriticas, fmt1, r1, potencialEtapa } from "../../src/lib/scoring.js";
+import { getNivel, calcGlobalPotential, etapasCriticas, fmt1, r1, potencialEtapa, recsDeEtapa } from "../../src/lib/scoring.js";
 import * as FONTS from "./fonts.generated.js";
 import { NIVEL_DESC, lecturaDiagnostico, AUTORIDAD } from "../../src/data/textos.js";
 
@@ -57,8 +56,8 @@ function InformePDF({ d, contacto }) {
   const etapas = ETAPAS_DATA.map((e) => ({ ...e, score: scores[e.id] || 0, nivel: getNivel(scores[e.id] || 0) }));
   const globalScore = Number(d.score_global);
   const globalNivel = getNivel(globalScore);
-  const globalPotential = calcGlobalPotential(scores);
-  const POT = Object.fromEntries(ETAPAS_DATA.map((e) => [e.id, potencialEtapa(scores, e.id)]));
+  const globalPotential = calcGlobalPotential(scores, d.respuestas);
+  const POT = Object.fromEntries(ETAPAS_DATA.map((e) => [e.id, potencialEtapa(scores, e.id, d.respuestas)]));
   const bottleneck = etapasCriticas(scores)[0];
   const fecha = new Date(d.created_at || Date.now()).toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" });
   const sub = [d.nombre, d.cargo, d.pais].filter(Boolean).join(" · ");
@@ -122,7 +121,10 @@ function InformePDF({ d, contacto }) {
             h(Text, { style: { flex: 1, fontSize: 10.5, color: TEXT, lineHeight: 1.45 } }, f.texto),
           )),
           h(Text, { style: [s.mono, { color: SLATE_TXT, fontWeight: 700, marginTop: 5, marginBottom: 3 }] }, "Recomendaciones"),
-          (RECS[e.id] || []).map((r, ri) => h(View, { key: ri, style: { flexDirection: "row", marginBottom: 2 } },
+          recsDeEtapa(d.respuestas, e.id).every((r) => r.cubierta)
+            ? h(Text, { style: { fontSize: 10.5, color: TEXT, lineHeight: 1.45 } }, "Esta etapa ya tiene las bases resueltas. El próximo salto es automatizar y medir.")
+            : null,
+          recsDeEtapa(d.respuestas, e.id).filter((r) => !r.cubierta).map((r, ri) => h(View, { key: ri, style: { flexDirection: "row", marginBottom: 2 } },
             h(Text, { style: { width: 12, fontSize: 10.5, fontWeight: 700, color: NAVY } }, `${ri + 1}.`),
             h(Text, { style: { flex: 1, fontSize: 10.5, color: TEXT, lineHeight: 1.45 } },
               r.texto, " ", h(Text, { style: { color: EMERALD_TXT } }, `(+${fmt1(r.impacto)}\u00A0pts)`)),

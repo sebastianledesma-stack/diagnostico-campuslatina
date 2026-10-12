@@ -2,7 +2,7 @@
 // Este módulo no depende de React: lo usan el frontend y las Netlify Functions.
 import { ORANGE_TXT } from "../theme.js";
 import { ETAPAS_DATA } from "../data/etapas.js";
-import { RECS, SCORE_POTENTIALS } from "../data/recs.js";
+import { RECS } from "../data/recs.js";
 
 // Un solo redondeo para todo el producto: los puntajes se muestran con 1 decimal
 // y el nivel se asigna sobre ese mismo valor, así lo que se lee coincide con la etiqueta.
@@ -30,20 +30,27 @@ export function calcGlobal(scores){
   return parseFloat((ETAPAS_DATA.reduce((a,e)=>a+(scores[e.id]||0),0)/ETAPAS_DATA.length).toFixed(2));
 }
 
-// Potencial de una etapa: la referencia, o el puntaje actual si ya la supera (nunca promete bajar).
-export function potencialEtapa(scores,eid){
-  return Math.max(scores?.[eid]||0,SCORE_POTENTIALS[eid]);
-}
-export function calcGlobalPotential(scores){
-  return parseFloat((ETAPAS_DATA.reduce((a,e)=>a+(scores?potencialEtapa(scores,e.id):SCORE_POTENTIALS[e.id]),0)/ETAPAS_DATA.length).toFixed(2));
+// Acciones de una etapa, marcando las que ya están cubiertas: la pregunta que mejora cada acción
+// ya está en C o D (valor ≥ 4). Esas no se recomiendan ni suman puntos.
+export function recsDeEtapa(respuestas,eid){
+  const e=ETAPAS_DATA.find(x=>x.id===eid);
+  return (RECS[eid]||[]).map((r,ri)=>{
+    const letra=respuestas?.[`${eid}_${r.q}`];
+    const valor=e?.preguntas[r.q]?.opciones.find(o=>o.letra===letra)?.valor||0;
+    return {...r,ri,cubierta:valor>=4};
+  });
 }
 
-// Puntaje proyectado de una etapa según las recomendaciones marcadas.
-// Antes vivía dentro de Report y leía `checked` del estado; ahora lo recibe por parámetro.
-export function calcEtapaProjected(scores,checked,eid){
-  const recs=RECS[eid]||[];
-  const extra=recs.reduce((sum,r,ri)=>checked[`${eid}-${ri}`]?sum+r.impacto:sum,0);
-  return Math.min(5,parseFloat((scores[eid]+extra).toFixed(2)));
+// Puntaje de una etapa sumando las acciones marcadas que no estén cubiertas (tope 5).
+// `checked` null = todas las pendientes. Un único cálculo para el potencial (solapas Etapas,
+// Resumen, PDF) y para la proyección de la solapa Acciones: marcar todo da el potencial.
+export function calcEtapaProjected(scores,checked,eid,respuestas){
+  const extra=recsDeEtapa(respuestas,eid).reduce((sum,r)=>!r.cubierta&&(!checked||checked[`${eid}-${r.ri}`])?sum+r.impacto:sum,0);
+  return Math.min(5,parseFloat(((scores?.[eid]||0)+extra).toFixed(2)));
+}
+export const potencialEtapa=(scores,eid,respuestas)=>calcEtapaProjected(scores,null,eid,respuestas);
+export function calcGlobalPotential(scores,respuestas){
+  return parseFloat((ETAPAS_DATA.reduce((a,e)=>a+potencialEtapa(scores,e.id,respuestas),0)/ETAPAS_DATA.length).toFixed(2));
 }
 
 // Todo lo que se persiste en Supabase a partir de las respuestas.
@@ -59,10 +66,11 @@ export function etapasCriticas(scores){
   return ETAPAS_DATA.map(e=>({...e,score:scores[e.id]||0})).sort((a,b)=>a.score-b.score);
 }
 
-// Top 3 recomendaciones prioritarias: la de mayor impacto de cada una de las 3 etapas más bajas.
-export function topRecomendaciones(scores,n=3){
-  return etapasCriticas(scores).slice(0,n).map(e=>{
-    const rec=[...(RECS[e.id]||[])].sort((a,b)=>b.impacto-a.impacto)[0];
-    return {etapa:e,rec};
-  });
+// Top 3 recomendaciones prioritarias: la de mayor impacto de cada etapa, empezando por las más
+// bajas y salteando las acciones que la universidad ya tiene cubiertas.
+export function topRecomendaciones(scores,n=3,respuestas){
+  return etapasCriticas(scores).map(e=>{
+    const rec=recsDeEtapa(respuestas,e.id).filter(r=>!r.cubierta).sort((a,b)=>b.impacto-a.impacto)[0];
+    return rec&&{etapa:e,rec};
+  }).filter(Boolean).slice(0,n);
 }

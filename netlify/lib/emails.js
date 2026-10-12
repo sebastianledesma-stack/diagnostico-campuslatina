@@ -53,7 +53,10 @@ export function ctaInforme(d, { contactoEmail, agendaUrl } = {}) {
 export function mailInforme(d, { contactoEmail, agendaUrl } = {}) {
   const nivel = getNivel(Number(d.score_global));
   const etapas = ETAPAS_DATA.map((e) => ({ ...e, score: d.scores?.[e.id] || 0 }));
-  const top = topRecomendaciones(d.scores || {});
+  const top = topRecomendaciones(d.scores || {}, 3, d.respuestas);
+  // Si ya tiene cubiertas las acciones de arranque, no hay "3 acciones": se dice en una línea.
+  const accionesTitulo = top.length === 1 ? "La acción para empezar" : `Las ${top.length} acciones para empezar`;
+  const sinAcciones = "Su proceso ya tiene las bases en las 7 etapas: el próximo salto es automatizar y medir.";
   const nombre = String(d.nombre || "").trim().split(/\s+/)[0];
   const critica = etapasCriticas(d.scores || {})[0];
   const subject = `${d.universidad}: dónde se están perdiendo inscriptos`;
@@ -78,7 +81,7 @@ export function mailInforme(d, { contactoEmail, agendaUrl } = {}) {
 <tr><td class="px" style="padding:28px 36px 8px;">
   <p style="font-size:15px;line-height:1.65;margin:0 0 12px;">Hola ${esc(nombre)},</p>
   <p style="font-size:15px;line-height:1.65;margin:0 0 12px;">Gracias por completar el diagnóstico. <strong>El momento donde más inscriptos se pierden es ${esc(critica.name)}</strong> <span style="color:${MUTED};">(${esc(critica.pregunta)})</span>.</p>
-  <p style="font-size:15px;line-height:1.65;margin:0 0 12px;">El puntaje global es <strong>${f1(d.score_global)} de 5</strong>, nivel <strong style="color:${nivel.color};">${nivel.label}</strong>. Abajo están las 3 acciones para empezar.</p>
+  <p style="font-size:15px;line-height:1.65;margin:0 0 12px;">El puntaje global es <strong>${f1(d.score_global)} de 5</strong>, nivel <strong style="color:${nivel.color};">${nivel.label}</strong>. ${top.length ? `Abajo ${top.length === 1 ? "está la acción" : `están las ${top.length} acciones`} para empezar.` : esc(sinAcciones)}</p>
   <p style="font-size:15px;line-height:1.65;margin:0;"><strong>El informe completo va adjunto en PDF</strong>, con el análisis de cada etapa y el plan de acción, listo para compartir con el equipo directivo.</p>
 </td></tr>
 
@@ -88,7 +91,7 @@ export function mailInforme(d, { contactoEmail, agendaUrl } = {}) {
 </td></tr>
 
 <tr><td class="px" style="padding:24px 36px 8px;">
-  <div style="font-family:${MONO};font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:${SLATE_TXT};margin-bottom:10px;">Las 3 acciones para empezar</div>
+  ${top.length ? `<div style="font-family:${MONO};font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:${SLATE_TXT};margin-bottom:10px;">${accionesTitulo}</div>` : ""}
   ${top.map(({ etapa, rec }, i) => `
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px;background:${CREAM};border-radius:10px;"><tr>
     <td style="width:34px;vertical-align:top;padding:14px 0 14px 14px;font-family:${SERIF};font-size:22px;color:${EMERALD_TXT};line-height:1;">${i + 1}</td>
@@ -118,7 +121,7 @@ export function mailInforme(d, { contactoEmail, agendaUrl } = {}) {
     `Las 7 etapas:`,
     ...etapas.map((e) => `  ${e.num}. ${e.name}: ${f1(e.score)} · ${getNivel(e.score).label}`),
     ``,
-    `Las 3 acciones para empezar:`,
+    top.length ? `${accionesTitulo}:` : sinAcciones,
     ...top.map(({ etapa, rec }, i) => `  ${i + 1}. [${etapa.name}] ${rec.texto} (+${f1(rec.impacto)} pts)`),
     ``,
     `El informe completo va adjunto en PDF.`,

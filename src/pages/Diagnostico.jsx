@@ -4,8 +4,7 @@ import { NAVY, NAVY_DK, EMERALD, SLATE, CREAM, WHITE, EMERALD_TXT, ORANGE_TXT, S
 import { PAISES_LATAM } from "../data/paises.js";
 import { ETAPAS_DATA } from "../data/etapas.js";
 import { FRICCIONES } from "../data/fricciones.js";
-import { RECS, SCORE_POTENTIALS } from "../data/recs.js";
-import { getNivel, calcScore, calcEtapaProjected as projectEtapa, r1, fmt1, potencialEtapa, calcGlobalPotential, calcResultados, etapasCriticas } from "../lib/scoring.js";
+import { getNivel, calcScore, calcEtapaProjected as projectEtapa, recsDeEtapa, r1, fmt1, potencialEtapa, calcGlobalPotential, calcResultados, etapasCriticas } from "../lib/scoring.js";
 import { crearDiagnostico, leerDiagnostico, guardarEtapa, invitarColega, finalizarDiagnostico, leerQuien, guardarQuien, etapaCompleta } from "../lib/api.js";
 import { RANGOS_ALUMNOS } from "../data/calificacion.js";
 import { Tablero, InvitarVentana, QuienVentana, Cargando, NoEncontrado } from "./Tablero.jsx";
@@ -489,17 +488,19 @@ function Report({registroData,respuestas,envio}){
   const etapaScores=ETAPAS_DATA.map(e=>({...e,score:scores[e.id],nivel:getNivel(scores[e.id])}));
   const globalScore=parseFloat((Object.values(scores).reduce((a,b)=>a+b,0)/ETAPAS_DATA.length).toFixed(2));
   const globalNivel=getNivel(globalScore);
-  // Potencial efectivo por etapa: la referencia o el puntaje actual si ya la supera.
-  const POT={}; ETAPAS_DATA.forEach(e=>{POT[e.id]=potencialEtapa(scores,e.id);});
-  const globalPotential=calcGlobalPotential(scores);
+  // Potencial por etapa = puntaje actual + todas las acciones de arranque que no tiene cubiertas.
+  // Es el mismo número que se ve en Acciones al marcarlas todas.
+  const POT={}; ETAPAS_DATA.forEach(e=>{POT[e.id]=potencialEtapa(scores,e.id,respuestas);});
+  const globalPotential=calcGlobalPotential(scores,respuestas);
   const hayMejora=r1(globalPotential)>r1(globalScore);
   const bottleneck=etapaScores.reduce((a,e)=>e.score<a.score?e:a);
   const best=etapaScores.reduce((a,e)=>e.score>a.score?e:a);
 
   // UNIFIED scoring: same function for both Recs and Recibir
-  const calcEtapaProjected=(eid)=>projectEtapa(scores,checked,eid);
+  const calcEtapaProjected=(eid)=>projectEtapa(scores,checked,eid,respuestas);
   const projGlobal=parseFloat((ETAPAS_DATA.reduce((s,e)=>s+calcEtapaProjected(e.id),0)/ETAPAS_DATA.length).toFixed(2));
-  const totalChecked=Object.values(checked).filter(Boolean).length;
+  const totalChecked=ETAPAS_DATA.reduce((n,e)=>n+recsDeEtapa(respuestas,e.id).filter(r=>!r.cubierta&&checked[`${e.id}-${r.ri}`]).length,0);
+  const cubiertas=ETAPAS_DATA.reduce((n,e)=>n+recsDeEtapa(respuestas,e.id).filter(r=>r.cubierta).length,0);
 
   const TABS=["Resumen","Radar","Etapas","Acciones","PDF"];
   const desk=useIsDesktop();
@@ -789,7 +790,7 @@ function Report({registroData,respuestas,envio}){
                 <span style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:nd(projGlobal),background:"rgba(255,255,255,.08)",padding:"2px 8px",borderRadius:8,letterSpacing:".07em",textTransform:"uppercase"}}>{getNivel(projGlobal).label}</span>
               </>}
             </div>
-            <Mono color={EMERALD}>{totalChecked} acción{totalChecked!==1?"es":""} seleccionada{totalChecked!==1?"s":""}{r1(projGlobal)>r1(globalScore)?` · +${fmt1(projGlobal-globalScore)} pts`:""}</Mono>
+            <Mono color={EMERALD}>{totalChecked} {totalChecked!==1?"acciones seleccionadas":"acción seleccionada"}{r1(projGlobal)>r1(globalScore)?` · +${fmt1(projGlobal-globalScore)} pts`:""}</Mono>
           </div>
         </div>
         <div style={{marginTop:12,height:7,background:"rgba(255,255,255,.1)",borderRadius:4,overflow:"hidden"}}>
@@ -798,11 +799,14 @@ function Report({registroData,respuestas,envio}){
             {r1(projGlobal)>r1(globalScore)&&<div style={{width:`${((projGlobal-globalScore)/5)*100}%`,background:EMERALD}}/>}
           </div>
         </div>
+        <p style={{fontSize:14,color:"rgba(255,255,255,.75)",lineHeight:1.55,margin:"12px 0 0"}}>
+          Son acciones de arranque{cubiertas?` (no mostramos ${cubiertas===1?"una que ya tiene":`${cubiertas} que ya tiene`} resuelta${cubiertas===1?"":"s"})`:""}. Llegar a 5 implica tener todo el proceso automatizado y medido en las 7 etapas{registroData.target?": es lo que trabajamos en la reunión de 45 minutos.":"."}
+        </p>
       </div>
 
       <div style={g2("minmax(0,1fr) minmax(0,1fr)",16)}>
       {etapaScores.map((e,ei)=>{
-        const recs=RECS[e.id]||[];
+        const recs=recsDeEtapa(respuestas,e.id).filter(r=>!r.cubierta);
         const newScore=calcEtapaProjected(e.id);
         const changed=r1(newScore)>r1(e.score);
         return(
@@ -818,7 +822,9 @@ function Report({registroData,respuestas,envio}){
               </div>
             </div>
             <div style={{padding:"10px 15px",display:"flex",flexDirection:"column",gap:8}}>
-              {recs.map((r,ri)=>{
+              {!recs.length&&<p style={{margin:0,padding:"10px 2px",fontSize:15,color:TEXT,lineHeight:1.55}}>Esta etapa ya tiene las bases resueltas. El próximo salto es automatizar y medir.</p>}
+              {recs.map(r=>{
+                const ri=r.ri;
                 const key=`${e.id}-${ri}`;
                 const isCh=checked[key];
                 return(
@@ -861,8 +867,8 @@ function Report({registroData,respuestas,envio}){
       `).join("");
       const etapasDetalle=etapaScores.map(e=>{
         const fricc=(FRICCIONES[e.id]||[]).map(f=>`<li style="margin-bottom:6px;color:#3A4070;font-size:13px;">${f.icon} ${f.texto}</li>`).join("");
-        const recs=(RECS[e.id]||[]).map((r,i)=>`<li style="margin-bottom:8px;color:#3A4070;font-size:13px;"><strong>${i+1}.</strong> ${r.texto} <span style="color:#00C896;">(+${fmt1(r.impacto)} pts)</span></li>`).join("");
-        return`<div style="margin-bottom:28px;page-break-inside:avoid;"><div style="border-left:4px solid ${nivelColor(e.score)};padding-left:14px;margin-bottom:10px;"><div style="font-size:16px;font-weight:bold;color:#1A1F5E;">${e.emoji} ${e.num}. ${e.name}</div><div style="font-size:12px;color:${nivelColor(e.score)};margin-top:2px;">${fmt1(e.score)}/5 · ${nivelLabel(e.score)} → Potencial: ${fmt1(POT[e.id])}/5 · ${nivelLabel(POT[e.id])}</div></div><p style="font-size:13px;color:#3A4070;line-height:1.65;margin-bottom:6px;"><strong>El momento del aspirante:</strong> ${e.resumen}</p><p style="font-size:13px;color:#3A4070;line-height:1.65;margin-bottom:10px;"><strong>Qué mide esta etapa:</strong> ${e.contexto}</p><div style="margin-bottom:10px;"><div style="font-size:10px;font-weight:700;color:#8B94C8;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px;">Dónde se pierde valor</div><ul style="margin:0;padding-left:16px;">${fricc}</ul></div><div><div style="font-size:10px;font-weight:700;color:#8B94C8;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px;">Recomendaciones</div><ul style="margin:0;padding-left:16px;">${recs}</ul></div></div>`;
+        const recs=recsDeEtapa(respuestas,e.id).filter(r=>!r.cubierta).map((r,i)=>`<li style="margin-bottom:8px;color:#3A4070;font-size:13px;"><strong>${i+1}.</strong> ${r.texto} <span style="color:#00C896;">(+${fmt1(r.impacto)} pts)</span></li>`).join("");
+        return`<div style="margin-bottom:28px;page-break-inside:avoid;"><div style="border-left:4px solid ${nivelColor(e.score)};padding-left:14px;margin-bottom:10px;"><div style="font-size:16px;font-weight:bold;color:#1A1F5E;">${e.emoji} ${e.num}. ${e.name}</div><div style="font-size:12px;color:${nivelColor(e.score)};margin-top:2px;">${fmt1(e.score)}/5 · ${nivelLabel(e.score)} → Potencial: ${fmt1(POT[e.id])}/5 · ${nivelLabel(POT[e.id])}</div></div><p style="font-size:13px;color:#3A4070;line-height:1.65;margin-bottom:6px;"><strong>El momento del aspirante:</strong> ${e.resumen}</p><p style="font-size:13px;color:#3A4070;line-height:1.65;margin-bottom:10px;"><strong>Qué mide esta etapa:</strong> ${e.contexto}</p><div style="margin-bottom:10px;"><div style="font-size:10px;font-weight:700;color:#8B94C8;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px;">Dónde se pierde valor</div><ul style="margin:0;padding-left:16px;">${fricc}</ul></div><div><div style="font-size:10px;font-weight:700;color:#8B94C8;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px;">Recomendaciones</div><ul style="margin:0;padding-left:16px;">${recs||'<li style="color:#3A4070;font-size:13px;">Esta etapa ya tiene las bases resueltas. El próximo salto es automatizar y medir.</li>'}</ul></div></div>`;
       }).join("");
       const fechaStr=new Date().toLocaleDateString("es-AR",{month:"long",year:"numeric"});
       const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Diagnóstico del proceso de inscripción — ${registroData.universidad||"Su institución"}</title><style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Arial,Helvetica,sans-serif;color:#1A1F5E;background:white;font-size:14px;line-height:1.6;}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}.header{background:#0E1240;color:white;padding:28px 44px;}.content{padding:32px 44px;}table{width:100%;border-collapse:collapse;}th{background:#1A1F5E;color:white;padding:9px 12px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;text-align:left;}.section-title{font-size:20px;font-weight:bold;color:#1A1F5E;margin:28px 0 14px;padding-bottom:6px;border-bottom:2px solid #00C896;}.footer{background:#F5F4F0;padding:16px 44px;font-size:11px;color:#6A7090;text-align:center;border-top:1px solid #E8E6DF;margin-top:32px;}</style></head><body><div class="header"><div style="display:flex;justify-content:space-between;align-items:flex-start;"><div><div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#8B94C8;margin-bottom:8px;">CampusLatina & CIeLatam & Salesforce · ${fechaStr}</div><div style="font-size:24px;font-weight:bold;color:white;line-height:1.1;margin-bottom:6px;">Diagnóstico del proceso<br/>de inscripción universitaria</div><div style="font-size:12px;color:rgba(255,255,255,.5);">${registroData.universidad||"Mi institución"}${registroData.nombre?" · "+registroData.nombre:""}${registroData.cargo?" · "+registroData.cargo:""}${registroData.pais?" · "+registroData.pais:""}</div></div><div style="text-align:right;"><div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8B94C8;margin-bottom:4px;">Puntaje global</div><div style="font-size:48px;color:#00C896;line-height:1;font-weight:bold;">${fmt1(globalScore)}</div><div style="font-size:11px;color:#00C896;text-transform:uppercase;">${globalNivel.label} · de 5</div></div></div></div><div class="content"><div style="background:#F0FBF7;border-left:4px solid #00C896;padding:14px 18px;border-radius:0 8px 8px 0;margin-bottom:28px;"><div style="font-size:10px;font-weight:700;color:#00C896;letter-spacing:.12em;text-transform:uppercase;margin-bottom:5px;">Qué dice su diagnóstico</div><p style="font-size:13px;color:#1A1F5E;line-height:1.7;"><strong>${fmt1(globalScore)} de 5 · ${globalNivel.label}: ${NIVEL_DESC[globalNivel.label]}.</strong> ${lecturaDiagnostico(globalScore,bottleneck)}</p></div><div class="section-title">Resumen por etapa</div><table><thead><tr><th>Etapa</th><th style="text-align:center;">Puntaje actual</th><th>Nivel actual</th><th>Potencial</th></tr></thead><tbody>${etapasRows}</tbody></table><div style="margin-top:10px;font-size:12px;color:#6A7090;">Puntaje global hoy: <strong style="color:#E8833A;">${fmt1(globalScore)}/5</strong> &nbsp;·&nbsp; Potencial: <strong style="color:#2E7D32;">${hayMejora?`${fmt1(globalPotential)}/5 (+${fmt1(globalPotential-globalScore)} pts)`:"ya en el máximo de referencia"}</strong></div><div class="section-title">Análisis detallado por etapa</div>${etapasDetalle}</div><div class="footer">Diagnóstico del proceso de inscripción universitaria · CampusLatina & CIeLatam & Salesforce · v1.0</div><script>window.onload=function(){setTimeout(function(){window.print();},400);}<\/script></body></html>`;
