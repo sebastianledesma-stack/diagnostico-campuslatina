@@ -50,7 +50,7 @@ export const ETAPAS_DATA = [
   {
     id:"exploracion", name:"Exploración", num:2, emoji:"🔎", pregunta:"¿Entienden qué ofrece?",
     resumen:"El aspirante ya sabe que su universidad existe y empieza a investigarla. Entra a su web, mira sus redes, busca opiniones, compara con otras opciones.",
-    contexto:"Evaluamos si lo que encuentra le ayuda a decidir, si puede compararte con otras opciones, y si hay algo que lo oriente activamente hacia el siguiente paso.",
+    contexto:"Evaluamos si lo que encuentra le ayuda a decidir, si puede compararla con otras opciones, y si hay algo que lo oriente activamente hacia el siguiente paso.",
     preguntas:[
       {
         texto:"¿Qué tan fácil es entender y comparar su oferta?",
