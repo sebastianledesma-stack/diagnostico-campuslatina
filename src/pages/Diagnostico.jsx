@@ -313,7 +313,7 @@ function ConProgreso({desk,etapa,etapasScores,respondidas,children}){
 function StageIntro({etapa,onStart,etapasScores,respondidas,onTablero,onInvitar}){
   const desk=useIsDesktop();
   const barra=(
-    <div style={desk?{position:"sticky",bottom:0,zIndex:10,background:CREAM,padding:"16px 0 20px",marginTop:12}:{position:"sticky",bottom:0,zIndex:10,background:"rgba(245,244,240,.96)",backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)",borderTop:`1px solid ${LINE}`}}>
+    <div style={desk?{padding:"16px 0 20px",marginTop:12}:{position:"sticky",bottom:0,zIndex:10,background:"rgba(245,244,240,.96)",backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)",borderTop:`1px solid ${LINE}`}}>
       <div style={desk?undefined:{maxWidth:580,margin:"0 auto",padding:"10px 16px calc(10px + env(safe-area-inset-bottom))"}}>
           <button type="button" onClick={onStart} style={{width:desk?"auto":"100%",padding:desk?"0 36px":undefined,minHeight:TOUCH+4,borderRadius:10,border:"none",...BTN_PRIMARY,fontSize:16,fontFamily:"'DM Sans',sans-serif",fontWeight:700,cursor:"pointer"}}>
             Empezar etapa {etapa.num} →
@@ -371,15 +371,15 @@ function StageIntro({etapa,onStart,etapasScores,respondidas,onTablero,onInvitar}
 }
 
 // ── QUESTION ─────────────────────────────────────────────
-function Question({preguntaIdx,etapa,pregunta,selected,onSelect,onNext,onBack,isLast,esFinal,etapasScores,hechas,guardando,errorGuardar}){
+function Question({preguntaIdx,etapa,pregunta,selected,onSelect,onNext,onBack,isLast,esFinal,etapasScores,hechas,guardando,errorGuardar,revision}){
   const desk=useIsDesktop();
   const barra=(
-    <div style={desk?{position:"sticky",bottom:0,zIndex:10,background:CREAM,padding:"16px 0 20px",marginTop:8}:{position:"sticky",bottom:0,zIndex:10,background:"rgba(245,244,240,.96)",backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)",borderTop:`1px solid ${LINE}`}}>
+    <div style={desk?{padding:"16px 0 20px",marginTop:8}:{position:"sticky",bottom:0,zIndex:10,background:"rgba(245,244,240,.96)",backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)",borderTop:`1px solid ${LINE}`}}>
       <div style={desk?{display:"flex",gap:10,maxWidth:520}:{maxWidth:640,margin:"0 auto",padding:"10px 16px calc(10px + env(safe-area-inset-bottom))",display:"flex",gap:10}}>
           <button type="button" onClick={onBack} style={{minHeight:TOUCH,padding:"0 18px",borderRadius:10,border:`1px solid ${LINE}`,background:WHITE,color:NAVY,cursor:"pointer",fontSize:16,fontFamily:"'DM Sans',sans-serif"}}>← Atrás</button>
           <button type="button" onClick={()=>selected&&!guardando&&onNext()} disabled={!selected||guardando} aria-disabled={!selected||guardando}
             style={{flex:1,minHeight:TOUCH,borderRadius:10,border:"none",...(selected&&!guardando?BTN_PRIMARY:BTN_DISABLED),cursor:selected&&!guardando?"pointer":"not-allowed",fontSize:16,fontFamily:"'DM Sans',sans-serif",fontWeight:700,transition:"background .15s"}}>
-            {!selected?"Elija una opción":guardando?"Guardando…":isLast?(esFinal?"Guardar y ver el diagnóstico →":"Guardar etapa →"):"Siguiente →"}
+            {!selected?"Elija una opción":guardando?"Guardando…":isLast?(revision?"Guardar cambios →":esFinal?"Guardar y ver el diagnóstico →":"Guardar etapa →"):"Siguiente →"}
           </button>
       </div>
       {errorGuardar&&<p role="alert" style={{maxWidth:640,margin:"0 auto",padding:"0 16px 10px",fontSize:14,color:"#B3261E",textAlign:desk?"left":"center"}}>{errorGuardar}</p>}
@@ -429,6 +429,9 @@ function Question({preguntaIdx,etapa,pregunta,selected,onSelect,onNext,onBack,is
       {/* Pregunta */}
       <ConProgreso desk={desk} etapa={etapa} etapasScores={etapasScores} respondidas={globalIdx}>
       <div style={desk?{paddingTop:4}:{flex:1,maxWidth:640,margin:"0 auto",padding:"22px 16px 24px",width:"100%"}}>
+        {revision&&<p role="status" style={{margin:"0 0 14px",padding:"10px 14px",borderRadius:10,background:"rgba(0,200,150,.1)",border:"1px solid rgba(0,122,92,.25)",fontSize:15,color:NAVY,lineHeight:1.5}}>
+          <strong>Revisando {etapa.name}.</strong> Sus respuestas guardadas están marcadas: cambie lo que necesite y guarde al final.
+        </p>}
         <h2 id={qid} style={{fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:desk?26:21,color:NAVY,lineHeight:1.3,letterSpacing:"-.01em",margin:0}}>{pregunta.texto}</h2>
         {pregunta.ayuda&&<p id={`${qid}-ayuda`} style={{fontSize:15,color:MUTED,lineHeight:1.55,margin:"8px 0 0"}}>{pregunta.ayuda}</p>}
         <div style={{height:18}}/>
@@ -1036,6 +1039,7 @@ export default function Diagnostico(){
   const [finalizando,setFinalizando]=useState(false);
   const [errorFinal,setErrorFinal]=useState("");
   const [envio,setEnvio]=useState("pendiente");
+  const [revision,setRevision]=useState(false); // revisando una etapa ya guardada
 
   useEffect(()=>{window.scrollTo(0,0);},[estado,pos.etapa,pos.pregunta,pos.showIntro]);
   useEffect(()=>{if(!aviso)return;const t=setTimeout(()=>setAviso(""),6000);return()=>clearTimeout(t);},[aviso]);
@@ -1088,12 +1092,14 @@ export default function Diagnostico(){
     navigate(`/d/${d.clave}`);
   };
 
-  const abrirEtapa=(i)=>{
-    if(!quien){setVentana({tipo:"quien",etapa:i});return;}
+  const abrirEtapa=(i,nombre=quien)=>{
+    if(!nombre){setVentana({tipo:"quien",etapa:i});return;}
     const e=ETAPAS_DATA[i];
-    // Al revisar una etapa ya respondida, se parte de las respuestas guardadas.
+    // Al revisar una etapa ya respondida, se parte de las respuestas guardadas y se va directo a las preguntas.
+    const yaLista=etapaCompleta(e,diag.respuestas);
+    setRevision(yaLista);
     setBorrador(Object.fromEntries(e.preguntas.map((_,k)=>[`${e.id}_${k}`,diag.respuestas[`${e.id}_${k}`]]).filter(([,v])=>v)));
-    setPos({etapa:i,pregunta:0,showIntro:true});
+    setPos({etapa:i,pregunta:0,showIntro:!yaLista});
     setErrorGuardar("");
     setEstado("quiz");
   };
@@ -1123,9 +1129,11 @@ export default function Diagnostico(){
     try{
       const d=await guardarEtapa(clave,e.id,resp,quien);
       setDiag(d);setBorrador({});
-      track("etapa_completada",{etapa:e.id,numero:e.num,colega:!!invitado});
+      track("etapa_completada",{etapa:e.id,numero:e.num,colega:!!invitado,revision});
       const pendientes=ETAPAS_DATA.filter(x=>!etapaCompleta(x,d.respuestas));
-      if(!pendientes.length){await finalizar();return;}
+      if(!pendientes.length&&!revision){await finalizar();return;}
+      // Después de revisar, vuelve al tablero confirmando que se guardó.
+      if(revision){setRevision(false);setAviso(`Guardamos los cambios en ${e.name}.`);setEstado("tablero");return;}
       // Sigue con la próxima etapa: primero las asignadas a esta persona; si no tiene, la siguiente pendiente.
       const prox=invitado?pendientes.find(x=>misEtapas.includes(x.id)):(pendientes.find(x=>x.num>e.num)||pendientes[0]);
       if(prox){setAviso(`Etapa ${e.num} guardada.`);setPos({etapa:prox.num-1,pregunta:0,showIntro:true});}
@@ -1143,6 +1151,7 @@ export default function Diagnostico(){
   };
   const handleBack=()=>{
     if(pos.pregunta>0)setPos({...pos,pregunta:pos.pregunta-1});
+    else if(revision){setRevision(false);setBorrador({});setEstado("tablero");}
     else setPos({...pos,showIntro:true});
   };
 
@@ -1161,8 +1170,7 @@ export default function Diagnostico(){
 
   const ventanas=<>
     {ventana?.tipo==="invitar"&&<InvitarVentana etapasIniciales={ventana.etapas} onCerrar={()=>setVentana(null)} onEnviar={invitar}/>}
-    {ventana?.tipo==="quien"&&<QuienVentana sugerido="" onCerrar={()=>setVentana(null)} onListo={(n)=>{guardarQuien(clave,n);setQuien(n);const i=ventana.etapa;setVentana(null);
-      const e=ETAPAS_DATA[i];setBorrador(Object.fromEntries(e.preguntas.map((_,k)=>[`${e.id}_${k}`,diag.respuestas[`${e.id}_${k}`]]).filter(([,v])=>v)));setPos({etapa:i,pregunta:0,showIntro:true});setEstado("quiz");}}/>}
+    {ventana?.tipo==="quien"&&<QuienVentana sugerido="" onCerrar={()=>setVentana(null)} onListo={(n)=>{guardarQuien(clave,n);setQuien(n);const i=ventana.etapa;setVentana(null);abrirEtapa(i,n);}}/>}
   </>;
 
   if(estado==="welcome") return <Welcome onStart={()=>{track("diagnostico_inicio");setEstado("register");}}/>;
@@ -1200,7 +1208,7 @@ export default function Diagnostico(){
       selected={respuestas[key]||null} onSelect={(v)=>setBorrador(b=>({...b,[key]:v}))}
       onNext={handleNext} onBack={handleBack}
       isLast={isLast} esFinal={isLast&&otrasPendientes===0} etapasScores={etapasScores}
-      hechas={guardadasOtras+pos.pregunta} guardando={guardando} errorGuardar={errorGuardar}
+      hechas={guardadasOtras+pos.pregunta} guardando={guardando} errorGuardar={errorGuardar} revision={revision}
     />
   );
 }

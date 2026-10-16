@@ -34,6 +34,31 @@
         "--strictPort"
       ],
       "port": 4173
+    },
+    {
+      "name": "identidad",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "vite",
+        ".preview-identidad",
+        "--port",
+        "4310",
+        "--strictPort"
+      ],
+      "port": 4310
+    },
+    {
+      "name": "web-prototipo",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "--yes",
+        "serve@14.2.4",
+        "/Users/sebaledesma/Documents/campuslatina-web",
+        "-l",
+        "4320",
+        "--no-clipboard"
+      ],
+      "port": 4320
     }
   ]
 }
