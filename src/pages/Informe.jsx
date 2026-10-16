@@ -6,13 +6,14 @@ import { useState, useEffect, useLayoutEffect, useRef, Fragment } from "react";
 import { NAVY_DK, EMERALD, SLATE, WHITE, PETROLEO, CORAL, MUTED, TEXT, LINE, BTN_PRIMARY, BTN_DISABLED, TOUCH } from "../theme.js";
 import { ETAPAS_DATA } from "../data/etapas.js";
 import { FRICCIONES } from "../data/fricciones.js";
-import { getNivel, calcScore, calcEtapaProjected, accionesDeEtapa, recsDeEtapa, sinAcciones, r1, fmt1, potencialEtapa, calcGlobalPotential } from "../lib/scoring.js";
+import { getNivel, calcEtapaProjected, accionesDeEtapa, r1, fmt1 } from "../lib/scoring.js";
 import { NIVEL_DESC, lecturaDiagnostico, VALIDAR } from "../data/textos.js";
 import { EnvioNota, ContactoCTA } from "../components/ReportExtras.jsx";
 import { Etiqueta, Escalon, Nivel, Tramo, BORDES, pct } from "../components/Nivel.jsx";
 import Flujo, { posEtapa, FIN } from "../components/Flujo.jsx";
 import { useIsDesktop } from "../lib/useIsDesktop.js";
 import { useCuenta } from "../lib/movimiento.js";
+import { datosInforme, htmlInforme } from "../lib/informePdf.js";
 import { track } from "../lib/analytics.js";
 
 const SECCIONES = ["Resumen", "Mapa", "Etapas", "Acciones", "Informe"];
@@ -36,23 +37,6 @@ function Encabezado({ etiqueta, titulo, bajada, desk, oscuro }) {
       {bajada && <p {...sube(2, { fontSize: desk ? 19 : 17, lineHeight: 1.55, color: oscuro ? "rgba(255,255,255,.72)" : MUTED, margin: "16px 0 0", maxWidth: 640 })}>{bajada}</p>}
     </div>
   );
-}
-
-// Todo lo que el informe necesita, calculado una vez por render.
-function datos(respuestas) {
-  const scores = {};
-  ETAPAS_DATA.forEach((e) => { scores[e.id] = calcScore(respuestas, e.id); });
-  const etapas = ETAPAS_DATA.map((e) => ({ ...e, score: scores[e.id], pot: potencialEtapa(scores, e.id, respuestas) }));
-  const global = parseFloat((etapas.reduce((a, e) => a + e.score, 0) / etapas.length).toFixed(2));
-  const potencial = calcGlobalPotential(scores, respuestas);
-  return {
-    respuestas, scores, etapas, global, potencial,
-    hayMejora: r1(potencial) > r1(global),
-    peor: etapas.reduce((a, e) => (e.score < a.score ? e : a)),
-    mejor: etapas.reduce((a, e) => (e.score > a.score ? e : a)),
-    todoEnD: sinAcciones(respuestas),
-    cubiertas: ETAPAS_DATA.reduce((n, e) => n + recsDeEtapa(respuestas, e.id).filter((r) => r.cubierta).length, 0),
-  };
 }
 
 // ── 01 RESUMEN ─────────────────────────────────────────────
@@ -497,41 +481,10 @@ function Acciones({ d, desk, checked, setChecked, registroData }) {
 }
 
 // ── 05 INFORME ─────────────────────────────────────────────
-// PDF imprimible: se abre en otra pestaña con la tipografía y los colores de la marca.
+// PDF imprimible: el HTML A4 de lib/informePdf.js se abre en otra pestaña y se imprime.
 function abrirPdf(d, registroData) {
-  const tinta = "#0A2329", petroleo = "#0B6470", gris = "#4D6166", linea = "#D5E3E5";
-  const origen = window.location.origin;
-  const filas = d.etapas.map((e) => `<tr><td>${num2(e.num)} · ${e.name}</td><td class="n">${fmt1(e.score)}</td><td>${getNivel(e.score).label}</td><td class="n p">${fmt1(e.pot)}</td></tr>`).join("");
-  const detalle = d.etapas.map((e) => {
-    const fricc = (FRICCIONES[e.id] || []).map((f) => `<li>${f.texto}</li>`).join("");
-    const recs = accionesDeEtapa(d.respuestas, e.id).map((r) => `<li>${r.texto} <span class="p">(+${fmt1(r.impacto)} pts)</span></li>`).join("");
-    const max = "<li>Esta etapa ya está en el nivel más alto que mide el diagnóstico.</li>";
-    return `<section class="etapa"><div class="et"><span class="num">${num2(e.num)}</span><div><h3>${e.name}</h3><div class="meta">Hoy ${fmt1(e.score)} · ${getNivel(e.score).label} &nbsp;→&nbsp; con el plan ${fmt1(e.pot)} · ${getNivel(e.pot).label}</div></div></div>
-      <p><strong>El momento del aspirante.</strong> ${e.resumen}</p><p><strong>Qué mide esta etapa.</strong> ${e.contexto}</p>
-      <div class="lbl">Dónde suele perderse valor</div><ul>${e.score < 5 ? fricc : max}</ul>
-      <div class="lbl">Acciones recomendadas</div><ul>${recs || max}</ul></section>`;
-  }).join("");
-  const fecha = new Date().toLocaleDateString("es-AR", { month: "long", year: "numeric" });
-  const nivel = getNivel(d.global).label;
-  const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Diagnóstico del proceso de inscripción — ${registroData.universidad || "Su institución"}</title>
-<link rel="stylesheet" href="${origen}/marca.css"><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Schibsted Grotesk',Arial,sans-serif;color:${tinta};font-size:13px;line-height:1.6}
-@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}.tapa{background:${tinta};color:#fff;padding:36px 48px 32px}.tapa img{height:34px}
-.lbl{font-family:'CL Etiquetas',Arial,sans-serif;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:${gris};margin:14px 0 6px}.tapa .lbl{color:#A9C2C6}
-.cifra{font-weight:700;font-size:72px;line-height:.85;letter-spacing:-.05em}.c{padding:28px 48px}h2{font-size:22px;letter-spacing:-.02em;margin:26px 0 12px;padding-bottom:8px;border-bottom:2px solid ${tinta}}
-table{width:100%;border-collapse:collapse}td,th{padding:9px 8px;border-bottom:1px solid ${linea};text-align:left;font-size:12.5px}th{font-family:'CL Etiquetas',Arial,sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:${gris};font-weight:600}
-.n{text-align:right;font-variant-numeric:tabular-nums}.p{color:${petroleo};font-weight:600}.etapa{page-break-inside:avoid;margin-bottom:22px}.et{display:flex;gap:14px;align-items:flex-end;margin-bottom:8px}
-.num{font-size:40px;font-weight:700;color:${petroleo};line-height:.85;letter-spacing:-.05em}h3{font-size:17px}.meta{font-size:12px;color:${gris}}p{margin-bottom:6px}ul{padding-left:16px}li{margin-bottom:4px}
-.pie{padding:16px 48px;font-size:10px;color:${gris};border-top:1px solid ${linea}}</style></head><body>
-<div class="tapa"><img src="${origen}/campus-latina-sobre-oscuro.svg" alt="Campus Latina"><div class="lbl" style="margin-top:28px">Diagnóstico del proceso de inscripción · ${fecha}</div>
-<div style="font-size:26px;font-weight:700;letter-spacing:-.02em">${registroData.universidad || "Su institución"}</div><div style="color:#A9C2C6;font-size:12px">${[registroData.nombre, registroData.cargo, registroData.pais].filter(Boolean).join(" · ")}</div>
-<div style="display:flex;gap:48px;align-items:flex-end;margin-top:28px"><div><div class="lbl">Hoy</div><div class="cifra">${fmt1(d.global)}</div><div style="color:#A9C2C6">de 5 · ${nivel}</div></div>
-<div><div class="lbl">Con el plan</div><div class="cifra" style="color:#FF6B4A">${fmt1(d.potencial)}</div><div style="color:#A9C2C6">${getNivel(d.potencial).label}</div></div></div></div>
-<div class="c"><div class="lbl">Qué dice su diagnóstico</div><p style="font-size:14px"><strong>${capital(NIVEL_DESC[nivel])}.</strong> ${lecturaDiagnostico(d.global, d.peor)}</p>
-<h2>Resumen por etapa</h2><table><thead><tr><th>Etapa</th><th class="n">Hoy</th><th>Nivel</th><th class="n">Con el plan</th></tr></thead><tbody>${filas}</tbody></table>
-<h2>Análisis por etapa</h2>${detalle}</div><div class="pie">Diagnóstico del proceso de inscripción universitaria · CampusLatina × CIeLatam × Salesforce</div>
-<script>window.onload=function(){setTimeout(function(){window.print();},500);}<\/script></body></html>`;
   const win = window.open("", "_blank");
-  if (win) { win.document.write(html); win.document.close(); }
+  if (win) { win.document.write(htmlInforme(d, registroData, { origen: window.location.origin })); win.document.close(); }
 }
 
 function InformeFinal({ d, desk, registroData, envio }) {
@@ -649,7 +602,7 @@ export function Informe({ registroData, respuestas, envio }) {
   const [tab, setTab] = useState(0);
   const [checked, setChecked] = useState({});
   const [sel, setSel] = useState(null);
-  const d = datos(respuestas);
+  const d = datosInforme(respuestas);
   const irA = (i, etapa) => {
     if (etapa != null) setSel(etapa);
     setTab(i); window.scrollTo(0, 0);
