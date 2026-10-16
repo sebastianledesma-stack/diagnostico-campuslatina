@@ -1,7 +1,8 @@
 // Campo de líneas: el recurso gráfico de la marca (mismo dibujo que en campuslatina.com, assets/campo.js).
 // Líneas finas que nacen dispersas y convergen en un haz calmo; algunos puntos de luz viajan por ellas
-// y los que llegan toman el color de destaque. montarCampo(canvas, { linea, destaque, tipo }) devuelve
-// una función para desmontarlo. Con movimiento reducido se dibuja quieto.
+// y los que llegan toman el color de destaque. montarCampo(canvas, { linea, destaque, tipo, orden }) devuelve
+// una función para desmontarlo. `orden` (0 a 1, o una función que lo devuelve) ordena el haz: con 0 las
+// líneas ondulan dispersas; con 1 nacen más juntas y casi rectas. Con movimiento reducido se dibuja quieto.
 const TIPOS = {
   // Fondo de pantallas oscuras: las líneas pasan por la mitad de abajo y convergen abajo a la derecha.
   fondo: {
@@ -21,11 +22,13 @@ function rng(seed) {
 const suave = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 const rgb = (hex) => { const n = parseInt(hex.replace("#", ""), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
 
-export function montarCampo(cv, { linea = "#7FD6DE", destaque = "#FF6B4A", tipo = "fondo" } = {}) {
+export function montarCampo(cv, { linea = "#7FD6DE", destaque = "#FF6B4A", tipo = "fondo", orden = 0 } = {}) {
   if (!cv || typeof window === "undefined") return () => {};
   const ctx = cv.getContext("2d");
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const col = rgb(linea), dest = rgb(destaque);
+  const ord = () => Math.max(0, Math.min(1, typeof orden === "function" ? orden() : orden));
+  let o = ord();
   let F = null, raf = 0, t0 = null, visible = true;
 
   function preparar() {
@@ -40,10 +43,14 @@ export function montarCampo(cv, { linea = "#7FD6DE", destaque = "#FF6B4A", tipo 
     for (let j = 0; j < cfg.puntos; j++) P.push({ l: Math.floor(R() * cfg.n), u: R(), v: 0.035 + R() * 0.05, r: 1.5 + R() * 2, hi: R() < 0.4 });
     F = { w: r.width, h: r.height, cfg, L, P, R };
   }
-  const yEn = (l, u, t) => { const c = Math.pow(suave(0.08, 1, u), 1.25); return (l.y0 + (l.ye - l.y0) * c + Math.sin(u * l.f * 6.283 + l.ph + t * l.sp) * l.amp * (1 - c)) * F.h; };
+  const yEn = (l, u, t) => {
+    const c = Math.pow(suave(0.08, 1, u), 1.25), y0 = l.y0 + (l.ye - l.y0) * o * 0.6;
+    return (y0 + (l.ye - y0) * c + Math.sin(u * l.f * 6.283 + l.ph + t * l.sp) * l.amp * (1 - 0.8 * o) * (1 - c)) * F.h;
+  };
   const xEn = (u) => (-0.04 + u * (F.cfg.conv.x + 0.04)) * F.w;
 
   function dibujar(t) {
+    o = reduce && typeof orden === "function" ? 1 : ord(); // quieto: se muestra el estado final
     const { w, h, cfg } = F; ctx.clearRect(0, 0, w, h); ctx.lineCap = "round";
     for (const l of F.L) {
       const g = ctx.createLinearGradient(0, 0, w, 0);
