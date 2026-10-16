@@ -8,7 +8,7 @@ const CONTACT_WHATSAPP = (import.meta.env.VITE_CONTACT_WHATSAPP || "").replace(/
 // Link público para agendar la reunión de 45 min. Sin él, el botón abre un mail pidiendo la reunión.
 const AGENDA_URL = import.meta.env.VITE_AGENDA_URL || "";
 
-const monoStyle = {fontFamily:"'Space Mono',monospace",fontSize:11,letterSpacing:".12em",textTransform:"uppercase"};
+const monoStyle = {fontFamily:"'CL Etiquetas',sans-serif",fontSize:11,letterSpacing:".12em",textTransform:"uppercase"};
 
 // Nota discreta (dentro de la pestaña PDF) sobre la copia enviada por mail.
 // Estado: "pendiente" | "enviado" | "error"
@@ -42,15 +42,15 @@ export function ContactoCTA({universidad,target,alto,ancho=680}){
   const href=target?agendaHref(universidad):contactoHref(universidad);
   return(
     <div style={{maxWidth:ancho,margin:"0 auto",padding:"4px 18px 18px"}}>
-      <div style={{background:NAVY_DK,borderRadius:14,padding:"20px 18px",position:"relative",overflow:"hidden"}}>
-        <div style={{position:"absolute",right:-60,top:-60,width:200,height:200,borderRadius:"50%",background:"radial-gradient(circle, rgba(0,200,150,.12) 0%, transparent 70%)"}}/>
+      <div style={{background:NAVY_DK,borderRadius:2,padding:"20px 18px",position:"relative",overflow:"hidden"}}>
+        <div style={{position:"absolute",right:-60,top:-60,width:200,height:200,borderRadius:"50%",background:"radial-gradient(circle, rgba(127,214,222,.12) 0%, transparent 70%)"}}/>
         <div style={{position:"relative"}}>
           <span style={{...monoStyle,color:EMERALD}}>CampusLatina</span>
-          <div style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:WHITE,lineHeight:1.25,margin:"6px 0 8px"}}>
+          <div style={{fontFamily:"'CL Titulos',serif",fontSize:20,color:WHITE,lineHeight:1.25,margin:"6px 0 8px"}}>
             {target&&alto?<>Validemos su resultado <em style={{color:EMERALD}}>con datos</em></>
               :target?<>Revisemos su diagnóstico <em style={{color:EMERALD}}>en 45 minutos</em></>:<>¿Quiere inscribir <em style={{color:EMERALD}}>más estudiantes</em> el próximo ciclo?</>}
           </div>
-          <p style={{fontSize:15,color:"rgba(255,255,255,.7)",lineHeight:1.65,margin:"0 0 16px",fontFamily:"'DM Sans',sans-serif"}}>
+          <p style={{fontSize:15,color:"rgba(255,255,255,.7)",lineHeight:1.65,margin:"0 0 16px",fontFamily:"'Schibsted Grotesk',sans-serif"}}>
             {target&&alto
               ?<>Comparemos sus números con lo que vemos en otras universidades, en una videollamada de 45 minutos. {AUTORIDAD}</>
               :target
@@ -59,7 +59,7 @@ export function ContactoCTA({universidad,target,alto,ancho=680}){
           </p>
           {href&&(
             <a href={href} target="_blank" rel="noopener noreferrer" onClick={()=>track(target?"reunion_click":"contacto_click",{canal:target?(AGENDA_URL?"agenda":"mail"):(CONTACT_WHATSAPP?"whatsapp":"mail")})}
-              style={{display:"inline-flex",alignItems:"center",justifyContent:"center",minHeight:48,padding:"0 24px",borderRadius:10,background:EMERALD,color:NAVY_DK,fontSize:16,fontWeight:700,fontFamily:"'DM Sans',sans-serif",textDecoration:"none"}}>
+              style={{display:"inline-flex",alignItems:"center",justifyContent:"center",minHeight:48,padding:"0 24px",borderRadius:2,background:EMERALD,color:NAVY_DK,fontSize:16,fontWeight:700,fontFamily:"'Schibsted Grotesk',sans-serif",textDecoration:"none"}}>
               {target?"Agendar la reunión →":CONTACT_WHATSAPP?"Escríbanos por WhatsApp →":"Escríbanos →"}
             </a>
           )}

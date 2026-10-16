@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Diagnóstico del proceso de inscripción · CampusLatina</title>
     <meta name="description" content="Descubra en 10 minutos en qué momento su universidad pierde inscriptos y qué resolver primero. Diagnóstico gratuito con informe en PDF." />
-    <meta name="theme-color" content="#0E1240" />
+    <meta name="theme-color" content="#0A2329" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
     <link rel="canonical" href="https://diagnostico.campuslatina.com/" />
@@ -41,16 +41,16 @@
         gtag("config", "G-3R3PVW6BMY", { page_location: location.origin + location.pathname.replace(/^\/d\/[^/]+/, "/d/privado") });
       })();
     </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+    <link rel="preload" href="/fonts/schibsted-grotesk-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/schibsted-grotesk-700.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/marca.css" />
     <style>
       *, *::before, *::after { box-sizing: border-box; }
-      html, body { margin: 0; padding: 0; background: #F5F4F0; -webkit-text-size-adjust: 100%; }
-      body { font-family: 'DM Sans', sans-serif; }
+      html, body { margin: 0; padding: 0; background: #EAF3F4; -webkit-text-size-adjust: 100%; }
+      body { font-family: 'Schibsted Grotesk', sans-serif; }
       button, input, select { font: inherit; }
       /* Foco visible para teclado (4.8:1 sobre crema, 3.5:1 sobre azul) */
-      :focus-visible { outline: 3px solid #007A5C; outline-offset: 2px; border-radius: 6px; }
+      :focus-visible { outline: 3px solid #0B6470; outline-offset: 2px; border-radius:2px; }
       button:focus:not(:focus-visible) { outline: none; }
       /* Bienvenida en escritorio (≥1024 px): dos columnas. Los estilos inline son los del celular. */
       @media (min-width: 1024px) {
@@ -59,8 +59,8 @@
               max-width: 1200px !important; padding: 36px 48px !important; }
         .wl-head { grid-area: head; } .wl-cta { grid-area: cta; } .wl-datos { grid-area: datos; max-width: 420px; }
         .wl-guia { grid-area: guia; margin: 4px 0 0 !important; } .wl-cta2 { display: none; }
-        .wl-ben { grid-area: ben; align-self: end; border-radius: 16px !important; padding: 24px !important; margin-bottom: 16px !important; }
-        .wl-jue { grid-area: jue; align-self: start; border-radius: 16px !important; padding: 20px 24px !important; margin-bottom: 0 !important; }
+        .wl-ben { grid-area: ben; align-self: end; border-radius:2px !important; padding: 24px !important; margin-bottom: 16px !important; }
+        .wl-jue { grid-area: jue; align-self: start; border-radius:2px !important; padding: 20px 24px !important; margin-bottom: 0 !important; }
         .wl-ben-grid { display: grid !important; grid-template-columns: 1fr 1fr; gap: 20px 24px !important; margin-top: 16px !important; }
         .wl-h1 { font-size: 52px !important; margin: 14px 0 18px !important; }
         .wl-lead { font-size: 18px !important; max-width: 520px !important; margin-bottom: 32px !important; }

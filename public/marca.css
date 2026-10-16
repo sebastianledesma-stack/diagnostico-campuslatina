@@ -1,0 +1,11 @@
+/* Campus Latina — tipografías de la marca (verde petróleo con coral).
+   "CL Titulos": Schibsted Grotesk negrita para el texto y Newsreader cursiva para la palabra destacada.
+   "CL Etiquetas": Schibsted Grotesk semibold para etiquetas en mayúsculas. Licencias en /fonts. */
+@font-face{font-family:"Schibsted Grotesk";src:url(/fonts/schibsted-grotesk-400.woff2) format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Schibsted Grotesk";src:url(/fonts/schibsted-grotesk-500.woff2) format("woff2");font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:"Schibsted Grotesk";src:url(/fonts/schibsted-grotesk-600.woff2) format("woff2");font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:"Schibsted Grotesk";src:url(/fonts/schibsted-grotesk-700.woff2) format("woff2");font-weight:700 900;font-style:normal;font-display:swap}
+@font-face{font-family:"Newsreader";src:url(/fonts/newsreader-italic-400.woff2) format("woff2");font-weight:100 900;font-style:italic;font-display:swap}
+@font-face{font-family:"CL Titulos";src:url(/fonts/schibsted-grotesk-700.woff2) format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
+@font-face{font-family:"CL Titulos";src:url(/fonts/newsreader-italic-400.woff2) format("woff2");font-weight:100 900;font-style:italic;font-display:swap}
+@font-face{font-family:"CL Etiquetas";src:url(/fonts/schibsted-grotesk-600.woff2) format("woff2");font-weight:100 900;font-style:normal;font-display:swap}

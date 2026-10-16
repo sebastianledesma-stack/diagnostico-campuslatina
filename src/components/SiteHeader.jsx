@@ -12,7 +12,7 @@ export default function SiteHeader({ onCta }) {
     <nav className="cl-nav" aria-label="CampusLatina">
       <style dangerouslySetInnerHTML={{ __html: SITE_HEADER_CSS }} />
       <div className="cl-nav-in">
-        <a className="cl-logo" href={`${WEB}/`}><img src="/campuslatina-logo.png" alt="Campus Latina" width="121" height="40" /></a>
+        <a className="cl-logo" href={`${WEB}/`}><img src="/campus-latina.svg" alt="Campus Latina" width="148" height="42" /></a>
         <div className="cl-links">
           {NAV_LINKS.map((l) => <a key={l.href} href={l.href}>{l.texto}</a>)}
           {cta()}

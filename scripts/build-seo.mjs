@@ -50,45 +50,45 @@ const ld = (obj) => `<script type="application/ld+json">${JSON.stringify(obj).re
 
 const CSS = `
 *,*::before,*::after{box-sizing:border-box}
-html,body{margin:0;background:#F5F4F0;color:#1A1F5E;-webkit-text-size-adjust:100%}
-body{font:17px/1.7 'DM Sans',system-ui,sans-serif}
-a{color:#007A5C;text-underline-offset:3px}
-a:focus-visible{outline:3px solid #007A5C;outline-offset:2px;border-radius:4px}
+html,body{margin:0;background:#EAF3F4;color:#123A42;-webkit-text-size-adjust:100%}
+body{font:17px/1.7 'Schibsted Grotesk',system-ui,sans-serif}
+a{color:#0B6470;text-underline-offset:3px}
+a:focus-visible{outline:3px solid #0B6470;outline-offset:2px;border-radius:4px}
 main{max-width:760px;margin:0 auto;padding:32px 20px 56px}
-.crumbs{font-size:14px;color:#565C80;margin-bottom:12px}
-.crumbs a{color:#565C80;display:inline-flex;align-items:center;min-height:44px}
-.eyebrow{font:700 12px/1.4 'Space Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#007A5C}
-h1{font:400 clamp(32px,5vw,46px)/1.12 'DM Serif Display',Georgia,serif;margin:8px 0 16px}
-h1 em{color:#007A5C}
-h2{font:400 28px/1.2 'DM Serif Display',Georgia,serif;margin:44px 0 12px}
+.crumbs{font-size:14px;color:#4D6166;margin-bottom:12px}
+.crumbs a{color:#4D6166;display:inline-flex;align-items:center;min-height:44px}
+.eyebrow{font:700 12px/1.4 'CL Etiquetas',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#0B6470}
+h1{font:400 clamp(32px,5vw,46px)/1.12 'CL Titulos',Georgia,serif;margin:8px 0 16px}
+h1 em{color:#0B6470}
+h2{font:400 28px/1.2 'CL Titulos',Georgia,serif;margin:44px 0 12px}
 h3{font-size:19px;line-height:1.35;margin:28px 0 6px}
-.lead{font-size:19px;color:#3A4070}
-.card{background:#fff;border:1px solid #E8E6DF;border-radius:14px;padding:20px 22px;margin:16px 0}
+.lead{font-size:19px;color:#1F3A40}
+.card{background:#fff;border:1px solid #D5E3E5;border-radius:2px;padding:20px 22px;margin:16px 0}
 .card h3{margin-top:0}
-.muted{color:#565C80}
+.muted{color:#4D6166}
 ul,ol{padding-left:22px}
 li{margin:6px 0}
 .niveles{width:100%;border-collapse:collapse;font-size:16px;margin:12px 0}
-.niveles th,.niveles td{text-align:left;padding:10px 12px;border-bottom:1px solid #E8E6DF;vertical-align:top}
-.niveles th{font:700 12px/1.3 'Space Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:#5A6190}
+.niveles th,.niveles td{text-align:left;padding:10px 12px;border-bottom:1px solid #D5E3E5;vertical-align:top}
+.niveles th{font:700 12px/1.3 'CL Etiquetas',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#4D6166}
 .opcion{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:10px 0}
-.opcion b{font:700 13px/1.6 'Space Mono',monospace}
-.imp{font:700 13px/1 'Space Mono',monospace;color:#007A5C;white-space:nowrap}
-.cta-box{background:#0E1240;color:#fff;border-radius:16px;padding:26px 24px;margin:44px 0 8px}
+.opcion b{font:700 13px/1.6 'CL Etiquetas',sans-serif}
+.imp{font:700 13px/1 'CL Etiquetas',sans-serif;color:#0B6470;white-space:nowrap}
+.cta-box{background:#0A2329;color:#fff;border-radius:2px;padding:26px 24px;margin:44px 0 8px}
 .cta-box h2{color:#fff;margin:0 0 8px}
 .cta-box p{color:rgba(255,255,255,.8);margin:0 0 18px}
-.cta-box a{display:inline-block;background:#00C896;color:#0E1240;font-weight:700;text-decoration:none;border-radius:12px;padding:14px 22px}
+.cta-box a{display:inline-block;background:#7FD6DE;color:#0A2329;font-weight:700;text-decoration:none;border-radius:2px;padding:14px 22px}
 .nav-etapas{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:28px;font-size:16px}
-.nav-etapas a{display:inline-flex;align-items:center;min-height:48px;padding:0 16px;border:1px solid #E8E6DF;border-radius:10px;background:#fff;text-decoration:none;font-weight:700}
+.nav-etapas a{display:inline-flex;align-items:center;min-height:48px;padding:0 16px;border:1px solid #D5E3E5;border-radius:2px;background:#fff;text-decoration:none;font-weight:700}
 .etapas-lista{list-style:none;padding:0}
 .etapas-lista li{margin:0 0 12px}
-.etapas-lista a{display:block;background:#fff;border:1px solid #E8E6DF;border-radius:12px;padding:14px 18px;text-decoration:none;color:#1A1F5E}
-.etapas-lista a:hover{border-color:#007A5C}
+.etapas-lista a{display:block;background:#fff;border:1px solid #D5E3E5;border-radius:2px;padding:14px 18px;text-decoration:none;color:#123A42}
+.etapas-lista a:hover{border-color:#0B6470}
 .etapas-lista strong{display:block;font-size:18px}
-.etapas-lista span{color:#565C80;font-size:15px}
-details{background:#fff;border:1px solid #E8E6DF;border-radius:12px;padding:14px 18px;margin:10px 0}
+.etapas-lista span{color:#4D6166;font-size:15px}
+details{background:#fff;border:1px solid #D5E3E5;border-radius:2px;padding:14px 18px;margin:10px 0}
 summary{cursor:pointer;font-weight:700}
-footer{border-top:1px solid #E8E6DF;padding:24px 20px 40px;text-align:center;font-size:14px;color:#565C80}
+footer{border-top:1px solid #D5E3E5;padding:24px 20px 40px;text-align:center;font-size:14px;color:#4D6166}
 footer a{display:inline-flex;align-items:center;min-height:44px}
 `;
 
@@ -117,12 +117,11 @@ function page({ path, title, description, body, jsonld = [], type = "article" })
 <meta name="twitter:title" content="${esc(title)}">
 <meta name="twitter:description" content="${esc(description)}">
 <meta name="twitter:image" content="${url("/og.png")}">
-<meta name="theme-color" content="#0E1240">
+<meta name="theme-color" content="#0A2329">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="alternate" type="text/plain" title="Resumen para modelos de lenguaje" href="/llms.txt">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700&family=DM+Serif+Display:ital@0;1&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/marca.css">
 <style>${CSS}${SITE_HEADER_CSS}</style>
 ${jsonld.map(ld).join("\n")}
 ${GA_SNIPPET}

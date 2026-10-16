@@ -12,11 +12,11 @@ export const AREA = {
   decision: "Admisiones", inscripcion: "Administración", retencion: "Área académica",
 };
 
-const mono = { fontFamily: "'Space Mono',monospace", fontSize: 12, letterSpacing: ".1em", textTransform: "uppercase" };
-const btnBase = { minHeight: TOUCH, borderRadius: 10, fontSize: 16, fontFamily: "'DM Sans',sans-serif", cursor: "pointer" };
+const mono = { fontFamily: "'CL Etiquetas',sans-serif", fontSize: 12, letterSpacing: ".1em", textTransform: "uppercase" };
+const btnBase = { minHeight: TOUCH, borderRadius:2, fontSize: 16, fontFamily: "'Schibsted Grotesk',sans-serif", cursor: "pointer" };
 const btnSec = { ...btnBase, padding: "0 16px", border: `1.5px solid ${NAVY}`, background: WHITE, color: NAVY, fontWeight: 600 };
 const btnLink = { ...btnBase, minHeight: 44, padding: "0 4px", border: "none", background: "none", color: EMERALD_TXT, fontWeight: 600, textDecoration: "underline", textUnderlineOffset: 3 };
-const campo = { display: "block", width: "100%", minHeight: TOUCH, padding: "11px 14px", border: "1.5px solid #8C8A93", borderRadius: 8, fontSize: 16, fontFamily: "'DM Sans',sans-serif", color: NAVY, background: CREAM };
+const campo = { display: "block", width: "100%", minHeight: TOUCH, padding: "11px 14px", border: "1.5px solid #8A9B9E", borderRadius:2, fontSize: 16, fontFamily: "'Schibsted Grotesk',sans-serif", color: NAVY, background: CREAM };
 const label = { display: "block", marginBottom: 6, ...mono, color: NAVY, fontWeight: 700 };
 
 export function Tablero({ diag, quien, misEtapas, aviso, onResponder, onInvitar, onCopiar, onFinalizar, finalizando, errorFinal }) {
@@ -30,7 +30,7 @@ export function Tablero({ diag, quien, misEtapas, aviso, onResponder, onInvitar,
   const invitadoA = (id) => diag.colaboradores.filter((c) => c.etapas.includes(id)).map((c) => c.nombre);
 
   const barra = (
-    <div style={{ position: "sticky", bottom: 0, zIndex: 10, background: "rgba(245,244,240,.96)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", borderTop: `1px solid ${LINE}` }}>
+    <div style={{ position: "sticky", bottom: 0, zIndex: 10, background: "rgba(234,243,244,.96)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", borderTop: `1px solid ${LINE}` }}>
       <div style={{ maxWidth: desk ? 860 : 620, margin: "0 auto", padding: "10px 16px calc(10px + env(safe-area-inset-bottom))" }}>
         {todas ? (
           <button type="button" onClick={onFinalizar} disabled={finalizando}
@@ -58,7 +58,7 @@ export function Tablero({ diag, quien, misEtapas, aviso, onResponder, onInvitar,
         <span style={{ ...mono, color: "rgba(255,255,255,.65)" }}>Diagnóstico del proceso de inscripción</span>
       </div>
       <main style={{ flex: 1, maxWidth: desk ? 860 : 620, margin: "0 auto", padding: desk ? "40px 32px 32px" : "28px 16px 24px", width: "100%" }}>
-        <h1 style={{ fontFamily: "'DM Serif Display',serif", fontWeight: 400, fontSize: desk ? 38 : 28, color: NAVY, lineHeight: 1.15, margin: 0 }}>
+        <h1 style={{ fontFamily: "'CL Titulos',serif", fontWeight: 400, fontSize: desk ? 38 : 28, color: NAVY, lineHeight: 1.15, margin: 0 }}>
           {diag.universidad}
         </h1>
         <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "14px 0 6px" }}>
@@ -68,9 +68,9 @@ export function Tablero({ diag, quien, misEtapas, aviso, onResponder, onInvitar,
           </div>
           <span style={{ fontSize: 15, fontWeight: 700, color: NAVY, whiteSpace: "nowrap" }}>{listas.length} de 7 etapas</span>
         </div>
-        {aviso && <p role="status" style={{ margin: "10px 0 0", padding: "10px 14px", borderRadius: 10, background: "rgba(0,200,150,.12)", color: NAVY, fontSize: 15, fontWeight: 500 }}>{aviso}</p>}
+        {aviso && <p role="status" style={{ margin: "10px 0 0", padding: "10px 14px", borderRadius:2, background: "rgba(127,214,222,.12)", color: NAVY, fontSize: 15, fontWeight: 500 }}>{aviso}</p>}
 
-        <div style={{ background: WHITE, border: `1px solid ${LINE}`, borderRadius: 14, padding: "16px 18px", margin: "16px 0 22px" }}>
+        <div style={{ background: WHITE, border: `1px solid ${LINE}`, borderRadius:2, padding: "16px 18px", margin: "16px 0 22px" }}>
           <p style={{ fontSize: 15, color: TEXT, lineHeight: 1.6, margin: 0 }}>
             <strong style={{ color: NAVY }}>Cada etapa se guarda al terminarla.</strong> Puede seguir más tarde desde el link que enviamos a {diag.email}, o pedirle a un colega que complete las etapas que conoce mejor. El informe se genera cuando estén las 7.
           </p>
@@ -87,10 +87,10 @@ export function Tablero({ diag, quien, misEtapas, aviso, onResponder, onInvitar,
             const invitados = invitadoA(e.id);
             const mia = misEtapas.includes(e.id);
             return (
-              <li key={e.id} style={{ background: WHITE, border: `1.5px solid ${lista ? "rgba(0,122,92,.35)" : mia ? EMERALD : LINE}`, borderRadius: 14, padding: "14px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
+              <li key={e.id} style={{ background: WHITE, border: `1.5px solid ${lista ? "rgba(0,122,92,.35)" : mia ? EMERALD : LINE}`, borderRadius:2, padding: "14px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <span aria-hidden="true" style={{ width: 36, height: 36, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: lista ? 15 : 18, fontWeight: 700, background: lista ? "rgba(0,200,150,.15)" : CREAM, color: EMERALD_TXT, border: `2px solid ${lista ? "rgba(0,122,92,.45)" : LINE}` }}>
-                    {lista ? "✓" : e.emoji}
+                  <span aria-hidden="true" style={{ width: 36, height: 36, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: lista ? 15 : 18, fontWeight: 700, background: lista ? "rgba(127,214,222,.15)" : CREAM, color: EMERALD_TXT, border: `2px solid ${lista ? "rgba(0,122,92,.45)" : LINE}` }}>
+                    {lista ? "✓" : e.num}
                   </span>
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontSize: 17, fontWeight: 700, color: NAVY }}>{e.num}. {e.name}</div>
@@ -133,10 +133,10 @@ function Ventana({ titulo, onCerrar, children }) {
     return () => { document.removeEventListener("keydown", esc); previo?.focus?.(); };
   }, []);
   return (
-    <div onClick={(ev) => ev.target === ev.currentTarget && onCerrar()} style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(14,18,64,.55)", display: "flex", alignItems: "flex-end", justifyContent: "center", padding: 0 }}>
+    <div onClick={(ev) => ev.target === ev.currentTarget && onCerrar()} style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(10,35,41,.55)", display: "flex", alignItems: "flex-end", justifyContent: "center", padding: 0 }}>
       <div ref={ref} role="dialog" aria-modal="true" aria-labelledby="ventana-titulo"
         style={{ background: WHITE, width: "100%", maxWidth: 560, maxHeight: "92vh", overflowY: "auto", borderRadius: "16px 16px 0 0", padding: "22px 20px calc(20px + env(safe-area-inset-bottom))", margin: "0 auto" }}>
-        <h2 id="ventana-titulo" style={{ fontFamily: "'DM Serif Display',serif", fontWeight: 400, fontSize: 24, color: NAVY, margin: "0 0 12px" }}>{titulo}</h2>
+        <h2 id="ventana-titulo" style={{ fontFamily: "'CL Titulos',serif", fontWeight: 400, fontSize: 24, color: NAVY, margin: "0 0 12px" }}>{titulo}</h2>
         {children}
       </div>
     </div>
@@ -227,7 +227,7 @@ export function NoEncontrado() {
   return (
     <div style={{ minHeight: "100vh", background: CREAM, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <div style={{ maxWidth: 440, textAlign: "center" }}>
-        <h1 style={{ fontFamily: "'DM Serif Display',serif", fontWeight: 400, fontSize: 28, color: NAVY, margin: "0 0 10px" }}>No encontramos este diagnóstico</h1>
+        <h1 style={{ fontFamily: "'CL Titulos',serif", fontWeight: 400, fontSize: 28, color: NAVY, margin: "0 0 10px" }}>No encontramos este diagnóstico</h1>
         <p style={{ fontSize: 16, color: TEXT, lineHeight: 1.6, margin: "0 0 20px" }}>Revise que el link esté completo. Si lo copió de un mail, a veces se corta al final.</p>
         <a href="/" style={{ ...btnBase, display: "inline-flex", alignItems: "center", padding: "0 22px", textDecoration: "none", fontWeight: 700, ...BTN_PRIMARY }}>Empezar un diagnóstico nuevo</a>
       </div>
