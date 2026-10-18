@@ -30,19 +30,25 @@ export function datosInforme(respuestas) {
   };
 }
 
-// Campo de líneas quieto (SVG) para la tapa: líneas que nacen dispersas y convergen abajo a la derecha.
-function campo(w = 210, h = 120) {
+// Campo de líneas quieto para la tapa: líneas que nacen dispersas y convergen abajo a la derecha.
+// Devuelve los trazos en unidades del recuadro (w × h) para dibujarlos en SVG o en el PDF del servidor.
+export function trazosCampo(w = 210, h = 120) {
   let s = 7; const R = () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; };
   const lineas = [], puntos = [];
   const en = (p, t) => { const u = 1 - t; return [0, 1].map((k) => u * u * u * p[0][k] + 3 * u * u * t * p[1][k] + 3 * u * t * t * p[2][k] + t * t * t * p[3][k]); };
+  const f = (n) => Number(n.toFixed(2));
   for (let i = 0; i < 52; i++) {
     const y0 = h * (0.02 + R() * 0.98), ye = h * (0.74 + (R() - 0.5) * 0.05);
-    const p = [[-2, y0], [w * (0.22 + R() * 0.2), y0 + (R() - 0.5) * h * 0.45], [w * (0.58 + R() * 0.16), ye + (R() - 0.5) * h * 0.06], [w + 2, ye]];
-    lineas.push(`<path d="M${p[0].join(" ")} C${p[1].join(" ")} ${p[2].join(" ")} ${p[3].join(" ")}" stroke="${AGUA}" stroke-opacity="${(0.1 + R() * 0.3).toFixed(2)}" stroke-width="${(0.12 + R() * 0.22).toFixed(2)}" fill="none"/>`);
-    if (i % 5 === 0) { const t = 0.15 + R() * 0.6, [px, py] = en(p, t); puntos.push(`<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="${(0.5 + R() * 0.5).toFixed(2)}" fill="${AGUA}" fill-opacity=".8"/>`); }
-    if (i % 13 === 0) { const [px, py] = en(p, 0.9 + R() * 0.08); puntos.push(`<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r=".9" fill="${CORAL}"/>`); }
+    const p = [[-2, y0], [w * (0.22 + R() * 0.2), y0 + (R() - 0.5) * h * 0.45], [w * (0.58 + R() * 0.16), ye + (R() - 0.5) * h * 0.06], [w + 2, ye]].map((q) => q.map(f));
+    lineas.push({ d: `M${p[0].join(" ")} C${p[1].join(" ")} ${p[2].join(" ")} ${p[3].join(" ")}`, opacidad: f(0.1 + R() * 0.3), ancho: f(0.12 + R() * 0.22) });
+    if (i % 5 === 0) { const [cx, cy] = en(p, 0.15 + R() * 0.6); puntos.push({ cx: f(cx), cy: f(cy), r: f(0.5 + R() * 0.5), coral: false }); }
+    if (i % 13 === 0) { const [cx, cy] = en(p, 0.9 + R() * 0.08); puntos.push({ cx: f(cx), cy: f(cy), r: 0.9, coral: true }); }
   }
-  return `<svg class="campo" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">${lineas.join("")}${puntos.join("")}</svg>`;
+  return { lineas, puntos };
+}
+function campo(w = 210, h = 120) {
+  const { lineas, puntos } = trazosCampo(w, h);
+  return `<svg class="campo" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">${lineas.map((l) => `<path d="${l.d}" stroke="${AGUA}" stroke-opacity="${l.opacidad}" stroke-width="${l.ancho}" fill="none"/>`).join("")}${puntos.map((q) => `<circle cx="${q.cx}" cy="${q.cy}" r="${q.r}" fill="${q.coral ? CORAL : AGUA}"${q.coral ? "" : ' fill-opacity=".8"'}/>`).join("")}</svg>`;
 }
 
 // Escalón de 4 barras (nivel) y tramo de 1 a 5 (hoy y con el plan), como en el informe en pantalla.
@@ -128,7 +134,7 @@ h3{font-size:17pt;letter-spacing:-.025em;line-height:1.1}.preg{font-size:12pt;ma
 .ilus{font-size:7.5pt;color:${GRIS};margin-top:2mm}
 </style></head><body>
 <section class="tapa">
-  ${campo()}
+  ${campo(210, 125)}
   <img src="${origen}/campus-latina-sobre-oscuro.svg" alt="Campus Latina">
   <div class="cuerpo">
     <span class="lbl">Diagnóstico del proceso de inscripción · ${mes}</span>

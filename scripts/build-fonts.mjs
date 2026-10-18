@@ -1,22 +1,29 @@
-// Genera netlify/lib/fonts.generated.js con las tipografías de marca en base64,
-// para que el PDF las embeba sin depender de archivos sueltos en la function.
-// Uso: node scripts/build-fonts.mjs  (solo hace falta volver a correrlo si cambian las fuentes)
+// Genera netlify/lib/fonts.generated.js con las tipografías y el logo de la marca, para que el PDF y las
+// imágenes para compartir los incluyan sin depender de archivos sueltos en la function.
+// Uso: node scripts/build-fonts.mjs  (solo hace falta volver a correrlo si cambian las fuentes o el logo)
 import { readFileSync, writeFileSync } from "node:fs";
 
-const F = "node_modules/@fontsource";
 const fonts = {
-  DM_SANS_400: `${F}/dm-sans/files/dm-sans-latin-400-normal.woff`,
-  DM_SANS_500: `${F}/dm-sans/files/dm-sans-latin-500-normal.woff`,
-  DM_SANS_700: `${F}/dm-sans/files/dm-sans-latin-700-normal.woff`,
-  DM_SERIF_400: `${F}/dm-serif-display/files/dm-serif-display-latin-400-normal.woff`,
-  DM_SERIF_400_ITALIC: `${F}/dm-serif-display/files/dm-serif-display-latin-400-italic.woff`,
-  SPACE_MONO_400: `${F}/space-mono/files/space-mono-latin-400-normal.woff`,
-  SPACE_MONO_700: `${F}/space-mono/files/space-mono-latin-700-normal.woff`,
+  SCHIBSTED_400: "scripts/fuentes-pdf/schibsted-grotesk-400.ttf",
+  SCHIBSTED_600: "scripts/fuentes-pdf/schibsted-grotesk-600.ttf",
+  SCHIBSTED_700: "scripts/fuentes-pdf/schibsted-grotesk-700.ttf",
+  NEWSREADER_ITALIC: "scripts/fuentes-pdf/newsreader-italic-400.ttf",
 };
 
-let out = "// Archivo generado por scripts/build-fonts.mjs — no editar a mano.\n// Fuentes: Google Fonts vía @fontsource (SIL Open Font License).\n";
-for (const [name, path] of Object.entries(fonts)) {
-  out += `export const ${name} = "data:font/woff;base64,${readFileSync(path).toString("base64")}";\n`;
+// Logo: grupos { fill, transform, paths } del SVG sobre oscuro (ala en agua, nombre en blanco).
+function grupos(svg) {
+  return [...svg.matchAll(/<g fill="([^"]+)"><g transform="([^"]+)">(.*?)<\/g><\/g>/g)].map(([, fill, transform, cuerpo]) => ({
+    fill, transform, paths: [...cuerpo.matchAll(/<path d="([^"]+)"\/>/g)].map((m) => m[1]),
+  }));
 }
+const svg = readFileSync("public/campus-latina-sobre-oscuro.svg", "utf8");
+const logo = { viewBox: svg.match(/viewBox="([^"]+)"/)[1], grupos: grupos(svg) };
+if (logo.grupos.length !== 2) throw new Error("El logo cambió de estructura: revisar grupos()");
+
+let out = "// Archivo generado por scripts/build-fonts.mjs — no editar a mano.\n// Fuentes: Schibsted Grotesk y Newsreader (SIL Open Font License), en TTF: el PDF no lee bien los WOFF2 de /public/fonts.\n";
+for (const [name, path] of Object.entries(fonts)) {
+  out += `export const ${name} = "data:font/ttf;base64,${readFileSync(path).toString("base64")}";\n`;
+}
+out += `export const LOGO_SOBRE_OSCURO = ${JSON.stringify(logo)};\n`;
 writeFileSync("netlify/lib/fonts.generated.js", out);
 console.log("netlify/lib/fonts.generated.js", (out.length / 1024).toFixed(0) + " KB");
