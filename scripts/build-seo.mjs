@@ -11,15 +11,13 @@ import { NIVEL_DESC, AUTORIDAD } from "../src/data/textos.js";
 import { siteHeaderHTML, SITE_HEADER_CSS } from "../src/data/siteHeader.js";
 import { NOTAS, notasDeEtapa } from "../src/data/notas.js";
 import { GA_SNIPPET } from "../src/lib/analytics.js";
+import { trazosCampo } from "../src/lib/informePdf.js";
 
 const SITE = "https://diagnostico.campuslatina.com";
 const HOY = new Date().toISOString().slice(0, 10);
 // Misma entidad que en campuslatina.com (mismo @id), para que buscadores e IA la reconozcan como una sola.
 const ORG = { "@type": "Organization", "@id": "https://campuslatina.com/#organizacion", name: "Campus Latina", alternateName: "CampusLatina", url: "https://campuslatina.com/", logo: "https://campuslatina.com/logo.png" };
-const NIVELES = [
-  ["Inicial", "1.0–1.9", "#CC3333"], ["En desarrollo", "2.0–3.0", "#A94F16"],
-  ["Consolidado", "3.1–4.0", "#2E7D32"], ["Avanzado", "4.1–5.0", "#185FA5"],
-];
+const NIVELES = [["Inicial", "1.0–1.9"], ["En desarrollo", "2.0–3.0"], ["Consolidado", "3.1–4.0"], ["Avanzado", "4.1–5.0"]];
 const NIVEL_POR_LETRA = { A: "Inicial", B: "En desarrollo", C: "Consolidado", D: "Avanzado" };
 
 // Título y descripción de cada etapa pensados para búsqueda (qué problema resuelve cada página).
@@ -48,49 +46,67 @@ const url = (p) => SITE + p;
 const etapaUrl = (e) => `/guia/${SEO[e.id].slug}/`;
 const ld = (obj) => `<script type="application/ld+json">${JSON.stringify(obj).replace(/</g, "\\u003c")}</script>`;
 
+// Estilo del manual de marca: fondo blanco, titulares en Schibsted con la palabra destacada en cursiva
+// y resaltador, filetes en lugar de tarjetas y el campo de líneas en el cierre.
 const CSS = `
 *,*::before,*::after{box-sizing:border-box}
-html,body{margin:0;background:#EAF3F4;color:#123A42;-webkit-text-size-adjust:100%}
+html,body{margin:0;background:#fff;color:#0A2329;-webkit-text-size-adjust:100%}
 body{font:17px/1.7 'Schibsted Grotesk',system-ui,sans-serif}
 a{color:#0B6470;text-underline-offset:3px}
-a:focus-visible{outline:3px solid #0B6470;outline-offset:2px;border-radius:4px}
-main{max-width:760px;margin:0 auto;padding:32px 20px 56px}
-.crumbs{font-size:14px;color:#4D6166;margin-bottom:12px}
+a:focus-visible{outline:2px solid #0B6470;outline-offset:2px}
+main{max-width:780px;margin:0 auto;padding:40px 20px 64px}
+.crumbs{font-size:14px;color:#4D6166;margin-bottom:14px}
 .crumbs a{color:#4D6166;display:inline-flex;align-items:center;min-height:44px}
-.eyebrow{font:700 12px/1.4 'CL Etiquetas',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#0B6470}
-h1{font:400 clamp(32px,5vw,46px)/1.12 'CL Titulos',Georgia,serif;margin:8px 0 16px}
-h1 em{color:#0B6470}
-h2{font:400 28px/1.2 'CL Titulos',Georgia,serif;margin:44px 0 12px}
-h3{font-size:19px;line-height:1.35;margin:28px 0 6px}
-.lead{font-size:19px;color:#1F3A40}
-.card{background:#fff;border:1px solid #D5E3E5;border-radius:2px;padding:20px 22px;margin:16px 0}
-.card h3{margin-top:0}
+.eyebrow{font:600 12px/1.4 'CL Etiquetas',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#4D6166;margin:0}
+h1{font:700 clamp(34px,5.5vw,54px)/1.04 'Schibsted Grotesk',sans-serif;letter-spacing:-.03em;margin:12px 0 22px;text-wrap:balance}
+h1 em,h2 em{font-family:Newsreader,Georgia,serif;font-weight:400;font-style:italic;background:linear-gradient(transparent 60%,#FFB9A8 60%,#FFB9A8 92%,transparent 92%);padding:0 .06em}
+h2{font:700 28px/1.15 'Schibsted Grotesk',sans-serif;letter-spacing:-.02em;margin:56px 0 16px;padding-top:16px;border-top:2px solid #0A2329;text-wrap:balance}
+h3{font-size:19px;line-height:1.35;margin:0 0 6px}
+.lead{font-size:20px;line-height:1.6;color:#1F3A40}
+.card{border-top:1px solid #D5E3E5;padding:22px 0 10px;margin:0}
 .muted{color:#4D6166}
 ul,ol{padding-left:22px}
-li{margin:6px 0}
+li{margin:8px 0}
 .niveles{width:100%;border-collapse:collapse;font-size:16px;margin:12px 0}
-.niveles th,.niveles td{text-align:left;padding:10px 12px;border-bottom:1px solid #D5E3E5;vertical-align:top}
-.niveles th{font:700 12px/1.3 'CL Etiquetas',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#4D6166}
-.opcion{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:10px 0}
-.opcion b{font:700 13px/1.6 'CL Etiquetas',sans-serif}
-.imp{font:700 13px/1 'CL Etiquetas',sans-serif;color:#0B6470;white-space:nowrap}
-.cta-box{background:#0A2329;color:#fff;border-radius:2px;padding:26px 24px;margin:44px 0 8px}
-.cta-box h2{color:#fff;margin:0 0 8px}
-.cta-box p{color:rgba(255,255,255,.8);margin:0 0 18px}
-.cta-box a{display:inline-block;background:#7FD6DE;color:#0A2329;font-weight:700;text-decoration:none;border-radius:2px;padding:14px 22px}
-.nav-etapas{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:28px;font-size:16px}
-.nav-etapas a{display:inline-flex;align-items:center;min-height:48px;padding:0 16px;border:1px solid #D5E3E5;border-radius:2px;background:#fff;text-decoration:none;font-weight:700}
-.etapas-lista{list-style:none;padding:0}
-.etapas-lista li{margin:0 0 12px}
-.etapas-lista a{display:block;background:#fff;border:1px solid #D5E3E5;border-radius:2px;padding:14px 18px;text-decoration:none;color:#123A42}
-.etapas-lista a:hover{border-color:#0B6470}
-.etapas-lista strong{display:block;font-size:18px}
-.etapas-lista span{color:#4D6166;font-size:15px}
-details{background:#fff;border:1px solid #D5E3E5;border-radius:2px;padding:14px 18px;margin:10px 0}
+.niveles th,.niveles td{text-align:left;padding:12px 12px 12px 0;border-bottom:1px solid #D5E3E5;vertical-align:top}
+.niveles th{font:600 12px/1.3 'CL Etiquetas',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#4D6166;border-bottom:2px solid #0A2329}
+.esc{display:inline-flex;align-items:flex-end;gap:2px;height:12px;margin-right:8px;vertical-align:-1px}
+.esc i{width:4px;background:#D5E3E5}.esc i.on{background:#0B6470}
+.esc i:nth-child(1){height:25%}.esc i:nth-child(2){height:50%}.esc i:nth-child(3){height:75%}.esc i:nth-child(4){height:100%}
+.opcion{display:grid;grid-template-columns:132px 1fr;gap:4px 16px;padding:10px 0;border-top:1px solid #EAF3F4}
+.opcion b{font:600 12px/1.9 'CL Etiquetas',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#4D6166}
+@media (max-width:560px){.opcion{grid-template-columns:1fr}}
+.imp{font-weight:700;font-size:14px;color:#0B6470;white-space:nowrap}
+.cta-box{position:relative;overflow:hidden;background:#0A2329;color:#fff;padding:40px 32px 48px;margin:64px 0 8px}
+.cta-box svg{position:absolute;left:0;right:0;bottom:0;width:100%;height:65%;pointer-events:none}
+.cta-box>:not(svg){position:relative}
+.cta-box h2{color:#fff;margin:0 0 10px;border:0;padding:0;font-size:30px}
+.cta-box p{color:rgba(255,255,255,.75);margin:0 0 24px;max-width:520px}
+.cta-box a{display:inline-block;background:#7FD6DE;color:#0A2329;font-weight:700;text-decoration:none;padding:15px 24px}
+.nav-etapas{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:32px;padding-top:16px;border-top:1px solid #D5E3E5;font-size:16px}
+.nav-etapas a{display:inline-flex;align-items:center;min-height:48px;text-decoration:none;font-weight:700;color:#0A2329}
+.nav-etapas a:hover{color:#0B6470}
+.etapas-lista{list-style:none;padding:0;margin:0;border-top:2px solid #0A2329}
+.etapas-lista li{margin:0}
+.etapas-lista a{display:grid;grid-template-columns:64px 1fr;gap:2px 12px;padding:18px 8px 18px 0;border-bottom:1px solid #D5E3E5;text-decoration:none;color:#0A2329;transition:background .2s}
+.etapas-lista a:hover{background:#F3F8F8}
+.etapas-lista .n{grid-row:span 2;font:700 34px/1 'Schibsted Grotesk',sans-serif;letter-spacing:-.04em;color:#0B6470}
+.etapas-lista strong{font-size:19px;line-height:1.35}
+.etapas-lista .r{color:#4D6166;font-size:15px;line-height:1.55}
+details{border-bottom:1px solid #D5E3E5;padding:16px 0;margin:0}
+details:first-of-type{border-top:1px solid #D5E3E5}
 summary{cursor:pointer;font-weight:700}
 footer{border-top:1px solid #D5E3E5;padding:24px 20px 40px;text-align:center;font-size:14px;color:#4D6166}
 footer a{display:inline-flex;align-items:center;min-height:44px}
 `;
+
+// Campo de líneas quieto para el bloque de cierre (mismo trazado que la tapa del informe).
+const campoSvg = () => {
+  const { lineas, puntos } = trazosCampo(300, 110);
+  return `<svg viewBox="0 0 300 110" preserveAspectRatio="none" aria-hidden="true">${lineas.map((l) => `<path d="${l.d}" stroke="#7FD6DE" stroke-opacity="${l.opacidad}" stroke-width="${l.ancho * 2.2}" fill="none" vector-effect="non-scaling-stroke"/>`).join("")}${puntos.filter((q) => q.coral).map((q) => `<circle cx="${q.cx}" cy="${q.cy}" r="1.4" fill="#FF6B4A"/>`).join("")}</svg>`;
+};
+const num2 = (n) => String(n).padStart(2, "0");
+const escalon = (n) => `<span class="esc" aria-hidden="true">${[1, 2, 3, 4].map((k) => `<i${k <= n ? ' class="on"' : ""}></i>`).join("")}</span>`;
 
 function page({ path, title, description, body, jsonld = [], type = "article" }) {
   const full = `${title} | CampusLatina`;
@@ -138,6 +154,7 @@ ${body}
 
 const ctaBox = (texto = "Descubra en qué etapa pierde inscriptos su universidad") => `
 <section class="cta-box" aria-label="Diagnóstico gratuito">
+  ${campoSvg()}
   <h2>${esc(texto)}</h2>
   <p>28 preguntas, unos 10 minutos. Recibe el informe en pantalla y en PDF por mail, con las 3 acciones prioritarias de cada etapa.</p>
   <a href="/">Hacer el diagnóstico gratis →</a>
@@ -146,7 +163,7 @@ const ctaBox = (texto = "Descubra en qué etapa pierde inscriptos su universidad
 const nivelesTabla = () => `
 <table class="niveles">
   <thead><tr><th>Nivel</th><th>Puntaje</th><th>Qué significa</th></tr></thead>
-  <tbody>${NIVELES.map(([n, r, c]) => `<tr><td><strong style="color:${c}">${n}</strong></td><td>${r}</td><td>${esc(NIVEL_DESC[n].charAt(0).toUpperCase() + NIVEL_DESC[n].slice(1))}.</td></tr>`).join("")}</tbody>
+  <tbody>${NIVELES.map(([n, r], i) => `<tr><td style="white-space:nowrap">${escalon(i + 1)}<strong>${n}</strong></td><td>${r}</td><td>${esc(NIVEL_DESC[n].charAt(0).toUpperCase() + NIVEL_DESC[n].slice(1))}.</td></tr>`).join("")}</tbody>
 </table>`;
 
 const lecturas = (notas, titulo) => notas.length ? `
@@ -217,7 +234,7 @@ const guiaBody = `
 
 <h2>Las 7 etapas</h2>
 <ol class="etapas-lista">
-${ETAPAS_DATA.map((e) => `<li><a href="${etapaUrl(e)}"><strong>${e.num}. ${esc(e.name)} — ${esc(e.pregunta)}</strong><span>${esc(e.resumen)}</span></a></li>`).join("\n")}
+${ETAPAS_DATA.map((e) => `<li><a href="${etapaUrl(e)}"><span class="n">${num2(e.num)}</span><strong>${esc(e.name)} — ${esc(e.pregunta)}</strong><span class="r">${esc(e.resumen)}</span></a></li>`).join("\n")}
 </ol>
 
 <h2>Cómo se mide el proceso</h2>
