@@ -102,7 +102,7 @@ function Welcome({onStart}){
             Si el proceso pierde aspirantes en el camino, invertir en campañas es llenar un balde agujereado. Este diagnóstico muestra dónde está el agujero.
           </p>
           <p style={{fontSize:15,color:"rgba(255,255,255,.6)",lineHeight:1.65,margin:"10px 0 0"}}>
-            Lo creamos en CampusLatina: ayudamos a inscribir a más de 180.000 estudiantes en Argentina, y ahora llevamos esa experiencia al resto de Latinoamérica.
+            Lo creamos en CampusLatina: ayudamos a inscribir a más de 200.000 estudiantes en Argentina, y ahora llevamos esa experiencia al resto de Latinoamérica.
           </p>
         </div>
         <div className="wl-datos cl-sube" style={{"--i":6,display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",marginBottom:32}}>
