@@ -65,6 +65,17 @@
   to = "/taller.html"
   status = 200
 
+# El taller de REALCUP, con dirección propia: /realcup2026 (asistentes), /realcup2026/expositor y /realcup2026/pantalla.
+[[redirects]]
+  from = "/realcup2026"
+  to = "/taller.html"
+  status = 200
+
+[[redirects]]
+  from = "/realcup2026/*"
+  to = "/taller.html"
+  status = 200
+
 [[headers]]
   for = "/*"
   [headers.values]
@@ -111,6 +122,12 @@
 
 [[headers]]
   for = "/p/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Referrer-Policy = "no-referrer"
+
+[[headers]]
+  for = "/realcup2026*"
   [headers.values]
     X-Robots-Tag = "noindex, nofollow"
     Referrer-Policy = "no-referrer"

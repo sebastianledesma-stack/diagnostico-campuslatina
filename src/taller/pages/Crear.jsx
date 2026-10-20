@@ -1,14 +1,15 @@
 // /f — Crear una sesión del taller (o entrar al panel de una que ya existe).
+// Con `evento` (desde /realcup2026/expositor) el código y el nombre vienen dados: solo falta la clave.
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import * as api from "../api.js";
 import { Logo } from "../componentes.jsx";
 import { guardarClave, claveAlAzar } from "../claves.js";
-import { EVENTO_POR_DEFECTO, HERRAMIENTA } from "../datos.js";
+import { EVENTO_POR_DEFECTO, HERRAMIENTA, rutaAsistente, rutaExpositor } from "../datos.js";
 
-export default function Crear() {
+export default function Crear({ evento, alCrear }) {
   const nav = useNavigate();
-  const [f, setF] = useState(() => ({ nombre: EVENTO_POR_DEFECTO, clave: claveAlAzar(), codigo: "", demo: false }));
+  const [f, setF] = useState(() => ({ nombre: evento?.nombre || EVENTO_POR_DEFECTO, clave: claveAlAzar(), codigo: evento?.codigo || "", demo: false }));
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState("");
   const [existente, setExistente] = useState("");
@@ -23,7 +24,8 @@ export default function Crear() {
         nombre: f.nombre.trim(), clave: f.clave.trim(), codigo: f.codigo.trim().toUpperCase(), demo: f.demo,
       });
       guardarClave(codigo, f.clave.trim());
-      nav(`/f/${codigo}`);
+      if (alCrear) alCrear(codigo);
+      else nav(rutaExpositor(codigo));
     } catch (err) {
       setError(api.mensaje(err));
       setEnviando(false);
@@ -36,9 +38,11 @@ export default function Crear() {
       <div className="t-angosta">
         <Logo />
         <p className="t-etiqueta" style={{ marginTop: 32 }}>{HERRAMIENTA} · Expositores</p>
-        <h1 style={{ fontSize: 30, lineHeight: 1.15, color: "var(--profundo)", margin: "8px 0 10px" }}>Crear una sesión</h1>
+        <h1 style={{ fontSize: 30, lineHeight: 1.15, color: "var(--profundo)", margin: "8px 0 10px" }}>{evento ? "Crear la sesión del taller" : "Crear una sesión"}</h1>
         <p style={{ color: "var(--apagado)", marginBottom: 24 }}>
-          Cada sesión tiene su código y su QR. Los asistentes entran desde su teléfono, sin registrarse ni dar datos.
+          {evento
+            ? <>Los asistentes van a entrar desde su teléfono en <strong style={{ color: "var(--profundo)", fontWeight: 600 }}>{window.location.host}{rutaAsistente(evento.codigo)}</strong>, sin registrarse ni dar datos.</>
+            : "Cada sesión tiene su código y su QR. Los asistentes entran desde su teléfono, sin registrarse ni dar datos."}
         </p>
 
         <form className="t-tarjeta t-sube" onSubmit={crear}>
@@ -50,17 +54,18 @@ export default function Crear() {
           <input id="clave" className="t-campo" value={f.clave} onChange={campo("clave")} autoComplete="off" autoCapitalize="none" spellCheck={false} />
           <p className="t-ayuda">Con esta clave se entra a la pantalla del expositor. Anótela: no se puede recuperar.</p>
 
-          <label className="t-label" htmlFor="codigo" style={{ marginTop: 20 }}>Código de la sesión <span style={{ fontWeight: 400, color: "var(--apagado)" }}>(opcional)</span></label>
-          <input id="codigo" className="t-campo t-mayus" value={f.codigo} onChange={campo("codigo")} placeholder="Por ejemplo, REALCUP"
-            maxLength={8} autoCapitalize="characters" autoComplete="off" spellCheck={false} />
-          <p className="t-ayuda">Es lo que escribe quien no puede usar el QR. Vacío, se genera uno de 4 letras.</p>
+          {!evento && <>
+            <label className="t-label" htmlFor="codigo" style={{ marginTop: 20 }}>Código de la sesión <span style={{ fontWeight: 400, color: "var(--apagado)" }}>(opcional)</span></label>
+            <input id="codigo" className="t-campo t-mayus" value={f.codigo} onChange={campo("codigo")} placeholder="Por ejemplo, ENSAYO"
+              maxLength={8} autoCapitalize="characters" autoComplete="off" spellCheck={false} />
+            <p className="t-ayuda">Es lo que escribe quien no puede usar el QR. Vacío, se genera uno de 4 letras.</p>
 
-
-          <label className="t-check" style={{ marginTop: 20 }}>
-            <input type="checkbox" checked={f.demo} onChange={campo("demo")} />
-            <span><strong style={{ fontWeight: 600 }}>Sesión de prueba</strong><br />
-              <span style={{ fontSize: 14, color: "var(--apagado)" }}>Permite simular respuestas para ensayar sin gente.</span></span>
-          </label>
+            <label className="t-check" style={{ marginTop: 20 }}>
+              <input type="checkbox" checked={f.demo} onChange={campo("demo")} />
+              <span><strong style={{ fontWeight: 600 }}>Sesión de prueba</strong><br />
+                <span style={{ fontSize: 14, color: "var(--apagado)" }}>Permite simular respuestas para ensayar sin gente.</span></span>
+            </label>
+          </>}
 
           {error && <p className="t-error" role="alert">{error}</p>}
           <button className="t-boton" type="submit" disabled={enviando || !f.nombre.trim() || f.clave.trim().length < 6} style={{ marginTop: 24, width: "100%" }}>
@@ -68,7 +73,7 @@ export default function Crear() {
           </button>
         </form>
 
-        <form className="t-tarjeta" style={{ marginTop: 20 }} onSubmit={(e) => { e.preventDefault(); if (codigoExistente) nav(`/f/${codigoExistente}`); }}>
+        {!evento && <form className="t-tarjeta" style={{ marginTop: 20 }} onSubmit={(e) => { e.preventDefault(); if (codigoExistente) nav(rutaExpositor(codigoExistente)); }}>
           <h2 style={{ fontSize: 18, color: "var(--profundo)", marginBottom: 14 }}>¿Ya creó la sesión?</h2>
           <label className="t-label" htmlFor="existente">Código</label>
           <div style={{ display: "flex", gap: 10 }}>
@@ -76,7 +81,7 @@ export default function Crear() {
               maxLength={8} autoCapitalize="characters" autoComplete="off" spellCheck={false} />
             <button className="t-boton t-boton-sec" type="submit" disabled={codigoExistente.length < 4}>Entrar</button>
           </div>
-        </form>
+        </form>}
       </div>
     </main>
   );

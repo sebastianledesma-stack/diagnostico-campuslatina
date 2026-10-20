@@ -7,8 +7,9 @@ import { Escenario, AccesoFacilitador, SinSesion } from "../componentes.jsx";
 import { leerClave, guardarClave } from "../claves.js";
 import { Pantalla } from "../vistas/Pantalla.jsx";
 
-export default function Proyeccion() {
-  const codigo = useParams().codigo.toUpperCase();
+export default function Proyeccion({ codigo: fijo }) {
+  const params = useParams();
+  const codigo = (fijo || params.codigo).toUpperCase();
   const [clave, setClave] = useState(() => leerClave(codigo));
   const { datos, error, enLinea } = usePanel(codigo, clave);
 
