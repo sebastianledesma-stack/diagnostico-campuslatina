@@ -29,7 +29,11 @@ function guardarLocal(codigo, d) {
 
 export function useParticipante(codigo) {
   const local = useRef(null);
-  if (!local.current) local.current = leerLocal(codigo);
+  if (!local.current) {
+    local.current = leerLocal(codigo);
+    // El id se guarda apenas se genera: si el teléfono recarga antes de responder, sigue siendo la misma persona.
+    guardarLocal(codigo, local.current);
+  }
   const [, render] = useReducer((x) => x + 1, 0);
   const [est, setEst] = useState(null);
   const [res, setRes] = useState(null);
