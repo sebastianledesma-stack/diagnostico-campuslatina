@@ -294,7 +294,7 @@ const GRID_DESK={display:"grid",gridTemplateColumns:"250px minmax(0,720px)",just
 function ConProgreso({desk,etapa,etapasScores,respondidas,children}){
   if(!desk) return children;
   return(
-    <div style={{...GRID_DESK,flex:1,padding:"48px 32px 32px"}}>
+    <div style={{...GRID_DESK,flex:1,padding:"clamp(24px,4.5svh,48px) 32px 0"}}>
       <aside aria-label="Su avance">
         <div style={{position:"sticky",top:28}}>
           <Mono color={MUTED}>Su avance</Mono>
@@ -373,7 +373,8 @@ function StageIntro({etapa,onStart,etapasScores,respondidas,onTablero,onInvitar}
 function Question({preguntaIdx,etapa,pregunta,selected,onSelect,onNext,onBack,isLast,esFinal,etapasScores,hechas,guardando,errorGuardar,revision}){
   const desk=useIsDesktop();
   const barra=(
-    <div style={desk?{padding:"24px 0 20px"}:{position:"sticky",bottom:0,zIndex:10,background:"rgba(255,255,255,.96)",backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)",borderTop:`1px solid ${LINE}`}}>
+    // En escritorio la barra también queda pegada abajo: en notebooks bajas el botón no sale de la pantalla.
+    <div style={desk?{position:"sticky",bottom:0,zIndex:5,padding:"14px 0 18px",background:"rgba(255,255,255,.96)",backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)"}:{position:"sticky",bottom:0,zIndex:10,background:"rgba(255,255,255,.96)",backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)",borderTop:`1px solid ${LINE}`}}>
       <div style={desk?{display:"flex",gap:16,alignItems:"center",maxWidth:560}:{maxWidth:640,margin:"0 auto",padding:"10px 16px calc(10px + env(safe-area-inset-bottom))",display:"flex",gap:10,alignItems:"center"}}>
           <button type="button" onClick={onBack} style={{minHeight:TOUCH,padding:"0 12px 0 0",border:"none",background:"none",color:NAVY_DK,cursor:"pointer",fontSize:16,fontFamily:"'Schibsted Grotesk',sans-serif",whiteSpace:"nowrap"}}>← Atrás</button>
           <button type="button" onClick={()=>selected&&!guardando&&onNext()} disabled={!selected||guardando} aria-disabled={!selected||guardando}
@@ -396,14 +397,14 @@ function Question({preguntaIdx,etapa,pregunta,selected,onSelect,onNext,onBack,is
           <strong>Revisando {etapa.name}.</strong> Sus respuestas guardadas están marcadas: cambie lo que necesite y guarde al final.
         </p>}
         <Mono className="cl-sube" color={MUTED} style={{"--i":0}}>{desk?`Pregunta ${preguntaIdx+1} de 4`:`${num2(etapa.num)} · ${etapa.name} · ${preguntaIdx+1} de 4`}</Mono>
-        <h2 id={qid} className="cl-sube" style={{"--i":1,...titular(desk?34:25),lineHeight:1.15,color:NAVY_DK,marginTop:12}}>{pregunta.texto}</h2>
+        <h2 id={qid} className="cl-sube" style={{"--i":1,...titular(desk?"clamp(24px,4.6svh,34px)":25),lineHeight:1.15,color:NAVY_DK,marginTop:12}}>{pregunta.texto}</h2>
         {pregunta.ayuda&&<p id={`${qid}-ayuda`} className="cl-sube" style={{"--i":2,fontSize:16,color:MUTED,lineHeight:1.55,margin:"12px 0 0"}}>{pregunta.ayuda}</p>}
         <div role="radiogroup" aria-labelledby={qid} aria-describedby={pregunta.ayuda?`${qid}-ayuda`:undefined} style={{marginTop:desk?32:24,borderTop:`1px solid ${LINE}`}}>
           {pregunta.opciones.map((op,k)=>{
             const isSel=selected===op.letra;
             return(
               <button key={op.letra} type="button" role="radio" aria-checked={isSel} onClick={()=>onSelect(op.letra)} className="cl-lado cl-fila"
-                style={{"--i":k+2,position:"relative",display:"grid",gridTemplateColumns:"40px minmax(0,1fr)",gap:12,alignItems:"start",textAlign:"left",width:"100%",padding:"18px 14px 18px 16px",background:isSel?"#F3F8F8":"transparent",border:"none",borderBottom:`1px solid ${LINE}`,cursor:"pointer",fontFamily:"'Schibsted Grotesk',sans-serif"}}>
+                style={{"--i":k+2,position:"relative",display:"grid",gridTemplateColumns:"40px minmax(0,1fr)",gap:12,alignItems:"start",textAlign:"left",width:"100%",padding:desk?"clamp(12px,2.2svh,18px) 14px clamp(12px,2.2svh,18px) 16px":"18px 14px 18px 16px",background:isSel?"#F3F8F8":"transparent",border:"none",borderBottom:`1px solid ${LINE}`,cursor:"pointer",fontFamily:"'Schibsted Grotesk',sans-serif"}}>
                 <span aria-hidden="true" style={{position:"absolute",left:0,top:0,bottom:0,width:3,background:PETROLEO,transform:`scaleY(${isSel?1:0})`,transition:"transform .3s cubic-bezier(.2,.7,.2,1)"}}/>
                 <span aria-hidden="true" style={{...titular(28),lineHeight:1,color:isSel?PETROLEO:"#A9BBBE",transition:"color .25s"}}>{op.letra}</span>
                 <span style={{fontSize:16,color:TEXT,lineHeight:1.5}}>

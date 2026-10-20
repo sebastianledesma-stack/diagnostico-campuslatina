@@ -25,16 +25,26 @@ const cifraGrande = (tam) => ({ fontFamily: "'CL Titulos',sans-serif", fontWeigh
 const sube = (i, extra) => ({ className: "cl-sube", style: { "--i": i, ...extra } });
 const btnTexto = { background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "'Schibsted Grotesk',sans-serif", textAlign: "left", color: "inherit" };
 
+// Alto de la ventana (se actualiza al cambiar el tamaño), para gráficos que tienen que entrar en pantalla.
+function useAltoVentana() {
+  const [alto, setAlto] = useState(() => (typeof window === "undefined" ? 800 : window.innerHeight));
+  useEffect(() => { const f = () => setAlto(window.innerHeight); window.addEventListener("resize", f); return () => window.removeEventListener("resize", f); }, []);
+  return alto;
+}
+
 function Contenedor({ desk, children, style }) {
   return <div style={{ maxWidth: 1120, margin: "0 auto", paddingLeft: desk ? 32 : 20, paddingRight: desk ? 32 : 20, ...style }}>{children}</div>;
 }
 
+// En escritorio, título y bajada van en dos columnas: así cada solapa muestra su contenido sin bajar.
 function Encabezado({ etiqueta, titulo, bajada, desk, oscuro }) {
   return (
-    <div style={{ maxWidth: 780 }}>
-      <Etiqueta {...sube(0)} color={oscuro ? SLATE : MUTED}>{etiqueta}</Etiqueta>
-      <h2 {...sube(1, { ...titular(desk ? 48 : 32), color: oscuro ? WHITE : NAVY_DK, marginTop: 12 })}>{titulo}</h2>
-      {bajada && <p {...sube(2, { fontSize: desk ? 19 : 17, lineHeight: 1.55, color: oscuro ? "rgba(255,255,255,.72)" : MUTED, margin: "16px 0 0", maxWidth: 640 })}>{bajada}</p>}
+    <div style={desk && bajada ? { display: "grid", gridTemplateColumns: "minmax(0,7fr) minmax(0,5fr)", gap: 56, alignItems: "end" } : { maxWidth: 780 }}>
+      <div>
+        <Etiqueta {...sube(0)} color={oscuro ? SLATE : MUTED}>{etiqueta}</Etiqueta>
+        <h2 {...sube(1, { ...titular(desk ? "clamp(30px,6svh,48px)" : 32), color: oscuro ? WHITE : NAVY_DK, marginTop: 12 })}>{titulo}</h2>
+      </div>
+      {bajada && <p {...sube(2, { fontSize: desk ? "clamp(16px,2.6svh,19px)" : 17, lineHeight: 1.55, color: oscuro ? "rgba(255,255,255,.72)" : MUTED, margin: desk ? 0 : "16px 0 0", maxWidth: 640 })}>{bajada}</p>}
     </div>
   );
 }
@@ -74,8 +84,8 @@ function FlujoEtapas({ d, plan, desk }) {
   const ps = d.etapas.map((e) => (plan ? e.pot : e.score));
   if (desk) return (
     <div>
-      <Flujo puntajes={ps} style={{ height: 230 }} />
-      <div style={{ position: "relative", height: 86, marginTop: 6 }}>
+      <Flujo puntajes={ps} style={{ height: "clamp(130px,22svh,230px)" }} />
+      <div style={{ position: "relative", height: 74, marginTop: 4 }}>
         {d.etapas.map((e, i) => (
           <div key={e.id} style={{ position: "absolute", top: 0, left: `${posEtapa(i) * 100}%`, transform: "translateX(-50%)", width: "12.6%", textAlign: "center" }}>
             <RotuloEtapa e={e} plan={plan} d={d} />
@@ -117,29 +127,29 @@ function Resumen({ d, desk, registroData, irA }) {
   return (
     <>
       <section className="cl-oscuro" style={{ background: NAVY_DK, color: WHITE, overflow: "hidden" }}>
-        <Contenedor desk={desk} style={{ paddingTop: desk ? 56 : 32, paddingBottom: desk ? 28 : 20 }}>
+        <Contenedor desk={desk} style={{ paddingTop: desk ? "clamp(20px,4svh,56px)" : 32, paddingBottom: desk ? "clamp(14px,2.5svh,28px)" : 20 }}>
           <Etiqueta {...sube(0)} color={SLATE}>Diagnóstico del proceso de inscripción · {new Date().toLocaleDateString("es-AR", { month: "long", year: "numeric" })}</Etiqueta>
-          <h1 {...sube(1, { ...titular(desk ? 44 : 30), color: WHITE, marginTop: 12 })}>{registroData.universidad || "Su institución"}</h1>
+          <h1 {...sube(1, { ...titular(desk ? "clamp(26px,5svh,44px)" : 30), color: WHITE, marginTop: 10 })}>{registroData.universidad || "Su institución"}</h1>
           {quien && <p {...sube(2, { fontSize: 15, color: SLATE, margin: "8px 0 0" })}>{quien}</p>}
-          <div style={{ display: "grid", gridTemplateColumns: desk ? "auto minmax(0,1fr)" : "1fr", gap: desk ? 72 : 22, alignItems: "end", marginTop: desk ? 44 : 30 }}>
+          <div style={{ display: "grid", gridTemplateColumns: desk ? "auto minmax(0,1fr)" : "1fr", gap: desk ? 72 : 22, alignItems: "end", marginTop: desk ? "clamp(16px,3.5svh,44px)" : 30 }}>
             <div {...sube(3)}>
               <div style={{ display: "flex", alignItems: "baseline", gap: 12 }}>
-                <span aria-label={`${fmt1(d.global)} de 5`} style={{ ...cifraGrande(desk ? 176 : 120), color: WHITE }}>{cifra.toFixed(1)}</span>
+                <span aria-label={`${fmt1(d.global)} de 5`} style={{ ...cifraGrande(desk ? "clamp(80px,17svh,176px)" : 120), color: WHITE }}>{cifra.toFixed(1)}</span>
                 <span style={{ fontSize: 18, color: SLATE }}>de 5</span>
               </div>
-              <div style={{ marginTop: 18 }}><Nivel score={d.global} oscuro color={WHITE} tam={14} puntaje={false} /></div>
+              <div style={{ marginTop: desk ? "clamp(8px,2svh,18px)" : 18 }}><Nivel score={d.global} oscuro color={WHITE} tam={14} puntaje={false} /></div>
             </div>
-            <p {...sube(4, { fontSize: desk ? 22 : 18, lineHeight: 1.45, color: "rgba(255,255,255,.72)", margin: 0, maxWidth: 580, textWrap: "pretty" })}>
+            <p {...sube(4, { fontSize: desk ? "clamp(16px,2.8svh,22px)" : 18, lineHeight: 1.45, color: "rgba(255,255,255,.72)", margin: 0, maxWidth: 580, textWrap: "pretty" })}>
               <strong style={{ color: WHITE, fontWeight: 600 }}>{capital(NIVEL_DESC[nivel])}.</strong> {lecturaDiagnostico(d.global, d.peor)}
             </p>
           </div>
-          <div className="cl-aparece" style={{ "--i": 6, marginTop: desk ? 60 : 40 }}>
+          <div className="cl-aparece" style={{ "--i": 6, marginTop: desk ? "clamp(18px,4svh,60px)" : 40 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 14, flexWrap: "wrap", marginBottom: desk ? 8 : 18 }}>
               <Etiqueta color={EMERALD}>El recorrido del aspirante</Etiqueta>
               {d.hayMejora && <Alternar plan={plan} setPlan={setPlan} d={d} />}
             </div>
             <FlujoEtapas d={d} plan={plan} desk={desk} />
-            <p style={{ fontSize: 13, color: SLATE, lineHeight: 1.55, margin: desk ? "4px 0 0" : "18px 0 0", maxWidth: 720 }}>
+            <p style={{ fontSize: 13, color: SLATE, lineHeight: 1.55, margin: desk ? "4px 0 0" : "18px 0 0", maxWidth: desk ? "none" : 720 }}>
               Ilustrativo: en cada etapa el haz se angosta según su puntaje. En gris, los aspirantes que quedan en el camino; en coral, los que llegan a inscribirse.
             </p>
           </div>
@@ -165,14 +175,15 @@ const anchoBanda = (a, b) => `calc(${pct(b)} - ${pct(a)})`;
 function Mapa({ d, desk, irA }) {
   const [listo, setListo] = useState(false);
   useEffect(() => { let r2; const r = requestAnimationFrame(() => { r2 = requestAnimationFrame(() => setListo(true)); }); return () => { cancelAnimationFrame(r); cancelAnimationFrame(r2); }; }, []);
-  const FILA = desk ? 66 : 60, COL = desk ? 250 : 124, alto = FILA * 7;
+  const altoVentana = useAltoVentana();
+  const FILA = desk ? Math.round(Math.max(44, Math.min(66, (altoVentana - 300) / 7))) : 60, COL = desk ? 250 : 124, alto = FILA * 7;
   const x = (s) => ((Math.max(1, Math.min(5, s)) - 1) / 4) * 100;
   const linea = (k) => d.etapas.map((e, i) => `${x(e[k])},${FILA * i + FILA / 2}`).join(" ");
   return (
-    <Contenedor desk={desk} style={{ paddingTop: desk ? 64 : 36 }}>
+    <Contenedor desk={desk} style={{ paddingTop: desk ? "clamp(24px,5svh,64px)" : 36 }}>
       <Encabezado desk={desk} etiqueta="Mapa de niveles" titulo={<>Dónde está <em className="cl-hi">cada etapa</em></>}
         bajada="Cada fila es una etapa del recorrido. El punto marca su puntaje de hoy; el aro coral, hasta dónde llega con las acciones del plan." />
-      <div {...sube(3, { display: "grid", gridTemplateColumns: `${COL}px minmax(0,1fr)`, marginTop: desk ? 48 : 32 })}>
+      <div {...sube(3, { display: "grid", gridTemplateColumns: `${COL}px minmax(0,1fr)`, marginTop: desk ? "clamp(16px,4svh,48px)" : 32 })}>
         <div />
         <div style={{ position: "relative", height: desk ? 50 : 24 }}>
           {BANDAS.map(([n, r, a, b], k) => (
@@ -305,7 +316,7 @@ function Etapas({ d, desk, sel, setSel, irA }) {
     </>
   );
   return (
-    <Contenedor desk={desk} style={{ paddingTop: desk ? 64 : 36 }}>
+    <Contenedor desk={desk} style={{ paddingTop: desk ? "clamp(24px,5svh,64px)" : 36 }}>
       <Encabezado desk={desk} etiqueta="Diagnóstico detallado" titulo={<>Las 7 <em className="cl-hi">etapas</em></>}
         bajada="Un cuello de botella en cualquier etapa afecta todo lo que viene después." />
       {desk ? (
@@ -315,7 +326,7 @@ function Etapas({ d, desk, sel, setSel, irA }) {
               const activo = actual === i;
               return (
                 <button key={e.id} type="button" role="tab" aria-selected={activo} aria-controls="etapa-detalle" onClick={() => setSel(i)} className="cl-fila"
-                  style={{ ...btnTexto, position: "relative", display: "grid", gridTemplateColumns: "52px minmax(0,1fr)", gap: 8, alignItems: "center", width: "100%", padding: "16px 12px 16px 14px", borderBottom: `1px solid ${LINE}`, background: activo ? "#F3F8F8" : "transparent" }}>
+                  style={{ ...btnTexto, position: "relative", display: "grid", gridTemplateColumns: "52px minmax(0,1fr)", gap: 8, alignItems: "center", width: "100%", padding: "clamp(10px,1.9svh,16px) 12px clamp(10px,1.9svh,16px) 14px", borderBottom: `1px solid ${LINE}`, background: activo ? "#F3F8F8" : "transparent" }}>
                   <span aria-hidden="true" style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 3, background: PETROLEO, transform: `scaleY(${activo ? 1 : 0})`, transition: "transform .35s cubic-bezier(.2,.7,.2,1)" }} />
                   {cabecera(e, activo)}
                 </button>
@@ -387,7 +398,7 @@ function Barra({ hoy, plan }) {
 
 function Validar({ desk, registroData }) {
   return (
-    <Contenedor desk={desk} style={{ paddingTop: desk ? 64 : 36 }}>
+    <Contenedor desk={desk} style={{ paddingTop: desk ? "clamp(24px,5svh,64px)" : 36 }}>
       <Encabezado desk={desk} etiqueta="Plan de acción" titulo={<>El <em className="cl-hi">próximo paso</em></>} />
       <div {...sube(3, { background: NAVY_DK, color: WHITE, padding: desk ? "40px 44px" : "26px 22px", marginTop: 32, maxWidth: 820 })}>
         <div style={{ ...titular(desk ? 30 : 24), color: WHITE }}>{VALIDAR.titulo}</div>
@@ -454,7 +465,7 @@ function Acciones({ d, desk, checked, setChecked, registroData }) {
   );
   return (
     <>
-      <Contenedor desk={desk} style={{ paddingTop: desk ? 64 : 36 }}>
+      <Contenedor desk={desk} style={{ paddingTop: desk ? "clamp(24px,5svh,64px)" : 36 }}>
         <Encabezado desk={desk} etiqueta="Plan de acción" titulo={<>Para <em className="cl-hi">subir de nivel</em></>}
           bajada="Marque las acciones que su equipo puede implementar y vea cómo sube el puntaje." />
         {desk ? (
@@ -494,19 +505,24 @@ function InformeFinal({ d, desk, registroData, envio }) {
   return (
     <>
       <section className="cl-oscuro" style={{ background: NAVY_DK, color: WHITE }}>
-        <Contenedor desk={desk} style={{ paddingTop: desk ? 64 : 36, paddingBottom: desk ? 56 : 36 }}>
-          <Encabezado oscuro desk={desk} etiqueta="Su informe" titulo={<>Lo que puede <em className="cl-hi-oscuro">sumar</em></>} />
-          <div {...sube(3, { display: "flex", alignItems: "flex-end", gap: desk ? 56 : 28, marginTop: desk ? 40 : 28, flexWrap: "wrap" })}>
-            <div><Etiqueta color={SLATE}>Hoy</Etiqueta><div style={{ ...cifraGrande(desk ? 120 : 84), color: WHITE, marginTop: 14 }}>{fmt1(d.global)}</div></div>
-            <svg width={desk ? 120 : 60} height="20" aria-hidden="true" style={{ marginBottom: desk ? 40 : 26 }}><line x1="0" x2="100%" y1="10" y2="10" stroke={SLATE} strokeWidth="1" /><path d={`M${desk ? 110 : 50} 4l8 6-8 6`} fill="none" stroke={SLATE} strokeWidth="1" /></svg>
-            <div><Etiqueta color={SLATE}>Con el plan</Etiqueta><div style={{ ...cifraGrande(desk ? 120 : 84), color: CORAL, marginTop: 14 }}>{fmt1(d.potencial)}</div></div>
+        <Contenedor desk={desk} style={{ paddingTop: desk ? "clamp(24px,5svh,64px)" : 36, paddingBottom: desk ? "clamp(24px,4.5svh,56px)" : 36, ...(desk ? { display: "grid", gridTemplateColumns: "minmax(0,1fr) auto", columnGap: 56, alignItems: "end" } : {}) }}>
+          <div>
+            <Encabezado oscuro desk={desk} etiqueta="Su informe" titulo={<>Lo que puede <em className="cl-hi-oscuro">sumar</em></>} />
+            {desk && <p {...sube(4, { fontSize: "clamp(16px,2.6svh,19px)", color: "rgba(255,255,255,.72)", lineHeight: 1.55, margin: "16px 0 0", maxWidth: 520 })}>
+              {d.hayMejora ? <>Implementando todas las acciones del plan, su proceso suma <strong style={{ color: WHITE }}>+{fmt1(r1(d.potencial) - r1(d.global))} puntos</strong> y pasa a {getNivel(d.potencial).label.toLowerCase()}.</> : "Su proceso ya está en el máximo de referencia de este diagnóstico. Las recomendaciones ayudan a sostenerlo."}
+            </p>}
           </div>
-          <p {...sube(4, { fontSize: desk ? 19 : 17, color: "rgba(255,255,255,.72)", lineHeight: 1.55, margin: "24px 0 0", maxWidth: 620 })}>
+          <div {...sube(3, { display: "flex", alignItems: "flex-end", gap: desk ? 40 : 28, marginTop: desk ? 0 : 28, flexWrap: "wrap" })}>
+            <div><Etiqueta color={SLATE}>Hoy</Etiqueta><div style={{ ...cifraGrande(desk ? "clamp(72px,14svh,120px)" : 84), color: WHITE, marginTop: 14 }}>{fmt1(d.global)}</div></div>
+            <svg width={desk ? 80 : 60} height="20" aria-hidden="true" style={{ marginBottom: desk ? 26 : 26 }}><line x1="0" x2="100%" y1="10" y2="10" stroke={SLATE} strokeWidth="1" /><path d={`M${desk ? 70 : 50} 4l8 6-8 6`} fill="none" stroke={SLATE} strokeWidth="1" /></svg>
+            <div><Etiqueta color={SLATE}>Con el plan</Etiqueta><div style={{ ...cifraGrande(desk ? "clamp(72px,14svh,120px)" : 84), color: CORAL, marginTop: 14 }}>{fmt1(d.potencial)}</div></div>
+          </div>
+          {!desk && <p {...sube(4, { fontSize: 17, color: "rgba(255,255,255,.72)", lineHeight: 1.55, margin: "24px 0 0", maxWidth: 620 })}>
             {d.hayMejora ? <>Implementando todas las acciones del plan, su proceso suma <strong style={{ color: WHITE }}>+{fmt1(r1(d.potencial) - r1(d.global))} puntos</strong> y pasa a {getNivel(d.potencial).label.toLowerCase()}.</> : "Su proceso ya está en el máximo de referencia de este diagnóstico. Las recomendaciones ayudan a sostenerlo."}
-          </p>
+          </p>}
         </Contenedor>
       </section>
-      <Contenedor desk={desk} style={{ paddingTop: desk ? 56 : 32, display: "grid", gridTemplateColumns: desk ? "minmax(0,1fr) 380px" : "1fr", gap: desk ? 64 : 40, alignItems: "start" }}>
+      <Contenedor desk={desk} style={{ paddingTop: desk ? "clamp(24px,5svh,56px)" : 32, display: "grid", gridTemplateColumns: desk ? "minmax(0,1fr) 380px" : "1fr", gap: desk ? 64 : 40, alignItems: "start" }}>
         <div {...sube(5)}>
           <Etiqueta color={MUTED}>Mejora posible por etapa</Etiqueta>
           <div style={{ marginTop: 12, borderTop: `2px solid ${NAVY_DK}` }}>

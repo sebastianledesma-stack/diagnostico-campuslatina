@@ -53,18 +53,22 @@
       :focus-visible { outline: 3px solid #0B6470; outline-offset: 2px; border-radius:2px; }
       button:focus:not(:focus-visible) { outline: none; }
       /* Bienvenida en escritorio (≥1024 px): dos columnas. Los estilos inline son los del celular. */
+      /* Bienvenida en escritorio (≥1024 px): dos columnas que entran en el alto de la pantalla.
+         Tamaños y espacios en svh: en notebooks bajas se comprimen en lugar de quedar cortados. */
       @media (min-width: 1024px) {
         .wl { display: grid !important; grid-template-columns: minmax(0,1.05fr) minmax(0,1fr); column-gap: 64px; align-content: center;
               grid-template-areas: "head ben" "cta ben" "datos jue" "guia jue"; grid-template-rows: auto auto auto 1fr;
-              max-width: 1200px !important; padding: 36px 48px !important; }
-        .wl-head { grid-area: head; } .wl-cta { grid-area: cta; } .wl-datos { grid-area: datos; max-width: 420px; }
-        .wl-guia { grid-area: guia; margin: 4px 0 0 !important; } .wl-cta2 { display: none; }
-        .wl-ben { grid-area: ben; align-self: end; margin-bottom: 28px !important; }
+              max-width: 1200px !important; padding: clamp(14px,3svh,36px) 48px !important; }
+        .wl-head { grid-area: head; } .wl-cta { grid-area: cta; } .wl-datos { grid-area: datos; max-width: 420px; margin-bottom: clamp(12px,2.5svh,32px) !important; }
+        .wl-guia { grid-area: guia; margin: 0 !important; } .wl-cta2 { display: none; }
+        .wl-ben { grid-area: ben; align-self: end; margin-bottom: clamp(16px,3svh,28px) !important; padding-top: clamp(12px,2svh,20px) !important; }
         .wl-jue { grid-area: jue; align-self: start; margin-bottom: 0 !important; }
-        .wl-ben-grid { display: grid !important; grid-template-columns: 1fr 1fr; gap: 24px 28px !important; margin-top: 18px !important; }
-        .wl-h1 { font-size: 60px !important; margin: 16px 0 22px !important; }
-        .wl-lead { font-size: 18px !important; max-width: 520px !important; margin-bottom: 32px !important; }
-        .wl-cta button { margin-bottom: 28px !important; }
+        .wl-jue p { font-size: clamp(14px,2.1svh,16px) !important; line-height: 1.55 !important; }
+        .wl-ben-grid { display: grid !important; grid-template-columns: 1fr 1fr; gap: clamp(12px,2.4svh,24px) 28px !important; margin-top: clamp(10px,2svh,18px) !important; }
+        .wl-ben-grid li div div:last-child { font-size: 13.5px !important; }
+        .wl-h1 { font-size: clamp(36px,min(4.4vw,7svh),60px) !important; margin: clamp(8px,1.6svh,16px) 0 clamp(12px,2.2svh,22px) !important; }
+        .wl-lead { font-size: clamp(16px,2.6svh,18px) !important; max-width: 520px !important; margin-bottom: clamp(16px,3svh,32px) !important; }
+        .wl-cta button { margin-bottom: clamp(16px,3svh,28px) !important; min-height: 52px !important; }
       }
       @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
     </style>
