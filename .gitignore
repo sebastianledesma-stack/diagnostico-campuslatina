@@ -10,3 +10,6 @@ dist
 # Configuración local de Claude Code (no versionar)
 .claude/settings.local*.json
 dist-ssr
+
+# Base local del taller (npm run taller:local)
+.taller-local
