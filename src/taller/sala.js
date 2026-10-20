@@ -130,13 +130,15 @@ export function miMirada(mias, filas) {
 export function estadisticas(filas) {
   const con = filas.filter((f) => Object.keys(f.r).length);
   const niveles = { "Inicial": 0, "En desarrollo": 0, "Consolidado": 0, "Avanzado": 0 };
-  con.forEach((f) => {
-    const g = promedio(ETAPAS_DATA.filter((e) => respondio(f.r, e)).map((e) => calcScore(f.r, e.id)));
-    niveles[getNivel(g).label]++;
-  });
+  // El promedio de cada persona (anónimo), para ubicar a toda la sala en la escala de 1 a 5.
+  const personas = con.map((f) => promedio(ETAPAS_DATA.filter((e) => respondio(f.r, e)).map((e) => calcScore(f.r, e.id))));
+  personas.forEach((g) => { niveles[getNivel(g).label]++; });
   const preguntas = ETAPAS_DATA.flatMap((e) => e.preguntas.map((p, q) => {
     const vs = con.map((f) => valor(f.r, e.id, q)).filter((v) => v != null);
-    return { etapa: e, q, texto: p.texto, n: vs.length, promedio: promedio(vs), desvio: desvio(vs) };
+    // Cuántos eligieron cada opción: con una opción dominante hay acuerdo; repartidas, desacuerdo.
+    const letras = { A: 0, B: 0, C: 0, D: 0 };
+    con.forEach((f) => { const l = f.r[`${e.id}_${q}`]; if (l in letras) letras[l]++; });
+    return { etapa: e, q, texto: p.texto, n: vs.length, promedio: promedio(vs), desvio: desvio(vs), letras };
   })).filter((x) => x.n > 0);
   const porPromedio = [...preguntas].sort((a, b) => b.promedio - a.promedio);
   const porDesvio = [...preguntas].sort((a, b) => a.desvio - b.desvio);
@@ -144,6 +146,7 @@ export function estadisticas(filas) {
     participantes: con.length,
     respuestas: con.reduce((t, f) => t + Object.keys(f.r).length, 0),
     niveles,
+    personas,
     fuertes: porPromedio.slice(0, 3),
     debiles: porPromedio.slice(-3).reverse(),
     acuerdo: porDesvio.slice(0, 3),

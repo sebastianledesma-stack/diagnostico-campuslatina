@@ -132,6 +132,10 @@ button:focus:not(:focus-visible){outline:none}
 .t-controles-aviso{padding:8px 14px;border-radius:10px;background:#7A1D14;font-size:15px}
 .t-controles-ayuda{display:flex;align-items:center;gap:10px;padding:8px 10px 8px 16px;border-radius:12px;background:rgba(10,35,41,.92);border:1px solid rgba(255,255,255,.14);font-size:15px;color:var(--pizarra)}
 
+@keyframes t-cae{from{opacity:0;transform:translateY(-120px)}to{opacity:1;transform:none}}
+@keyframes t-aparece{from{opacity:0}to{opacity:1}}
+@keyframes t-desde-cero{from{width:0}}
+@keyframes t-revela{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
 @keyframes t-crece{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @keyframes t-sube{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 .t-sube{animation:t-sube .6s cubic-bezier(.2,.7,.2,1) both;animation-delay:calc(var(--i,0) * 70ms)}
