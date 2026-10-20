@@ -5,6 +5,8 @@ Test de 28 preguntas → informe online → PDF por mail al directivo + aviso in
 
 **Stack:** React 18 + Vite · React Router 6 · Supabase (Postgres + Auth) · Resend · Netlify (hosting + Functions)
 
+> **Diagnóstico colectivo (taller en vivo, rutas `/s`, `/f` y `/p`):** ver [README-taller.md](README-taller.md), con la demo, la puesta en producción y el guion del expositor.
+
 ## Cómo funciona
 
 ```

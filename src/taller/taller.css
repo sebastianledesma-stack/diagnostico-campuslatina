@@ -1,0 +1,138 @@
+/* Diagnóstico colectivo: identidad Campus Latina (verde petróleo con coral, Schibsted Grotesk).
+   Coral es el color de destaque: el dato que importa. Nunca significa pérdida ni error. */
+@font-face{font-family:"Schibsted Grotesk";src:url(/fonts/schibsted-grotesk-400.woff2) format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Schibsted Grotesk";src:url(/fonts/schibsted-grotesk-500.woff2) format("woff2");font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:"Schibsted Grotesk";src:url(/fonts/schibsted-grotesk-600.woff2) format("woff2");font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:"Schibsted Grotesk";src:url(/fonts/schibsted-grotesk-700.woff2) format("woff2");font-weight:700 900;font-style:normal;font-display:swap}
+@font-face{font-family:"Newsreader";src:url(/fonts/newsreader-italic-400.woff2) format("woff2");font-weight:100 900;font-style:italic;font-display:swap}
+
+:root{
+  --petroleo:#0B6470;   /* principal: botones y acentos sobre fondos claros */
+  --profundo:#123A42;   /* títulos sobre fondos claros */
+  --noche:#0A2329;      /* fondos oscuros (pantalla proyectada) */
+  --agua:#7FD6DE;       /* acento sobre fondos oscuros */
+  --bruma:#EAF3F4;      /* fondo claro */
+  --coral:#FF6B4A;      /* destaque */
+  --coral-suave:#FFB9A8;
+  --texto:#1F3A40;
+  --apagado:#4D6166;
+  --linea:#D5E3E5;
+  --pizarra:#A9C2C6;    /* texto secundario sobre fondos oscuros */
+  --error:#B42318;
+  --toque:48px;         /* alto mínimo de botones y controles táctiles */
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0;-webkit-text-size-adjust:100%}
+body{font-family:"Schibsted Grotesk",system-ui,sans-serif;color:var(--texto);background:var(--bruma);line-height:1.5}
+button,input,select{font:inherit;color:inherit}
+h1,h2,h3,p{margin:0}
+:focus-visible{outline:3px solid var(--petroleo);outline-offset:2px;border-radius:2px}
+.t-oscuro :focus-visible{outline-color:var(--agua)}
+button:focus:not(:focus-visible){outline:none}
+
+.t-etiqueta{font-weight:600;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--apagado)}
+.t-oscuro .t-etiqueta{color:var(--pizarra)}
+.t-cursiva{font-family:"Newsreader",Georgia,serif;font-style:italic;font-weight:400}
+
+.t-boton{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:var(--toque);padding:0 22px;border:0;border-radius:10px;
+  background:var(--petroleo);color:#fff;font-weight:600;font-size:17px;cursor:pointer;text-decoration:none}
+.t-boton:disabled{background:#DCE6E7;color:var(--apagado);cursor:default}
+.t-boton-sec{background:transparent;color:var(--petroleo);border:1.5px solid var(--petroleo)}
+.t-oscuro .t-boton-sec{color:var(--agua);border-color:var(--agua)}
+.t-link{background:none;border:0;padding:4px 0;min-height:44px;color:var(--petroleo);font-weight:600;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.t-link:disabled{color:var(--apagado);cursor:default}
+
+.t-label{display:block;margin:0 0 6px;font-weight:600;font-size:15px;color:var(--profundo)}
+.t-campo{display:block;width:100%;min-height:var(--toque);padding:11px 14px;border:1.5px solid #8FA5A9;border-radius:8px;background:#fff;font-size:17px}
+.t-campo:focus{border-color:var(--petroleo);outline:none;box-shadow:0 0 0 3px rgba(11,100,112,.18)}
+.t-mayus{text-transform:uppercase}
+.t-mayus::placeholder{text-transform:none;letter-spacing:normal;font-weight:400}
+.t-ayuda{margin-top:6px;font-size:14px;color:var(--apagado);line-height:1.45}
+.t-error{margin-top:12px;color:var(--error);font-size:15px;font-weight:500}
+.t-check{display:flex;gap:12px;align-items:flex-start;min-height:var(--toque);cursor:pointer}
+.t-check input{width:22px;height:22px;margin:2px 0 0;accent-color:var(--petroleo);flex:none}
+
+.t-tarjeta{background:#fff;border:1px solid var(--linea);border-radius:16px;padding:24px}
+.t-pagina{min-height:100vh;min-height:100dvh;padding:24px 16px 48px}
+.t-angosta{max-width:520px;margin:0 auto}
+
+.t-qr svg{display:block;width:100%;height:100%}
+
+/* Botones segmentados (panel y celular) */
+.t-segmentos{display:flex;flex-wrap:wrap;gap:6px}
+.t-segmentos button{min-height:40px;padding:0 14px;border-radius:999px;border:1.5px solid var(--linea);background:#fff;color:var(--profundo);font-size:15px;font-weight:500;cursor:pointer}
+.t-segmentos button[aria-pressed="true"]{background:var(--petroleo);border-color:var(--petroleo);color:#fff}
+.t-segmentos button:disabled{opacity:.5;cursor:default}
+
+
+/* Estado de la conexión (panel y celular) */
+.t-red{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:500;color:var(--apagado)}
+.t-red::before{content:"";width:9px;height:9px;border-radius:50%;background:#2E9E6A}
+.t-red[data-off]::before{background:var(--error)}
+.t-red[data-off]{color:var(--error)}
+
+/* ── Celular: pantallas oscuras para "mire la pantalla", claras para responder y leer */
+.t-celu{max-width:560px;margin:0 auto;padding:16px 16px 40px;width:100%}
+.t-oscura{min-height:100vh;min-height:100dvh;background:var(--noche);color:#fff;display:flex;flex-direction:column}
+.t-oscura > .t-celu{flex:1;display:flex;flex-direction:column}
+.t-barra{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:32px}
+.t-oscuro .t-red{color:var(--pizarra)}
+.t-oscuro .t-red[data-off]{color:var(--coral-suave)}
+
+.t-progreso{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:12px 0 16px}
+.t-progreso span{height:6px;border-radius:3px;background:var(--linea)}
+.t-progreso span[data-hecho]{background:var(--petroleo)}
+.t-progreso span[data-actual]{background:var(--profundo)}
+
+.t-chip{display:inline-block;padding:5px 12px;border-radius:999px;background:#D6E8EA;color:var(--profundo);font-size:14px;font-weight:500}
+
+/* Opciones de cada pregunta: grandes y táctiles */
+.t-opcion{display:flex;gap:14px;align-items:flex-start;width:100%;text-align:left;padding:14px 16px;min-height:64px;border:1.5px solid var(--linea);
+  border-radius:14px;background:#fff;cursor:pointer;transition:border-color .15s,background .15s;-webkit-tap-highlight-color:transparent}
+.t-opcion + .t-opcion{margin-top:10px}
+.t-letra{flex:none;display:grid;place-items:center;width:32px;height:32px;border-radius:50%;border:1.5px solid var(--petroleo);color:var(--petroleo);font-weight:700;font-size:15px}
+.t-opcion[aria-pressed="true"]{border-color:var(--petroleo);background:#E1EFF0;box-shadow:inset 0 0 0 1px var(--petroleo)}
+.t-opcion[aria-pressed="true"] .t-letra{background:var(--petroleo);color:#fff}
+.t-opcion strong{display:block;font-size:17px;font-weight:600;color:var(--profundo);line-height:1.3}
+.t-opcion small{display:block;font-size:15px;color:var(--apagado);line-height:1.4;margin-top:2px}
+@media (hover:hover){.t-opcion:hover{border-color:#8FA5A9}}
+
+
+/* Distribución de respuestas: barras horizontales con el % de cada opción */
+.t-dist-fila + .t-dist-fila{margin-top:12px}
+.t-dist-texto{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:15px;line-height:1.35}
+.t-dist-texto b{font-variant-numeric:tabular-nums;color:var(--profundo)}
+.t-dist-pista{height:10px;border-radius:5px;background:#DCE6E7;margin-top:5px;overflow:hidden}
+.t-dist-pista > span{display:block;height:100%;border-radius:5px;background:#6FA7AE;transform-origin:left;animation:t-crece .9s cubic-bezier(.2,.7,.2,1) both}
+.t-dist-fila[data-mayoria] .t-dist-pista > span{background:var(--coral)}
+
+/* Escalón de niveles: Inicial · En desarrollo · Consolidado · Avanzado */
+.t-escalon{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.t-escalon i{height:8px;border-radius:2px;background:#DCE6E7}
+.t-escalon i[data-on]{background:var(--petroleo)}
+.t-escalon-txt{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;font-size:12px;line-height:1.25;color:var(--apagado);margin-top:6px}
+.t-escalon-txt span[data-actual]{color:var(--profundo);font-weight:700}
+
+/* Controles del expositor sobre la pantalla proyectada: aparecen al mover el mouse. */
+.t-controles{position:fixed;left:0;right:0;bottom:0;z-index:5;display:flex;flex-direction:column;align-items:center;gap:8px;padding:0 16px 16px;
+  opacity:0;transform:translateY(12px);transition:opacity .25s,transform .25s;pointer-events:none;color:#fff;font-family:"Schibsted Grotesk",system-ui,sans-serif}
+.t-controles[data-visible]{opacity:1;transform:none;pointer-events:auto}
+.t-barra-expositor{display:flex;align-items:center;justify-content:space-between;gap:16px;width:min(1180px,100%);padding:10px 12px 10px 18px;
+  background:rgba(10,35,41,.92);border:1px solid rgba(255,255,255,.14);border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.35);backdrop-filter:blur(8px)}
+.t-ctl{min-height:40px;padding:0 14px;border-radius:10px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.06);color:#fff;font:inherit;font-size:15px;font-weight:500;cursor:pointer;white-space:nowrap}
+.t-ctl:hover:not(:disabled){background:rgba(255,255,255,.14)}
+.t-ctl:disabled{opacity:.4;cursor:default}
+.t-ctl[aria-expanded="true"]{background:rgba(255,255,255,.18)}
+.t-ctl-principal{background:var(--agua);border-color:var(--agua);color:var(--noche);font-weight:700;padding:0 20px}
+.t-ctl-principal:hover:not(:disabled){background:#A6E6EC}
+.t-menu{position:absolute;bottom:84px;padding:10px 14px;background:rgba(10,35,41,.97);border:1px solid rgba(255,255,255,.16);border-radius:14px;box-shadow:0 10px 40px rgba(0,0,0,.4);max-height:70vh;overflow:auto}
+.t-menu-item{display:block;width:100%;text-align:left;padding:10px 8px;border:0;border-radius:8px;background:none;color:#fff;font:inherit;font-size:15px;cursor:pointer;text-decoration:none}
+.t-menu-item:hover{background:rgba(255,255,255,.08)}
+.t-controles-aviso{padding:8px 14px;border-radius:10px;background:#7A1D14;font-size:15px}
+.t-controles-ayuda{display:flex;align-items:center;gap:10px;padding:8px 10px 8px 16px;border-radius:12px;background:rgba(10,35,41,.92);border:1px solid rgba(255,255,255,.14);font-size:15px;color:var(--pizarra)}
+
+@keyframes t-crece{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes t-sube{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.t-sube{animation:t-sube .6s cubic-bezier(.2,.7,.2,1) both;animation-delay:calc(var(--i,0) * 70ms)}
+@media (prefers-reduced-motion: reduce){*{animation-duration:.01ms !important;animation-delay:0s !important;transition-duration:.01ms !important}}

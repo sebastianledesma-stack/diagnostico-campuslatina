@@ -38,6 +38,33 @@
   to = "/index.html"
   status = 200
 
+# Diagnóstico colectivo (taller en vivo): otra app, servida con taller.html.
+# /s participante · /f facilitador · /p pantalla proyectada.
+[[redirects]]
+  from = "/s"
+  to = "/taller.html"
+  status = 200
+
+[[redirects]]
+  from = "/s/*"
+  to = "/taller.html"
+  status = 200
+
+[[redirects]]
+  from = "/f"
+  to = "/taller.html"
+  status = 200
+
+[[redirects]]
+  from = "/f/*"
+  to = "/taller.html"
+  status = 200
+
+[[redirects]]
+  from = "/p/*"
+  to = "/taller.html"
+  status = 200
+
 [[headers]]
   for = "/*"
   [headers.values]
@@ -59,6 +86,31 @@
 # Links privados de cada diagnóstico: fuera de buscadores y sin filtrar la URL a otros sitios.
 [[headers]]
   for = "/d/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Referrer-Policy = "no-referrer"
+
+# Taller en vivo: fuera de buscadores y sin filtrar el código de la sesión a otros sitios.
+[[headers]]
+  for = "/taller.html"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Referrer-Policy = "no-referrer"
+
+[[headers]]
+  for = "/s/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Referrer-Policy = "no-referrer"
+
+[[headers]]
+  for = "/f/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Referrer-Policy = "no-referrer"
+
+[[headers]]
+  for = "/p/*"
   [headers.values]
     X-Robots-Tag = "noindex, nofollow"
     Referrer-Policy = "no-referrer"

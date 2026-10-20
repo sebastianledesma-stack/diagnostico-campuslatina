@@ -8,6 +8,8 @@ function apiLocal() {
     [/^\/api\/diagnostico$/, "diagnostico", () => ({})],
     [/^\/api\/d\/([^/]+)(?:\/([^/]+))?$/, "diagnostico", (m) => ({ clave: m[1], accion: m[2] })],
     [/^\/api\/(notify|guardar|admin-data)$/, null, () => ({})],
+    // Con `npm run taller:local` el informe lo atiende la base local (scripts/taller-local.mjs).
+    ...(process.env.TALLER_LOCAL ? [] : [[/^\/api\/taller\/informe$/, "taller-informe", () => ({})]]),
   ];
   return {
     name: "api-local",
@@ -37,6 +39,30 @@ function apiLocal() {
   };
 }
 
-export default defineConfig({
-  plugins: [react(), apiLocal()],
-});
+// Diagnóstico colectivo (taller en vivo): /s, /f y /p son otra app, servida con taller.html.
+// En producción lo resuelven los redirects de netlify.toml; acá, en dev y en preview.
+function tallerRutas() {
+  const RUTA = /^\/(s|f|p)(\/[^.?]*)?(\?.*)?$/;
+  const reescribir = (req, _res, next) => {
+    if (RUTA.test(req.url)) req.url = "/taller.html";
+    next();
+  };
+  return {
+    name: "taller-rutas",
+    configureServer(server) { server.middlewares.use(reescribir); },
+    configurePreviewServer(server) { server.middlewares.use(reescribir); },
+  };
+}
+
+export default defineConfig(async () => ({
+  plugins: [
+    react(),
+    apiLocal(),
+    tallerRutas(),
+    // `npm run taller:local`: base Postgres local en lugar de Supabase (scripts/taller-local.mjs).
+    ...(process.env.TALLER_LOCAL ? [(await import("./scripts/taller-local.mjs")).tallerLocal()] : []),
+  ],
+  build: {
+    rollupOptions: { input: { main: "index.html", taller: "taller.html" } },
+  },
+}));
