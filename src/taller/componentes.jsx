@@ -1,6 +1,7 @@
 // Piezas compartidas por las tres vistas del taller.
 import { useEffect, useState } from "react";
 import * as api from "./api.js";
+import { EVENTO } from "./datos.js";
 
 // Marca discreta: el logo figura solo como fuente de la herramienta.
 export function Logo({ oscuro = false, alto = 28 }) {
@@ -79,14 +80,16 @@ export function AccesoFacilitador({ codigo, destino, aviso = "", onListo }) {
 }
 
 export function SinSesion({ codigo }) {
+  // En la dirección del evento no hay código que revisar: la sesión se crea antes del taller.
+  const evento = codigo === EVENTO.codigo;
   return (
     <main className="t-pagina">
       <div className="t-angosta">
         <Logo />
         <div className="t-tarjeta" style={{ marginTop: 32 }}>
-          <h1 style={{ fontSize: 24, color: "var(--profundo)" }}>No hay ninguna sesión con el código {codigo}</h1>
-          <p style={{ marginTop: 10, color: "var(--apagado)" }}>Revise el código que aparece en la pantalla.</p>
-          <a className="t-boton" href="/s" style={{ marginTop: 20 }}>Escribir otro código</a>
+          <h1 style={{ fontSize: 24, color: "var(--profundo)" }}>{evento ? "El taller todavía no empezó" : `No hay ninguna sesión con el código ${codigo}`}</h1>
+          <p style={{ marginTop: 10, color: "var(--apagado)" }}>{evento ? "Vuelva a abrir este link cuando empiece." : "Revise el código que aparece en la pantalla."}</p>
+          {!evento && <a className="t-boton" href="/s" style={{ marginTop: 20 }}>Escribir otro código</a>}
         </div>
       </div>
     </main>

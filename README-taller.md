@@ -2,6 +2,16 @@
 
 Versión en vivo del diagnóstico para el taller de Campus Latina en **REALCUP 2026 (Guayaquil)**: 90 minutos, entre 40 y 50 asistentes. Cada asistente responde desde su teléfono, etapa por etapa, pensando en una universidad típica de su región. Los expositores muestran los resultados de la sala cuando lo deciden, los discuten con la sala y eligen entre todos las ideas para subir el puntaje. Al final, cada asistente ve su mirada frente a la de la sala y puede pedir el informe en PDF por email.
 
+## Las direcciones de REALCUP
+
+| Quién | Dirección |
+|---|---|
+| Asistentes (QR) | `diagnostico.campuslatina.com/realcup2026` |
+| Expositores | `diagnostico.campuslatina.com/realcup2026/expositor` |
+| Pantalla espejo | `diagnostico.campuslatina.com/realcup2026/pantalla` |
+
+Son la sesión de código `REALCUP` con direcciones fijas, sin código que escribir (`EVENTO` en [src/taller/datos.js](src/taller/datos.js)). La primera vez que se abre `/realcup2026/expositor` pide crear la sesión: nombre y clave de los expositores. Hasta entonces, `/realcup2026` muestra "El taller todavía no empezó". Para ensayar, usar otras sesiones (`/f`): lo que se responde en `REALCUP` queda en la sesión del evento.
+
 ## Las dos pantallas
 
 | Quién | Dirección | Para qué |
@@ -56,7 +66,7 @@ Usa el mismo Supabase, Resend y Netlify que el diagnóstico (ver [README.md](REA
 
 1. **Supabase → SQL Editor:** pegar y ejecutar [supabase/migrations/003_taller.sql](supabase/migrations/003_taller.sql). Crea las tablas, las funciones y el bucket privado `taller-informes`, donde quedan los PDF enviados. Se puede correr dos veces sin problema.
 2. **Variables de entorno:** no hace falta ninguna nueva. El email usa `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `RESEND_API_KEY` y `MAIL_FROM`, las mismas del diagnóstico. Si se quiere otro remitente para el taller, cambiar `MAIL_FROM`.
-3. **Deploy:** las rutas `/s`, `/f` y `/p` ya están en [netlify.toml](netlify.toml) y se sirven con `taller.html`, fuera de buscadores y sin Analytics. El envío del PDF es la function `/api/taller/informe`.
+3. **Deploy:** las rutas `/s`, `/f`, `/p` y `/realcup2026` ya están en [netlify.toml](netlify.toml) y se sirven con `taller.html`, fuera de buscadores y sin Analytics. El envío del PDF es la function `/api/taller/informe`.
 4. **Sesión de demo en producción (opcional):** en el SQL Editor, `select public.taller_sembrar('DEMO', 'una-clave-larga');`. Para dejarla en el cierre, agregar `p_cierre => true`.
 5. **Verificación:**
    - crear una sesión de prueba;
@@ -67,16 +77,16 @@ Usa el mismo Supabase, Resend y Netlify que el diagnóstico (ver [README.md](REA
 
 ## Antes del taller
 
-- [ ] **Crear la sesión del evento** en `diagnostico.campuslatina.com/f`, con el nombre "REALCUP 2026 · Guayaquil", un código fácil (por ejemplo `REALCUP`) y una clave que tengan los dos expositores. La clave no se puede recuperar.
+- [ ] **Crear la sesión del evento** abriendo `diagnostico.campuslatina.com/realcup2026/expositor`: pide el nombre ("REALCUP 2026 · Guayaquil") y una clave que tengan los dos expositores. La clave no se puede recuperar.
 - [ ] **Ensayar** con una sesión de prueba y **Simular respuestas**, de punta a punta, con el control remoto de diapositivas que se va a usar.
 - [ ] **En el salón:**
   - probar el wifi con un teléfono, escaneando el QR y respondiendo una pregunta;
   - tener a mano un hotspot 4G para la notebook.
 - [ ] **En la notebook conectada al proyector:**
-  - abrir `/f/<CÓDIGO>` y entrar con la clave;
+  - abrir `/realcup2026/expositor` y entrar con la clave;
   - pasar a pantalla completa con la tecla **F**;
   - desactivar el bloqueo de pantalla y las notificaciones.
-- [ ] **Segundo expositor:** puede abrir `/f/<CÓDIGO>` en su propia computadora para seguir los números o elegir ideas. Ve lo mismo y los cambios se sincronizan en unos 2 segundos.
+- [ ] **Segundo expositor:** puede abrir `/realcup2026/expositor` en su propia computadora para seguir los números o elegir ideas. Ve lo mismo y los cambios se sincronizan en unos 2 segundos.
 
 ## Controles de la pantalla del expositor
 
@@ -133,7 +143,7 @@ Cada etapa lleva unos 9 minutos: 2 para responder, 1 para el resultado, 2 para e
   - para la notebook, usar el hotspot 4G.
 - **Alguien llega tarde:** entra a la etapa que esté abierta; las anteriores le quedan sin responder.
 - **Se avanzó por error:** **←** vuelve. Si se cerró una etapa antes de tiempo, abrirla otra vez desde **Etapas → Reabrir**: las respuestas se mantienen y sus resultados se ocultan hasta volver a mostrarlos.
-- **El proyector está en otra computadora:** abrir ahí `/p/<CÓDIGO>` (pantalla espejo) y manejar desde `/f/<CÓDIGO>` en la propia.
+- **El proyector está en otra computadora:** abrir ahí `/realcup2026/pantalla` (pantalla espejo) y manejar desde `/realcup2026/expositor` en la propia.
 
 ## Cómo se calculan los números
 
@@ -159,6 +169,7 @@ taller.html                      entrada de la app del taller (separada del diag
 src/taller/
   pages/Participante.jsx         teléfono del asistente
   pages/Expositor.jsx            pantalla del expositor con controles · Proyeccion.jsx: espejo · Crear.jsx: /f
+  pages/ExpositorEvento.jsx      /realcup2026/expositor: crea la sesión del evento si todavía no existe
   vistas/                        pantallas proyectadas, resultados en el teléfono, mapa de calor
   sala.js                        cálculos de la sala (puntajes, ideas, mirada propia, estadísticas)
   api.js · useParticipante.js · usePanel.js   conexión con la base (consultas cada 2–3 s, cola sin conexión)

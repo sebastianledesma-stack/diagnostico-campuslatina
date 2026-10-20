@@ -9,7 +9,7 @@ import * as api from "../api.js";
 import { usePanel } from "../usePanel.js";
 import { Escenario, AccesoFacilitador, SinSesion } from "../componentes.jsx";
 import { leerClave, guardarClave, borrarClave } from "../claves.js";
-import { ETAPAS_DATA, VISTAS_ETAPA, VISTAS_CIERRE, urlParticipante } from "../datos.js";
+import { ETAPAS_DATA, VISTAS_ETAPA, VISTAS_CIERRE, urlParticipante, rutaPantalla } from "../datos.js";
 import { completaron, conRespuestas, ideasEtapa } from "../sala.js";
 import { exportarCSV } from "../csv.js";
 import { Pantalla } from "../vistas/Pantalla.jsx";
@@ -37,8 +37,9 @@ function posicion(d) {
   return i((p) => p.fase === "cierre" && p.vista === d.vista);
 }
 
-export default function Expositor() {
-  const codigo = useParams().codigo.toUpperCase();
+export default function Expositor({ codigo: fijo }) {
+  const params = useParams();
+  const codigo = (fijo || params.codigo).toUpperCase();
   const [clave, setClave] = useState(() => leerClave(codigo));
   const { datos, error, enLinea, aplicar } = usePanel(codigo, clave);
 
@@ -241,7 +242,7 @@ function MenuMas({ datos, codigo, clave, simulando, setSimulando, irAlQr, setAvi
       <button className="t-menu-item" onClick={() => navigator.clipboard?.writeText(urlParticipante(codigo)).then(() => { setCopiado(true); setTimeout(() => setCopiado(false), 2000); })}>
         {copiado ? "Link copiado" : "Copiar el link para asistentes"}
       </button>
-      <a className="t-menu-item" href={`/p/${codigo}`} target="_blank" rel="noopener" onClick={cerrar}>Abrir pantalla espejo</a>
+      <a className="t-menu-item" href={rutaPantalla(codigo)} target="_blank" rel="noopener" onClick={cerrar}>Abrir pantalla espejo</a>
       <button className="t-menu-item" onClick={csv}>Exportar CSV (con emails)</button>
       {datos.demo && (
         <button className="t-menu-item" onClick={() => { setSimulando(!simulando); cerrar(); }}>{simulando ? "Detener la simulación" : "Simular respuestas (sesión de prueba)"}</button>

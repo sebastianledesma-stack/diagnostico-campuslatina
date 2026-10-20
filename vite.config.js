@@ -39,10 +39,10 @@ function apiLocal() {
   };
 }
 
-// Diagnóstico colectivo (taller en vivo): /s, /f y /p son otra app, servida con taller.html.
+// Diagnóstico colectivo (taller en vivo): /s, /f, /p y /realcup2026 son otra app, servida con taller.html.
 // En producción lo resuelven los redirects de netlify.toml; acá, en dev y en preview.
 function tallerRutas() {
-  const RUTA = /^\/(s|f|p)(\/[^.?]*)?(\?.*)?$/;
+  const RUTA = /^\/(s|f|p|realcup2026)(\/[^.?]*)?(\?.*)?$/;
   const reescribir = (req, _res, next) => {
     if (RUTA.test(req.url)) req.url = "/taller.html";
     next();

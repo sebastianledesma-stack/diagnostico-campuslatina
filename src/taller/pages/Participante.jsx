@@ -10,8 +10,9 @@ import { Logo, Red, SinSesion } from "../componentes.jsx";
 import { ResultadosEtapa, DiagnosticoSala } from "../vistas/ResultadosCelular.jsx";
 import { CONSIGNA, CONSIGNA_TITULO, ETAPAS_DATA } from "../datos.js";
 
-export default function Participante() {
-  const codigo = useParams().codigo.toUpperCase();
+export default function Participante({ codigo: fijo }) {
+  const params = useParams();
+  const codigo = (fijo || params.codigo).toUpperCase();
   const p = useParticipante(codigo);
   const est = p.est;
 
