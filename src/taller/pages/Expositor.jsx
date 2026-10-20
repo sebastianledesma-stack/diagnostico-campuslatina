@@ -233,7 +233,7 @@ function MenuEtapas({ datos, ejecutar, codigo, clave }) {
 function MenuMas({ datos, codigo, clave, simulando, setSimulando, irAlQr, setAviso, salir, cerrar }) {
   const [copiado, setCopiado] = useState(false);
   async function csv() {
-    try { exportarCSV(codigo, await api.exportar(codigo, clave)); } catch (err) { setAviso(api.mensaje(err)); }
+    try { exportarCSV(codigo, await api.exportar(codigo, clave)); cerrar(); } catch (err) { setAviso(api.mensaje(err)); }
   }
   return (
     <div className="t-menu" role="menu" style={{ right: 16, width: 320 }}>
@@ -244,7 +244,7 @@ function MenuMas({ datos, codigo, clave, simulando, setSimulando, irAlQr, setAvi
       <a className="t-menu-item" href={`/p/${codigo}`} target="_blank" rel="noopener" onClick={cerrar}>Abrir pantalla espejo</a>
       <button className="t-menu-item" onClick={csv}>Exportar CSV (con emails)</button>
       {datos.demo && (
-        <button className="t-menu-item" onClick={() => setSimulando(!simulando)}>{simulando ? "Detener la simulación" : "Simular respuestas (sesión de prueba)"}</button>
+        <button className="t-menu-item" onClick={() => { setSimulando(!simulando); cerrar(); }}>{simulando ? "Detener la simulación" : "Simular respuestas (sesión de prueba)"}</button>
       )}
       <button className="t-menu-item" onClick={salir}>Salir</button>
     </div>
