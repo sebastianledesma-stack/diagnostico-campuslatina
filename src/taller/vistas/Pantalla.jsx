@@ -3,25 +3,24 @@
 import { Qr } from "../Qr.jsx";
 import { HERRAMIENTA, ETAPAS_DATA, urlParticipante, urlCorta } from "../datos.js";
 import { Pie } from "./proyector.jsx";
-import { EtapaAbierta, ResultadoEtapa, MapaEtapa, IdeasEtapa } from "./ProyeccionEtapa.jsx";
-import { ResumenSala, MapaSala, EstadisticasSala } from "./ProyeccionCierre.jsx";
+import { EtapaAbierta, ResultadoEtapa, IdeasEtapa } from "./ProyeccionEtapa.jsx";
+import { ResumenSala, EstadisticasSala } from "./ProyeccionCierre.jsx";
 
+// Cualquier otra vista (como el mapa de calor, que ya no se usa) cae en el resultado o el resumen.
 export function Pantalla({ datos, onElegir }) {
   if (datos.fase === "abierta") return <EtapaAbierta datos={datos} />;
   if (datos.fase === "resultados") {
-    if (datos.vista === "mapa") return <MapaEtapa datos={datos} />;
     if (datos.vista === "ideas") return <IdeasEtapa datos={datos} onElegir={onElegir} />;
     return <ResultadoEtapa datos={datos} />;
   }
   if (datos.fase === "cierre") {
-    if (datos.vista === "mapa") return <MapaSala datos={datos} />;
     if (datos.vista === "estadisticas") return <EstadisticasSala datos={datos} />;
     return <ResumenSala datos={datos} />;
   }
   return <Espera datos={datos} />;
 }
 
-// QR grande, código y cuántos ya entraron. También entre etapas, para quien llega tarde.
+// QR grande, la dirección y cuántos ya entraron. También entre etapas, para quien llega tarde.
 function Espera({ datos }) {
   const proxima = ETAPAS_DATA[datos.etapa]; // la siguiente a la última abierta
   const n = datos.participantes.length;
@@ -42,12 +41,11 @@ function Espera({ datos }) {
           </div>
           {datos.etapa > 0 && proxima && <p style={{ fontSize: 30, color: "var(--pizarra)", marginTop: 20 }}>Próxima: etapa {proxima.num}, {proxima.name}</p>}
         </div>
+        {/* Sin el código aparte: ya está en la dirección (o no hace falta, en la del evento). */}
         <div className="t-sube" style={{ "--i": 2 }}>
           <div style={{ background: "#fff", borderRadius: 32, padding: 48 }}>
             <Qr texto={urlParticipante(datos.codigo)} tamano={504} />
           </div>
-          <p style={{ textAlign: "center", fontSize: 30, color: "var(--pizarra)", marginTop: 28 }}>Código</p>
-          <p style={{ textAlign: "center", fontSize: 96, fontWeight: 700, letterSpacing: ".12em", lineHeight: 1.05 }}>{datos.codigo}</p>
         </div>
       </div>
       <Pie />

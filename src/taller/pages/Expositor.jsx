@@ -1,8 +1,8 @@
 // /f/<código> — Frontend del expositor (escritorio). Es lo que se proyecta en el salón, con los
 // controles encima: aparecen al mover el mouse y se esconden solos a los 3 s. Se avanza como en una
 // presentación: → (o el control remoto de diapositivas) pasa al paso siguiente del taller y ← vuelve.
-//   Pantalla del QR → por cada etapa: abierta · resultado · mapa de calor · ideas para subir → cierre:
-//   resumen · mapa de calor · estadísticas.
+//   Pantalla del QR → por cada etapa: abierta · resultado · ideas para subir → cierre: resumen ·
+//   estadísticas.
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import * as api from "../api.js";
@@ -28,13 +28,14 @@ const PASOS = [
 const etiqueta = (p) => (p.fase === "resultados" ? `Etapa ${p.etapa} · ${p.texto}` : p.texto);
 
 // Dónde está el taller en la lista de pasos. La pantalla del QR entre etapas queda "entre" la etapa
-// anterior y la siguiente.
+// anterior y la siguiente. Una vista que ya no existe (el mapa de calor) cuenta como la primera.
 function posicion(d) {
   const i = (f) => PASOS.findIndex(f);
+  const vista = (lista) => (lista.some((v) => v.id === d.vista) ? d.vista : lista[0].id);
   if (d.fase === "espera") return d.etapa === 0 ? 0 : i((p) => p.fase === "resultados" && p.etapa === d.etapa && p.vista === "ideas") + 0.5;
   if (d.fase === "abierta") return i((p) => p.fase === "abierta" && p.etapa === d.etapa);
-  if (d.fase === "resultados") return i((p) => p.fase === "resultados" && p.etapa === d.etapa && p.vista === d.vista);
-  return i((p) => p.fase === "cierre" && p.vista === d.vista);
+  if (d.fase === "resultados") return i((p) => p.fase === "resultados" && p.etapa === d.etapa && p.vista === vista(VISTAS_ETAPA));
+  return i((p) => p.fase === "cierre" && p.vista === vista(VISTAS_CIERRE));
 }
 
 export default function Expositor({ codigo: fijo }) {

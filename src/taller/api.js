@@ -79,5 +79,6 @@ export const control = (codigo, clave, accion, etapa = null, vista = null) =>
 export const vista = (codigo, clave, valor) => rpc("taller_vista", { p_codigo: codigo, p_clave: clave, p_vista: valor });
 export const elegir = (codigo, clave, etapa, claves) => rpc("taller_elegir", { p_codigo: codigo, p_clave: clave, p_etapa: etapa, p_claves: claves });
 export const exportar = (codigo, clave) => rpc("taller_exportar", { p_codigo: codigo, p_clave: clave });
-export const simular = (codigo, clave, cantidad = 3, total = 46) =>
+// Hasta 15 asistentes ficticios en total, de a 3 por llamada.
+export const simular = (codigo, clave, cantidad = 3, total = 15) =>
   rpc("taller_simular", { p_codigo: codigo, p_clave: clave, p_cantidad: cantidad, p_total: total });
