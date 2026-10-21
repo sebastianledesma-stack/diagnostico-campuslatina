@@ -24,11 +24,9 @@ export const urlCorta = (codigo) => `${window.location.host}${rutaAsistente(codi
 // Los pasos de los resultados de una etapa y del cierre, en el orden en que se proyectan.
 export const VISTAS_ETAPA = [
   { id: "resultado", texto: "Resultado" },
-  { id: "mapa", texto: "Mapa de calor" },
   { id: "ideas", texto: "Ideas para subir" },
 ];
 export const VISTAS_CIERRE = [
   { id: "resumen", texto: "Resumen" },
-  { id: "mapa", texto: "Mapa de calor" },
   { id: "estadisticas", texto: "Estadísticas" },
 ];

@@ -16,7 +16,7 @@ Son la sesión de código `REALCUP` con direcciones fijas, sin código que escri
 
 | Quién | Dirección | Para qué |
 |---|---|---|
-| Asistente (teléfono) | `diagnostico.campuslatina.com/s/<CÓDIGO>` | Entra por el QR, sin login ni datos. Responde las 4 preguntas de la etapa abierta, ve los resultados de la sala y, al final, su mirada y el formulario para recibir el PDF. |
+| Asistente (teléfono) | `diagnostico.campuslatina.com/s/<CÓDIGO>` | Entra por el QR, sin login ni datos. Responde las 4 preguntas de la etapa abierta. En los resultados ve solo el puntaje de la sala y su mirada al lado (el detalle está en la pantalla del salón) y, al final, el formulario para recibir el PDF. |
 | Expositor (escritorio) | `diagnostico.campuslatina.com/f/<CÓDIGO>` | Lo que se proyecta en el salón, con una barra de controles que aparece al mover el mouse. Pide la clave de la sesión. |
 
 Además:
@@ -51,7 +51,7 @@ npm run taller:sembrar -- --cierre
 
 La deja directo en el resultado final, con ideas elegidas en todas las etapas.
 
-- **Ver el contador subir en vivo:** en `DEMO` todas las respuestas ya están cargadas, así que al abrir una etapa el contador aparece completo. Para ensayar con el contador en vivo, crear en `/f` una sesión marcando **Sesión de prueba** y usar **Más → Simular respuestas**: se suman hasta 46 participantes ficticios que responden de a poco cada etapa que se abre.
+- **Ver el contador subir en vivo:** en `DEMO` todas las respuestas ya están cargadas, así que al abrir una etapa el contador aparece completo. Para ensayar con el contador en vivo, crear en `/f` una sesión marcando **Sesión de prueba** y usar **Más → Simular respuestas**: se suman hasta 15 participantes ficticios que responden de a poco cada etapa que se abre.
 - **El email en local:** el PDF se genera igual y queda en `.taller-local/informes/`, y el mail no se envía (la consola lo registra).
 
 ```bash
@@ -71,7 +71,7 @@ Usa el mismo Supabase, Resend y Netlify que el diagnóstico (ver [README.md](REA
 5. **Verificación:**
    - crear una sesión de prueba;
    - responder una etapa desde dos teléfonos;
-   - mostrar resultados, mapa e ideas;
+   - mostrar resultados e ideas;
    - ir al cierre y pedir el PDF desde un teléfono real;
    - revisar que llegue el mail y que el PDF quede en **Storage → taller-informes**.
 
@@ -102,22 +102,23 @@ Usa el mismo Supabase, Resend y Netlify que el diagnóstico (ver [README.md](REA
 
 Los pasos, en orden:
 1. Pantalla del QR.
-2. Por cada etapa: **etapa abierta** (contador en vivo) → **resultado** → **mapa de calor** → **ideas para subir**.
-3. **Resultado final** → **mapa de calor** de la sala → **estadísticas**.
+2. Por cada etapa: **etapa abierta** (contador en vivo) → **resultado** → **ideas para subir**.
+3. **Resultado final** → **estadísticas**.
+
+En el resultado de una etapa, cada pregunta es una fila sobre la escala de 1 a 5: los círculos son cuántas personas eligieron cada respuesta (más intenso, más desarrollado) y la línea blanca es el promedio de la sala. En el resultado final, lo mismo por etapa, con el coral hasta donde llegaría cada etapa con las ideas elegidas.
 
 "Mostrar resultados" cierra la etapa: lo que llegue después ya no cuenta. En los teléfonos no aparece nada hasta que ustedes muestran los resultados.
 
 ## Guion minuto a minuto (90 minutos)
 
-Cada etapa lleva unos 9 minutos: 2 para responder, 1 para el resultado, 2 para el mapa de calor y 4 para las ideas. Si una conversación se alarga, se recupera acortando el mapa en las etapas siguientes.
+Cada etapa lleva unos 9 minutos: 2 para responder, 3 para el resultado y 4 para las ideas. Si una conversación se alarga, se recupera acortando el resultado en las etapas siguientes.
 
 | Minuto | En pantalla | Qué tocar | Qué hacer con la sala |
 |---|---|---|---|
-| 0:00 | QR y "N personas ya entraron" | — | Bienvenida. Pedir que escaneen el QR; quien no puede, escribe la dirección y el código. |
+| 0:00 | QR y "N personas ya entraron" | — | Bienvenida. Pedir que escaneen el QR; quien no puede, escribe la dirección que está al lado. |
 | 0:05 | QR | — | La consigna: no hay respuestas correctas; responder a conciencia lo que pasa con más frecuencia en una universidad típica de su región, no lo ideal. Es anónimo. |
 | 0:08 | Etapa 1 abierta, contador | **→** Abrir etapa 1 | Leer la pregunta guía ("¿Lo encuentran?"). El teléfono muestra la consigna y las 4 preguntas. |
-| 0:10 | Resultado: puntaje y barras | **→** Mostrar resultados (cuando el contador está cerca del total) | ¿Por qué dio esto? ¿Qué sorprende? |
-| 0:11 | Mapa de calor de la etapa | **→** | ¿Dónde coincidimos y dónde no? Las bandas pálidas son lo menos desarrollado. |
+| 0:10 | Resultado: puntaje y una fila por pregunta | **→** Mostrar resultados (cuando el contador está cerca del total) | ¿Por qué dio esto? ¿Qué sorprende? ¿Dónde coincidimos y dónde no? La pregunta más baja va en negrita. |
 | 0:13 | Ideas para subir | **→**, después clic en las ideas que elige la sala | Debatir cuáles aplicarían y elegirlas entre todos; ver cuánto sube la etapa. |
 | 0:17 | Etapa 2 abierta | **→** Abrir etapa 2 | Igual que la etapa 1. |
 | 0:26 | Etapa 3 abierta | **→** | — |
@@ -126,15 +127,14 @@ Cada etapa lleva unos 9 minutos: 2 para responder, 1 para el resultado, 2 para e
 | 0:53 | Etapa 6 abierta | **→** | — |
 | 1:02 | Etapa 7 abierta | **→** | — |
 | 1:11 | Resultado final: las 7 etapas, hoy y con las ideas elegidas | **→** Resultado final | Dónde se pierden más aspirantes y cuánto subiría la sala con lo elegido. |
-| 1:15 | Mapa de calor de toda la sala | **→** | El patrón completo: qué etapas se ven pálidas en toda la sala. |
-| 1:20 | Estadísticas | **→** | Dónde hubo más acuerdo y más desacuerdo, y las preguntas más fuertes y más débiles. |
-| 1:25 | Estadísticas | — | Invitar a mirar el teléfono: su mirada frente a la sala, y el email para recibir el PDF. |
+| 1:18 | Estadísticas | **→** | Cómo ve cada persona a la universidad; la pregunta más fuerte, la más débil, la de más acuerdo y la de más desacuerdo. |
+| 1:25 | Estadísticas | — | Invitar a mirar el teléfono: su mirada frente a la sala, y el email para recibir el PDF (puede llegar a Notificaciones o a Spam). |
 | 1:30 | — | **Más → Exportar CSV** (después del taller) | Cierre. |
 
 ## Si algo sale mal
 
 - **Alguien no puede escanear el QR:**
-  - debajo del QR está la dirección corta y el código;
+  - al lado del QR está la dirección corta;
   - con una etapa abierta, la pantalla muestra un QR chico abajo a la derecha;
   - **Más → Mostrar el QR** lo vuelve a poner en grande.
 - **Se cae el wifi:**
@@ -170,7 +170,7 @@ src/taller/
   pages/Participante.jsx         teléfono del asistente
   pages/Expositor.jsx            pantalla del expositor con controles · Proyeccion.jsx: espejo · Crear.jsx: /f
   pages/ExpositorEvento.jsx      /realcup2026/expositor: crea la sesión del evento si todavía no existe
-  vistas/                        pantallas proyectadas, resultados en el teléfono, mapa de calor
+  vistas/                        pantallas proyectadas (Salud.jsx: los gráficos por pregunta y por etapa) y resultados en el teléfono
   sala.js                        cálculos de la sala (puntajes, ideas, mirada propia, estadísticas)
   api.js · useParticipante.js · usePanel.js   conexión con la base (consultas cada 2–3 s, cola sin conexión)
 supabase/migrations/003_taller.sql   tablas, funciones, permisos, simulación, siembra de la demo

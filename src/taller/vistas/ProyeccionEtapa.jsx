@@ -1,12 +1,12 @@
 // Pantalla proyectada durante una etapa (1920×1080): abierta (contador en vivo) y sus resultados en
-// 3 pasos: resultado (puntaje y barras), mapa de calor de la etapa e ideas para subir.
+// 2 pasos: resultado (puntaje y la salud de cada pregunta) e ideas para subir.
 // Solo el nombre y la pregunta guía de la etapa: sin el resumen, que describe dudas puntuales del aspirante.
 import { Qr } from "../Qr.jsx";
 import { ETAPAS_DATA, CONSIGNA, CONSIGNA_TITULO, urlParticipante, urlCorta } from "../datos.js";
 import { getNivel, fmt1 } from "../../lib/scoring.js";
-import { completaron, conRespuestas, puntajeEtapa, distribucion, ideasEtapa, puntajeConIdeas } from "../sala.js";
-import { Cabecera, Recorrido, Pie, EscalonGrande, AGUA_BARRA } from "./proyector.jsx";
-import { MapaCalor, Leyenda } from "./MapaCalor.jsx";
+import { completaron, conRespuestas, puntajeEtapa, ideasEtapa, puntajeConIdeas } from "../sala.js";
+import { Cabecera, Recorrido, Pie, EscalonGrande } from "./proyector.jsx";
+import { SaludPreguntas } from "./Salud.jsx";
 
 const marco = { position: "absolute", inset: 0, padding: "52px 96px 44px", display: "flex", flexDirection: "column" };
 const Numero = ({ valor, tam = 200 }) => (
@@ -47,12 +47,14 @@ export function EtapaAbierta({ datos }) {
       <Recorrido etapa={e.num} reveladas={datos.reveladas} />
       <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 560px", gap: 96, alignItems: "center" }}>
         <div className="t-sube">
-          <p style={{ fontSize: 30, color: "var(--pizarra)" }}>Etapa {e.num} de 7</p>
-          <h1 style={{ fontSize: 150, lineHeight: 1, fontWeight: 700, letterSpacing: "-.025em", marginTop: 12 }}>{e.name}</h1>
+          <h1 style={{ fontSize: 150, lineHeight: 1, fontWeight: 700, letterSpacing: "-.025em" }}>{e.name}</h1>
           <p className="t-cursiva" style={{ fontSize: 76, lineHeight: 1.1, color: "var(--agua)", marginTop: 20 }}>{e.pregunta}</p>
-          <p style={{ fontSize: 30, color: "var(--pizarra)", marginTop: 56, maxWidth: 1000, lineHeight: 1.4 }}>
-            <span style={{ color: "#fff" }}>{CONSIGNA_TITULO}</span> {CONSIGNA}
-          </p>
+          {/* La consigna, solo al empezar: después ya se conoce. */}
+          {e.num === 1 && (
+            <p style={{ fontSize: 30, color: "var(--pizarra)", marginTop: 56, maxWidth: 1000, lineHeight: 1.4 }}>
+              <span style={{ color: "#fff" }}>{CONSIGNA_TITULO}</span> {CONSIGNA}
+            </p>
+          )}
         </div>
         <div className="t-sube" style={{ "--i": 2 }}>
           <p style={{ fontSize: 30, color: "var(--pizarra)" }}>Respondieron</p>
@@ -77,7 +79,8 @@ export function EtapaAbierta({ datos }) {
   );
 }
 
-// Paso 1: puntaje de la sala y cómo se repartieron las respuestas de cada pregunta.
+// Paso 1: puntaje de la sala y la salud de cada pregunta (cómo se repartieron las respuestas y su
+// promedio, en un solo gráfico).
 export function ResultadoEtapa({ datos }) {
   const e = ETAPAS_DATA[datos.etapa - 1];
   const filas = datos.participantes;
@@ -97,70 +100,13 @@ export function ResultadoEtapa({ datos }) {
             </>
           )}
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "44px 64px", alignContent: "center" }}>
-          {e.preguntas.map((p, q) => <Distribucion key={q} indice={q} pregunta={p} d={distribucion(filas, e.id, q)} />)}
-        </div>
+        {valor != null && <div style={{ alignSelf: "center" }}><SaludPreguntas filas={filas} etapa={e.id} /></div>}
       </div>
     </div>
   );
 }
 
-function Distribucion({ indice, pregunta, d }) {
-  return (
-    <section className="t-sube" style={{ "--i": indice + 1 }}>
-      <h2 style={{ fontSize: 26, lineHeight: 1.3, fontWeight: 600, minHeight: 68, display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-        {indice + 1}. {pregunta.texto}
-      </h2>
-      <div style={{ marginTop: 14 }}>
-        {d.opciones.map((o, i) => (
-          <div key={o.letra} style={{ marginTop: i ? 14 : 0 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", gap: 16, fontSize: 22, lineHeight: 1.25 }}>
-              <span style={{ color: o.mayoria ? "#fff" : "rgba(255,255,255,.78)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                <b>{o.letra}</b> · {o.etiqueta.replace(/\.$/, "")}
-              </span>
-              <b style={{ fontSize: 24, color: o.mayoria ? "var(--coral)" : "#fff" }}>{Math.round(o.pct * 100)}%</b>
-            </div>
-            <div style={{ height: 12, borderRadius: 6, background: "rgba(255,255,255,.12)", marginTop: 6, overflow: "hidden" }}>
-              <span style={{ display: "block", height: "100%", borderRadius: 6, width: `${o.pct * 100}%`, background: o.mayoria ? "var(--coral)" : AGUA_BARRA,
-                transformOrigin: "left", animation: "t-crece .9s cubic-bezier(.2,.7,.2,1) both", animationDelay: `${indice * 120 + i * 60}ms` }} />
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-// Paso 2: mapa de calor de la etapa (una fila por persona, una columna por pregunta).
-const MAPA_ETAPA = { ancho: 1060, alto: 820, celdaGap: 6, bloqueGap: 6, filaGap: 2, filaMax: 28, cabeceraAlto: 70, cabeceraDoble: true, pieAlto: 52, letra: 20 };
-export function MapaEtapa({ datos }) {
-  const e = ETAPAS_DATA[datos.etapa - 1];
-  const filas = datos.participantes;
-  return (
-    <div style={marco}>
-      <Encabezado datos={datos} e={e} paso="Mapa de calor" />
-      <div style={{ display: "grid", gridTemplateColumns: "1060px 1fr", gap: 72, marginTop: 28, flex: 1, minHeight: 0 }}>
-        <div className="t-sube"><MapaCalor filas={filas} etapa={e.id} tema="oscuro" m={MAPA_ETAPA} titulo={`Mapa de calor de ${e.name}`} /></div>
-        <div className="t-sube" style={{ "--i": 2, display: "flex", flexDirection: "column" }}>
-          <TituloEtapa e={e} tam={52} />
-          <p style={{ fontSize: 22, color: "var(--pizarra)", marginTop: 24, lineHeight: 1.4 }}>
-            Cada fila es una persona; cada columna, una pregunta. <span style={{ color: "#fff" }}>Más intenso, más desarrollado.</span>
-          </p>
-          <ol style={{ listStyle: "none", margin: "28px 0 0", padding: 0 }}>
-            {e.preguntas.map((p, q) => (
-              <li key={q} style={{ fontSize: 21, lineHeight: 1.35, marginTop: q ? 16 : 0, color: "rgba(255,255,255,.9)" }}>
-                <b style={{ color: "var(--agua)" }}>Pregunta {q + 1}.</b> {p.texto}
-              </li>
-            ))}
-          </ol>
-          <div style={{ marginTop: "auto" }}><Leyenda tema="oscuro" letra={18} fuga={false} /></div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Paso 3: ideas para subir, como en el diagnóstico. La sala elige algunas o todas (en la pantalla
+// Paso 2: ideas para subir, como en el diagnóstico. La sala elige algunas o todas (en la pantalla
 // del expositor, con un clic) y se ve el puntaje potencial de la etapa.
 export function IdeasEtapa({ datos, onElegir }) {
   const e = ETAPAS_DATA[datos.etapa - 1];
