@@ -28,22 +28,22 @@ function Espera({ datos }) {
     <div style={{ position: "absolute", inset: 0, padding: "96px 120px 56px", display: "flex", flexDirection: "column" }}>
       <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 600px", gap: 120, alignItems: "center" }}>
         <div className="t-sube">
-          <p style={{ fontSize: 26, fontWeight: 600, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--agua)" }}>{datos.nombre}</p>
-          <p style={{ fontSize: 30, color: "var(--pizarra)", marginTop: 48 }}>{HERRAMIENTA}</p>
+          <p style={{ fontSize: 26, fontWeight: 600, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--petroleo)" }}>{datos.nombre}</p>
+          <p style={{ fontSize: 30, color: "var(--apagado)", marginTop: 48 }}>{HERRAMIENTA}</p>
           <h1 style={{ fontSize: 112, lineHeight: 1.02, fontWeight: 700, letterSpacing: "-.02em", marginTop: 12 }}>
-            El viaje <span className="t-cursiva" style={{ color: "var(--agua)", fontWeight: 400 }}>invisible</span> del aspirante
+            El viaje <span className="t-cursiva" style={{ color: "var(--petroleo)", fontWeight: 400 }}>invisible</span> del aspirante
           </h1>
-          <p style={{ fontSize: 36, color: "var(--pizarra)", marginTop: 56 }}>Escanee el código con su teléfono o entre a</p>
+          <p style={{ fontSize: 36, color: "var(--apagado)", marginTop: 56 }}>Escanee el código con su teléfono o entre a</p>
           <p style={{ fontSize: 48, fontWeight: 600, marginTop: 8 }}>{urlCorta(datos.codigo)}</p>
           <div style={{ display: "flex", alignItems: "baseline", gap: 24, marginTop: 48 }}>
             <span style={{ fontSize: 120, fontWeight: 700, lineHeight: 1, color: "var(--coral)" }}>{n}</span>
-            <span style={{ fontSize: 36, color: "var(--pizarra)" }}>{n === 1 ? "persona ya entró" : "personas ya entraron"}</span>
+            <span style={{ fontSize: 36, color: "var(--apagado)" }}>{n === 1 ? "persona ya entró" : "personas ya entraron"}</span>
           </div>
-          {datos.etapa > 0 && proxima && <p style={{ fontSize: 30, color: "var(--pizarra)", marginTop: 20 }}>Próxima: etapa {proxima.num}, {proxima.name}</p>}
+          {datos.etapa > 0 && proxima && <p style={{ fontSize: 30, color: "var(--apagado)", marginTop: 20 }}>Próxima: etapa {proxima.num}, {proxima.name}</p>}
         </div>
         {/* Sin el código aparte: ya está en la dirección (o no hace falta, en la del evento). */}
         <div className="t-sube" style={{ "--i": 2 }}>
-          <div style={{ background: "#fff", borderRadius: 32, padding: 48 }}>
+          <div style={{ background: "#fff", border: "1px solid var(--linea)", borderRadius: 32, padding: 48 }}>
             <Qr texto={urlParticipante(datos.codigo)} tamano={504} />
           </div>
         </div>

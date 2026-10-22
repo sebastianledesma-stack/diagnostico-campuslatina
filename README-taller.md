@@ -105,7 +105,7 @@ Los pasos, en orden:
 2. Por cada etapa: **etapa abierta** (contador en vivo) → **resultado** → **ideas para subir**.
 3. **Resultado final** → **estadísticas**.
 
-En el resultado de una etapa, cada pregunta es una fila sobre la escala de 1 a 5: los círculos son cuántas personas eligieron cada respuesta (más intenso, más desarrollado) y la línea blanca es el promedio de la sala. En el resultado final, lo mismo por etapa, con el coral hasta donde llegaría cada etapa con las ideas elegidas.
+La pantalla proyectada va en fondo claro. En el resultado de una etapa, cada pregunta tiene una barra con el promedio de la sala sobre la escala de 1 a 5, con los 4 niveles de fondo; la más baja va más oscura y con el rótulo "La más baja". En el resultado final, lo mismo por etapa, con el coral hasta donde llegaría cada etapa con las ideas elegidas.
 
 "Mostrar resultados" cierra la etapa: lo que llegue después ya no cuenta. En los teléfonos no aparece nada hasta que ustedes muestran los resultados.
 
