@@ -4,7 +4,7 @@
 //  2. La sala: las 7 etapas hoy y con las ideas elegidas, y dónde hubo más y menos acuerdo.
 //  3. El mapa de calor de la sala.
 //  4. Ideas para subir de cada etapa, con las que eligió la sala.
-// Identidad Campus Latina (petróleo con coral, Schibsted Grotesk). Sin nada comercial.
+// Identidad Campus Latina (petróleo con ámbar, Schibsted Grotesk). Sin nada comercial.
 import React from "react";
 import { Document, Page, Text, View, Svg, Path, Rect, Circle, Line, G, StyleSheet, Font, renderToBuffer } from "@react-pdf/renderer";
 import { ETAPAS_DATA } from "../../src/data/etapas.js";
@@ -23,7 +23,7 @@ Font.register({ family: "Schibsted", fonts: [
 Font.register({ family: "Newsreader", fonts: [{ src: F.NEWSREADER_ITALIC, fontStyle: "italic" }] });
 Font.registerHyphenationCallback((w) => [w]); // no cortar palabras con guiones
 
-const C = { petroleo: "#0B6470", profundo: "#123A42", noche: "#0A2329", texto: "#1F3A40", gris: "#4D6166", linea: "#D5E3E5", bruma: "#EAF3F4", coral: "#FF6B4A", coralSuave: "#FFB9A8", punto: "#A8CDD1" };
+const C = { petroleo: "#0B6470", profundo: "#123A42", noche: "#0A2329", texto: "#1F3A40", gris: "#4D6166", linea: "#D5E3E5", bruma: "#EAF3F4", coral: "#F08C1A", coralSuave: "#FFCF8A", punto: "#A8CDD1" };
 const ANCHO = 515; // ancho útil de la hoja A4 con márgenes de 40 pt
 
 const s = StyleSheet.create({
@@ -37,13 +37,13 @@ const s = StyleSheet.create({
   pie: { position: "absolute", bottom: 22, left: 40, right: 40, flexDirection: "row", justifyContent: "space-between", fontSize: 7.5, color: C.gris, borderTopWidth: 0.6, borderTopColor: C.linea, paddingTop: 6 },
 });
 
-// Isotipo (las 3 plumas) y nombre: el logo, discreto, como fuente de la herramienta.
+// Isotipo (las 3 plumas, cada una en su tono) y nombre: el logo, discreto, como fuente de la herramienta.
 function Logo() {
   return h(View, { style: { flexDirection: "row", alignItems: "center" } },
     h(Svg, { viewBox: "6 4 91 90", width: 20, height: 20 },
       h(Path, { d: "M6 94C15 58 44 24 97 4C91 16 87 24 84 32C62 43 37 62 6 94Z", fill: C.petroleo }),
-      h(Path, { d: "M6 94C35 66 60 48 94 39C90 47 87 53 83 59C62 65 37 77 6 94Z", fill: C.petroleo }),
-      h(Path, { d: "M6 94C39 80 63 71 91 68C87 75 83 80 78 85C57 87 35 89 6 94Z", fill: C.petroleo })),
+      h(Path, { d: "M6 94C35 66 60 48 94 39C90 47 87 53 83 59C62 65 37 77 6 94Z", fill: "#2D8E98" }),
+      h(Path, { d: "M6 94C39 80 63 71 91 68C87 75 83 80 78 85C57 87 35 89 6 94Z", fill: "#64BCC5" })),
     h(View, { style: { marginLeft: 5 } },
       h(Text, { style: { fontWeight: 700, fontSize: 8.5, lineHeight: 1, color: C.profundo } }, "Campus"),
       h(Text, { style: { fontWeight: 700, fontSize: 8.5, lineHeight: 1, color: C.profundo } }, "Latina")));

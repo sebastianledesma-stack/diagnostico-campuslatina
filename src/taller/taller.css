@@ -1,5 +1,6 @@
-/* Diagnóstico colectivo: identidad Campus Latina (verde petróleo con coral, Schibsted Grotesk).
-   Coral es el color de destaque: el dato que importa. Nunca significa pérdida ni error. */
+/* Diagnóstico colectivo: identidad Campus Latina (verde petróleo con ámbar, Schibsted Grotesk).
+   Ámbar es el color de destaque: el dato que importa. Nunca significa pérdida ni error.
+   Las variables siguen llamándose --coral y --coral-suave (nombre anterior del destaque). */
 @font-face{font-family:"Schibsted Grotesk";src:url(/fonts/schibsted-grotesk-400.woff2) format("woff2");font-weight:400;font-style:normal;font-display:swap}
 @font-face{font-family:"Schibsted Grotesk";src:url(/fonts/schibsted-grotesk-500.woff2) format("woff2");font-weight:500;font-style:normal;font-display:swap}
 @font-face{font-family:"Schibsted Grotesk";src:url(/fonts/schibsted-grotesk-600.woff2) format("woff2");font-weight:600;font-style:normal;font-display:swap}
@@ -12,8 +13,8 @@
   --noche:#0A2329;      /* fondos oscuros (pantalla proyectada) */
   --agua:#7FD6DE;       /* acento sobre fondos oscuros */
   --bruma:#EAF3F4;      /* fondo claro */
-  --coral:#FF6B4A;      /* destaque */
-  --coral-suave:#FFB9A8;
+  --coral:#F08C1A;      /* destaque: ámbar */
+  --coral-suave:#FFCF8A; /* ámbar claro */
   --texto:#1F3A40;
   --apagado:#4D6166;
   --linea:#D5E3E5;
