@@ -20,7 +20,7 @@ export default function Proyeccion({ codigo: fijo }) {
   return (
     <Escenario cursor="none">
       {datos && <div key={`${datos.fase}-${datos.etapa}-${datos.vista}`} style={{ position: "absolute", inset: 0 }}><Pantalla datos={datos} /></div>}
-      {!enLinea && <p role="status" style={{ position: "absolute", top: 24, right: 32, fontSize: 18, color: "var(--coral-suave)" }}>Sin conexión, reintentando…</p>}
+      {!enLinea && <p role="status" style={{ position: "absolute", top: 24, right: 32, fontSize: 18, color: "var(--error)" }}>Sin conexión, reintentando…</p>}
     </Escenario>
   );
 }

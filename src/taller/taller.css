@@ -134,8 +134,7 @@ button:focus:not(:focus-visible){outline:none}
 
 @keyframes t-cae{from{opacity:0;transform:translateY(-120px)}to{opacity:1;transform:none}}
 @keyframes t-aparece{from{opacity:0}to{opacity:1}}
-@keyframes t-brota{from{transform:scale(0)}to{transform:none}}
-.t-brota{transform-box:fill-box;transform-origin:center;animation:t-brota .7s cubic-bezier(.2,.8,.3,1.25) both}
+.t-crece-svg{transform-box:fill-box;transform-origin:left;animation:t-crece 1s cubic-bezier(.2,.7,.2,1) both}
 @keyframes t-desde-cero{from{width:0}}
 @keyframes t-revela{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
 @keyframes t-crece{from{transform:scaleX(0)}to{transform:scaleX(1)}}

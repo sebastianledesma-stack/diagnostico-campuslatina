@@ -25,7 +25,8 @@ export function Red({ enLinea }) {
 }
 
 // Pantalla proyectada: se diseña a 1920×1080 y se escala para ocupar la pantalla que haya.
-export function Escenario({ children, fondo = "var(--noche)", cursor = "auto" }) {
+// La pantalla proyectada va en claro: fondo bruma y texto profundo.
+export function Escenario({ children, fondo = "var(--bruma)", cursor = "auto" }) {
   const [escala, setEscala] = useState(1);
   useEffect(() => {
     const medir = () => setEscala(Math.min(window.innerWidth / 1920, window.innerHeight / 1080));
@@ -34,8 +35,8 @@ export function Escenario({ children, fondo = "var(--noche)", cursor = "auto" })
     return () => window.removeEventListener("resize", medir);
   }, []);
   return (
-    <div className="t-oscuro" style={{ position: "fixed", inset: 0, background: fondo, overflow: "hidden", cursor }}>
-      <div style={{ position: "absolute", left: "50%", top: "50%", width: 1920, height: 1080, transform: `translate(-50%,-50%) scale(${escala})`, color: "#fff" }}>
+    <div style={{ position: "fixed", inset: 0, background: fondo, overflow: "hidden", cursor }}>
+      <div style={{ position: "absolute", left: "50%", top: "50%", width: 1920, height: 1080, transform: `translate(-50%,-50%) scale(${escala})`, color: "var(--profundo)" }}>
         {children}
       </div>
     </div>

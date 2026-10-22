@@ -12,7 +12,7 @@ const marco = { position: "absolute", inset: 0, padding: "52px 96px 44px", displ
 const Numero = ({ valor, tam = 200 }) => (
   <p style={{ lineHeight: 1, fontWeight: 700 }}>
     <span style={{ fontSize: tam, letterSpacing: "-.04em" }}>{fmt1(valor)}</span>
-    <span style={{ fontSize: tam / 5, color: "var(--pizarra)", fontWeight: 500 }}> de 5</span>
+    <span style={{ fontSize: tam / 5, color: "var(--apagado)", fontWeight: 500 }}> de 5</span>
   </p>
 );
 
@@ -30,9 +30,9 @@ function Encabezado({ datos, e, paso }) {
 function TituloEtapa({ e, tam = 64 }) {
   return (
     <>
-      <p style={{ fontSize: 24, color: "var(--pizarra)" }}>Etapa {e.num} de 7</p>
+      <p style={{ fontSize: 24, color: "var(--apagado)" }}>Etapa {e.num} de 7</p>
       <h1 style={{ fontSize: tam, lineHeight: 1.02, fontWeight: 700, letterSpacing: "-.02em", marginTop: 6 }}>{e.name}</h1>
-      <p className="t-cursiva" style={{ fontSize: tam * 0.58, color: "var(--agua)", marginTop: 6 }}>{e.pregunta}</p>
+      <p className="t-cursiva" style={{ fontSize: tam * 0.58, color: "var(--petroleo)", marginTop: 6 }}>{e.pregunta}</p>
     </>
   );
 }
@@ -48,31 +48,31 @@ export function EtapaAbierta({ datos }) {
       <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 560px", gap: 96, alignItems: "center" }}>
         <div className="t-sube">
           <h1 style={{ fontSize: 150, lineHeight: 1, fontWeight: 700, letterSpacing: "-.025em" }}>{e.name}</h1>
-          <p className="t-cursiva" style={{ fontSize: 76, lineHeight: 1.1, color: "var(--agua)", marginTop: 20 }}>{e.pregunta}</p>
+          <p className="t-cursiva" style={{ fontSize: 76, lineHeight: 1.1, color: "var(--petroleo)", marginTop: 20 }}>{e.pregunta}</p>
           {/* La consigna, solo al empezar: después ya se conoce. */}
           {e.num === 1 && (
-            <p style={{ fontSize: 30, color: "var(--pizarra)", marginTop: 56, maxWidth: 1000, lineHeight: 1.4 }}>
-              <span style={{ color: "#fff" }}>{CONSIGNA_TITULO}</span> {CONSIGNA}
+            <p style={{ fontSize: 30, color: "var(--apagado)", marginTop: 56, maxWidth: 1000, lineHeight: 1.4 }}>
+              <span style={{ color: "var(--profundo)" }}>{CONSIGNA_TITULO}</span> {CONSIGNA}
             </p>
           )}
         </div>
         <div className="t-sube" style={{ "--i": 2 }}>
-          <p style={{ fontSize: 30, color: "var(--pizarra)" }}>Respondieron</p>
+          <p style={{ fontSize: 30, color: "var(--apagado)" }}>Respondieron</p>
           <p style={{ lineHeight: 1, marginTop: 8, fontWeight: 700 }}>
             <span style={{ fontSize: 240, color: "var(--coral)", letterSpacing: "-.03em" }}>{listos}</span>
-            <span style={{ fontSize: 80, color: "var(--pizarra)", fontWeight: 500 }}> / {total}</span>
+            <span style={{ fontSize: 80, color: "var(--apagado)", fontWeight: 500 }}> / {total}</span>
           </p>
-          <div style={{ height: 16, borderRadius: 8, background: "rgba(255,255,255,.14)", marginTop: 24, overflow: "hidden" }}>
+          <div style={{ height: 16, borderRadius: 8, background: "var(--linea)", marginTop: 24, overflow: "hidden" }}>
             <div style={{ height: "100%", width: `${total ? (listos / total) * 100 : 0}%`, background: "var(--coral)", borderRadius: 8, transition: "width .8s cubic-bezier(.2,.7,.2,1)" }} />
           </div>
         </div>
       </div>
       <Pie>
         <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-          <p style={{ fontSize: 24, color: "var(--pizarra)", textAlign: "right", lineHeight: 1.35 }}>
-            ¿Todavía no entró?<br /><span style={{ color: "#fff", fontWeight: 600 }}>{urlCorta(datos.codigo)}</span>
+          <p style={{ fontSize: 24, color: "var(--apagado)", textAlign: "right", lineHeight: 1.35 }}>
+            ¿Todavía no entró?<br /><span style={{ color: "var(--profundo)", fontWeight: 600 }}>{urlCorta(datos.codigo)}</span>
           </p>
-          <div style={{ background: "#fff", borderRadius: 14, padding: 12 }}><Qr texto={urlParticipante(datos.codigo)} tamano={112} /></div>
+          <div style={{ background: "#fff", border: "1px solid var(--linea)", borderRadius: 14, padding: 12 }}><Qr texto={urlParticipante(datos.codigo)} tamano={112} /></div>
         </div>
       </Pie>
     </div>
@@ -95,7 +95,7 @@ export function ResultadoEtapa({ datos }) {
           {valor == null ? <p style={{ fontSize: 32, marginTop: 48 }}>Nadie respondió esta etapa.</p> : (
             <>
               <div style={{ marginTop: 44 }}><Numero valor={valor} /></div>
-              <p style={{ fontSize: 40, fontWeight: 700, color: "var(--agua)", marginTop: 8 }}>{nivel}</p>
+              <p style={{ fontSize: 40, fontWeight: 700, color: "var(--petroleo)", marginTop: 8 }}>{nivel}</p>
               <div style={{ marginTop: 20 }}><EscalonGrande nivel={nivel} /></div>
             </>
           )}
@@ -124,10 +124,10 @@ export function IdeasEtapa({ datos, onElegir }) {
           <TituloEtapa e={e} />
           {hoy != null && (
             <div style={{ marginTop: 44 }}>
-              <p style={{ fontSize: 26, color: "var(--pizarra)" }}>Hoy</p>
+              <p style={{ fontSize: 26, color: "var(--apagado)" }}>Hoy</p>
               <Numero valor={hoy} tam={120} />
-              <p style={{ fontSize: 26, color: "var(--pizarra)", marginTop: 28 }}>{claves.length ? `Con ${claves.length === 1 ? "la idea elegida" : `las ${claves.length} ideas elegidas`}` : "Elijan las ideas que aplicarían"}</p>
-              <p style={{ lineHeight: 1, fontWeight: 700, color: claves.length ? "var(--coral)" : "rgba(255,255,255,.3)" }}>
+              <p style={{ fontSize: 26, color: "var(--apagado)", marginTop: 28 }}>{claves.length ? `Con ${claves.length === 1 ? "la idea elegida" : `las ${claves.length} ideas elegidas`}` : "Elijan las ideas que aplicarían"}</p>
+              <p style={{ lineHeight: 1, fontWeight: 700, color: claves.length ? "var(--coral)" : "#9DB5B9" }}>
                 <span style={{ fontSize: 160, letterSpacing: "-.04em" }}>{fmt1(con)}</span>
                 {claves.length > 0 && <span style={{ fontSize: 40, fontWeight: 600 }}> +{fmt1(con - hoy)}</span>}
               </p>
@@ -143,18 +143,18 @@ export function IdeasEtapa({ datos, onElegir }) {
               const elegida = claves.includes(i.clave);
               return (
                 <button key={i.clave} type="button" onClick={() => alternar(i.clave)} disabled={!onElegir} aria-pressed={elegida}
-                  className="t-sube" style={{ "--i": k + 1, textAlign: "left", font: "inherit", color: "#fff", cursor: onElegir ? "pointer" : "default",
-                    background: elegida ? "rgba(127,214,222,.14)" : "rgba(255,255,255,.05)", border: `2px solid ${elegida ? "var(--agua)" : "rgba(255,255,255,.12)"}`,
+                  className="t-sube" style={{ "--i": k + 1, textAlign: "left", font: "inherit", color: "var(--profundo)", cursor: onElegir ? "pointer" : "default",
+                    background: elegida ? "#E1EFF0" : "#fff", border: `2px solid ${elegida ? "var(--petroleo)" : "var(--linea)"}`,
                     borderRadius: 22, padding: "26px 30px", minHeight: 300, display: "flex", flexDirection: "column", transition: "background .2s, border-color .2s" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16 }}>
                     <span style={{ fontSize: 56, fontWeight: 700, lineHeight: 1, color: "var(--coral)" }}>{i.sube >= 0.05 ? `+${fmt1(i.sube)}` : "+0.0"}</span>
-                    <span aria-hidden="true" style={{ width: 44, height: 44, borderRadius: 12, border: `2px solid ${elegida ? "var(--agua)" : "rgba(255,255,255,.35)"}`,
-                      background: elegida ? "var(--agua)" : "transparent", display: "grid", placeItems: "center" }}>
-                      {elegida && <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--noche)" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>}
+                    <span aria-hidden="true" style={{ width: 44, height: 44, borderRadius: 12, border: `2px solid ${elegida ? "var(--petroleo)" : "#9DB5B9"}`,
+                      background: elegida ? "var(--petroleo)" : "transparent", display: "grid", placeItems: "center" }}>
+                      {elegida && <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>}
                     </span>
                   </div>
                   <p style={{ fontSize: 26, lineHeight: 1.35, marginTop: 18, fontWeight: 500 }}>{i.texto}</p>
-                  <p style={{ fontSize: 19, color: "var(--pizarra)", marginTop: "auto", paddingTop: 16 }}>
+                  <p style={{ fontSize: 19, color: "var(--apagado)", marginTop: "auto", paddingTop: 16 }}>
                     {i.tipo === "nivel" ? `${i.detalle} · pregunta ${i.q + 1}` : `${i.detalle} · pregunta ${i.q + 1}`}
                   </p>
                 </button>
