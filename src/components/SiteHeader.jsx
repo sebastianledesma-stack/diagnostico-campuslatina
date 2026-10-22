@@ -9,7 +9,7 @@ export default function SiteHeader({ onCta }) {
     ? <button type="button" className="cl-cta" onClick={() => { setAbierto(false); onCta(); }} {...extra}>{NAV_CTA.texto}</button>
     : <a className="cl-cta" href={NAV_CTA.href} {...extra}>{NAV_CTA.texto}</a>;
   return (
-    <nav className="cl-nav" aria-label="CampusLatina">
+    <nav className="cl-nav" aria-label="Campus Latina">
       <style dangerouslySetInnerHTML={{ __html: SITE_HEADER_CSS }} />
       <div className="cl-nav-in">
         <a className="cl-logo" href={`${WEB}/`}><img src="/campus-latina.svg" alt="Campus Latina" width="148" height="42" /></a>

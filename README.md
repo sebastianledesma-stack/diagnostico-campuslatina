@@ -98,7 +98,7 @@ node scripts/test-admin-data.mjs            # auth, allowlist y paginación del 
 | `SUPABASE_URL` | functions | Project URL |
 | `SUPABASE_SERVICE_KEY` | functions (**secreta**) | service_role key |
 | `RESEND_API_KEY` | functions (**secreta**) | API key de Resend |
-| `MAIL_FROM` | functions | `Diagnóstico CampusLatina <no-reply@campuslatina.com>` |
+| `MAIL_FROM` | functions | `Diagnóstico Campus Latina <no-reply@campuslatina.com>` |
 | `MAIL_INTERNAL_TO` | functions | quién recibe el aviso de cada diagnóstico (coma para varios) |
 | `CONTACT_EMAIL` | functions | Reply-To del informe y botón "Hablemos" |
 | `SITE_URL` | functions | `https://diagnostico.campuslatina.com` |

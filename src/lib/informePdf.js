@@ -156,7 +156,7 @@ h3{font-size:17pt;letter-spacing:-.025em;line-height:1.1}.preg{font-size:12pt;ma
       ${d.hayMejora ? `<div class="flecha"></div><div><span class="lbl">Con el plan</span><div class="dato destaque">${fmt1(d.potencial)}</div><div class="sub">${getNivel(d.potencial).label}</div></div>` : ""}
     </div>
   </div>
-  <div class="pie">CampusLatina × CIeLatam × Salesforce</div>
+  <div class="pie">Campus Latina × CIE LATAM × Salesforce</div>
 </section>
 
 <section>
@@ -181,7 +181,7 @@ h3{font-size:17pt;letter-spacing:-.025em;line-height:1.1}.preg{font-size:12pt;ma
   <div class="foco" style="margin-bottom:9mm">${ganancias.map((e) => `<div><span class="lbl">${num2(e.num)} · ${e.name}</span><b>+${fmt1(r1(e.pot) - r1(e.score))}</b>de ${fmt1(e.score)} a ${fmt1(e.pot)} con las acciones del plan</div>`).join("")}</div>` : ""}
   <span class="lbl">Análisis por etapa</span>
   ${detalle}
-  <div class="cierre"><span class="lbl">CampusLatina</span>${registro.target
+  <div class="cierre"><span class="lbl">Campus Latina</span>${registro.target
       ? `<h2>Revisemos su diagnóstico <em>en 45 minutos</em></h2><p>Una videollamada para recorrer sus resultados y definir por dónde empezar. ${AUTORIDAD}</p>`
       : `<h2>¿Quiere inscribir <em>más estudiantes</em> el próximo ciclo?</h2><p>${AUTORIDAD} Escríbanos y revisamos su diagnóstico juntos.</p>`}<p style="margin-top:3mm;color:#fff">campuslatina.com</p></div>
 </section>

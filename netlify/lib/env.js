@@ -3,7 +3,7 @@ export const env = {
   SUPABASE_URL: process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
   SUPABASE_SERVICE_KEY: process.env.SUPABASE_SERVICE_KEY,
   RESEND_API_KEY: process.env.RESEND_API_KEY,
-  MAIL_FROM: process.env.MAIL_FROM || "Diagnóstico CampusLatina <no-reply@campuslatina.com>",
+  MAIL_FROM: process.env.MAIL_FROM || "Diagnóstico Campus Latina <no-reply@campuslatina.com>",
   // Destinatario(s) del aviso interno, separados por coma.
   MAIL_INTERNAL_TO: list(process.env.MAIL_INTERNAL_TO),
   // Contacto comercial: Reply-To del mail al directivo y botón "Hablemos".

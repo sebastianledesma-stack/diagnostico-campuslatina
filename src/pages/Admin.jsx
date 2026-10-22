@@ -37,7 +37,7 @@ function Shell({ children, email, onLogout }) {
     <div style={{ minHeight: "100vh", background: CREAM, fontFamily: "'Schibsted Grotesk',sans-serif", color: NAVY }}>
       <div style={{ background: NAVY_DK, padding: "14px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
         <div>
-          <span style={mono(9, EMERALD)}>CampusLatina · Panel</span>
+          <span style={mono(9, EMERALD)}>Campus Latina · Panel</span>
           <div style={{ fontFamily: "'CL Titulos',serif", fontSize: 20, color: WHITE }}>Diagnósticos de inscripción</div>
         </div>
         {email && (
@@ -295,8 +295,8 @@ function Detalle({ d, onClose }) {
   const waNum = String(d.whatsapp || "").replace(/\D/g, "");
   const nombre = String(d.nombre || "").split(/\s+/)[0];
   const waMsg = enCurso(d)
-    ? `¡Hola, ${nombre}! Soy de CampusLatina. Vi que empezó el diagnóstico del proceso de inscripción de ${d.universidad}. ¿Lo podemos ayudar a completarlo?`
-    : `¡Hola, ${nombre}! Soy de CampusLatina. Vi que completó el diagnóstico del proceso de inscripción de ${d.universidad} (puntaje ${fmt1(d.score_global)} de 5). ¿Le parece si conversamos sobre los resultados?`;
+    ? `¡Hola, ${nombre}! Soy de Campus Latina. Vi que empezó el diagnóstico del proceso de inscripción de ${d.universidad}. ¿Lo podemos ayudar a completarlo?`
+    : `¡Hola, ${nombre}! Soy de Campus Latina. Vi que completó el diagnóstico del proceso de inscripción de ${d.universidad} (puntaje ${fmt1(d.score_global)} de 5). ¿Le parece si conversamos sobre los resultados?`;
 
   return (
     <div role="dialog" aria-modal="true" aria-label={`Diagnóstico de ${d.universidad}`} onClick={onClose}
@@ -607,7 +607,7 @@ export default function Admin() {
     return () => sub.subscription.unsubscribe();
   }, []);
 
-  useEffect(() => { document.title = "Panel · Diagnósticos CampusLatina"; }, []);
+  useEffect(() => { document.title = "Panel · Diagnósticos Campus Latina"; }, []);
 
   if (!supabase) return <Shell><p>Falta configurar <code>VITE_SUPABASE_URL</code> y <code>VITE_SUPABASE_ANON_KEY</code>.</p></Shell>;
   if (session === undefined) return <Shell><p style={{ color: MUTED }}>Cargando…</p></Shell>;

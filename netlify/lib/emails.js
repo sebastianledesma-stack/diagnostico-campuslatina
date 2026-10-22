@@ -26,7 +26,7 @@ const destacado = (texto) => `<span style="font-family:${SERIF};font-style:itali
 
 function layout({ preheader, body }) {
   return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light"><title>Diagnóstico CampusLatina</title>
+<meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light"><title>Diagnóstico Campus Latina</title>
 <link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;600;700&family=Newsreader:ital@1&display=swap" rel="stylesheet">
 <style>@media (max-width:600px){.px{padding-left:22px!important;padding-right:22px!important}.dato{font-size:46px!important}.col{display:block!important;width:100%!important;padding:0 0 14px!important}}</style></head>
 <body style="margin:0;padding:0;background:${BRUMA};">
@@ -149,7 +149,7 @@ ${cabecera({
 
 <tr><td class="px" style="padding:26px 40px 36px;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${TINTA};"><tr><td style="padding:30px 30px 32px;">
-    <div style="${ETIQUETA}color:${AGUA};">CampusLatina</div>
+    <div style="${ETIQUETA}color:${AGUA};">Campus Latina</div>
     <div style="font-family:${SANS};font-size:24px;line-height:1.2;font-weight:700;letter-spacing:-0.4px;color:#ffffff;margin:10px 0 0;">${esc(cta.titulo).replace(esc(cta.destacar), destacado(esc(cta.destacar)))}</div>
     <p style="font-size:15px;line-height:1.6;color:#C9D6D8;margin:12px 0 22px;">${AUTORIDAD} ${esc(cta.texto)}</p>
     ${boton(cta.boton, cta.href, { oscuro: true })}
@@ -172,13 +172,13 @@ ${cabecera({
     `El informe completo va adjunto en PDF.`,
     ``,
     `${cta.titulo} ${cta.texto}${cta.href && !cta.href.startsWith("mailto:") ? ` ${cta.href}` : ""}`,
-    `— CampusLatina`,
+    `— Campus Latina`,
   ].join("\n");
 
   return { subject, html: layout({ preheader: todoEnD(d.respuestas) ? "Su proceso está en el nivel más alto: el próximo paso es validarlo con datos." : `Donde más inscriptos se pierden: ${critica.name}. El informe completo va adjunto en PDF.`, body }), text };
 }
 
-// Aviso interno a CampusLatina con los datos del prospecto (formato de la spec, sección 6.2).
+// Aviso interno a Campus Latina con los datos del prospecto (formato de la spec, sección 6.2).
 // El asunto conserva el prefijo "🎯 TARGET" porque el equipo filtra por él; el cuerpo va sin emojis.
 export function mailInterno(d, { adminUrl } = {}) {
   const nivel = getNivel(Number(d.score_global));
@@ -244,7 +244,7 @@ ${cabecera({
 // Bloque de texto + botón para los mails cortos.
 function mailSimple({ preheader, titulo, parrafos, boton: textoBoton, href, pie }) {
   const body = `
-${cabecera({ etiqueta: "CampusLatina & CIeLatam", titulo })}
+${cabecera({ etiqueta: "Campus Latina & CIE LATAM", titulo })}
 <tr><td class="px" style="padding:32px 40px 36px;">
   ${parrafos.map((p) => parrafo(p)).join("")}
   <div style="margin-top:12px;">${boton(textoBoton, href)}</div>

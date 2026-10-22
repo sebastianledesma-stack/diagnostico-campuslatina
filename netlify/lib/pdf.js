@@ -96,7 +96,7 @@ function Tapa({ d, registro, fecha }) {
         d.hayMejora ? h(View, null, Etiqueta("Con el plan", { color: SLATE }), h(Text, { style: [dato, { color: AMBAR_LUZ }] }, fmt1(d.potencial)), h(Text, { style: { color: SLATE, fontSize: 10, marginTop: mm(6) } }, getNivel(d.potencial).label)) : null,
       ),
     ),
-    h(Text, { style: { position: "absolute", left: mm(20), bottom: mm(12), fontSize: 7.5, color: SLATE, letterSpacing: 0.3 } }, "CampusLatina × CIeLatam × Salesforce"),
+    h(Text, { style: { position: "absolute", left: mm(20), bottom: mm(12), fontSize: 7.5, color: SLATE, letterSpacing: 0.3 } }, "Campus Latina × CIE LATAM × Salesforce"),
   );
 }
 
@@ -176,7 +176,7 @@ function Cierre({ d, registro, contacto }) {
       ? `Una videollamada para recorrer sus resultados y definir por dónde empezar. Sin compromiso. Responda el mail con este informe para coordinarla. ${AUTORIDAD}`
       : `${AUTORIDAD} Responda el mail con este informe y lo revisamos juntos.`;
   return h(View, { wrap: false, style: { backgroundColor: TINTA, color: BLANCO, paddingVertical: mm(10), paddingHorizontal: mm(12), marginTop: mm(4) } },
-    Etiqueta("CampusLatina", { color: AGUA }),
+    Etiqueta("Campus Latina", { color: AGUA }),
     h(Text, { style: { fontWeight: 700, fontSize: 19, lineHeight: 1.12, letterSpacing: -0.5, marginTop: mm(1), marginBottom: mm(3) } },
       antes, resaltado ? h(Text, { style: { fontFamily: "Newsreader", fontStyle: "italic", fontWeight: 400, color: BLANCO, textDecoration: "underline", textDecorationColor: AMBAR_LUZ } }, resaltado) : null, despues),
     h(Text, { style: { color: "#C9D6D8", lineHeight: 1.55, maxWidth: mm(150) } }, texto),
@@ -188,7 +188,7 @@ function InformePDF({ d: fila, contacto }) {
   const d = datosInforme(fila.respuestas || {});
   const fecha = new Date(fila.created_at || Date.now()).toLocaleDateString("es-AR", { month: "long", year: "numeric" });
   const ganancias = [...d.etapas].sort((a, b) => (b.pot - b.score) - (a.pot - a.score)).filter((e) => r1(e.pot) > r1(e.score)).slice(0, 3);
-  return h(Document, { title: `Diagnóstico del proceso de inscripción — ${fila.universidad}`, author: "CampusLatina", language: "es" },
+  return h(Document, { title: `Diagnóstico del proceso de inscripción — ${fila.universidad}`, author: "Campus Latina", language: "es" },
     h(Tapa, { d, registro: fila, fecha }),
     h(Page, { size: "A4", style: s.pagina },
       h(View, { style: s.cuerpo }, h(Resumen, { d })),

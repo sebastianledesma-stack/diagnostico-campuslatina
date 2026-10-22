@@ -636,7 +636,7 @@ export function Informe({ registroData, respuestas, envio }) {
       </main>
       {tab === SECCIONES.length - 1 && <div style={{ marginTop: desk ? 80 : 56 }}><ContactoCTA universidad={registroData.universidad} target={registroData.target} alto={d.todoEnD} ancho={1120} /></div>}
       <Pie tab={tab} irA={irA} desk={desk} />
-      <p style={{ textAlign: "center", margin: 0, padding: "0 16px 36px" }}><Etiqueta color={MUTED}>CampusLatina × CIeLatam × Salesforce</Etiqueta></p>
+      <p style={{ textAlign: "center", margin: 0, padding: "0 16px 36px" }}><Etiqueta color={MUTED}>Campus Latina × CIE LATAM × Salesforce</Etiqueta></p>
     </div>
   );
 }

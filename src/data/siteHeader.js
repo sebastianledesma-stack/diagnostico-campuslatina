@@ -33,7 +33,7 @@ export const SITE_HEADER_CSS = `
 // Versión HTML (páginas estáticas): el menú de celular se abre con un script mínimo.
 export function siteHeaderHTML() {
   const links = NAV_LINKS.map((l) => `<a href="${l.href}">${l.texto}</a>`).join("");
-  return `<nav class="cl-nav" aria-label="CampusLatina">
+  return `<nav class="cl-nav" aria-label="Campus Latina">
   <div class="cl-nav-in">
     <a class="cl-logo" href="${WEB}/"><img src="/campus-latina.svg" alt="Campus Latina" width="148" height="42"></a>
     <div class="cl-links">${links}<a class="cl-cta" href="${NAV_CTA.href}">${NAV_CTA.texto}</a></div>

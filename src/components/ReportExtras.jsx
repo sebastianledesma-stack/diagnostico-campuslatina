@@ -48,7 +48,7 @@ export function ContactoCTA({universidad,target,alto,ancho=680}){
     <section className="cl-oscuro" style={{background:NAVY_DK,position:"relative",overflow:"hidden"}}>
       <canvas ref={campo} aria-hidden="true" style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block",pointerEvents:"none"}}/>
       <div style={{position:"relative",maxWidth:ancho,margin:"0 auto",padding:"clamp(44px,7vw,80px) clamp(20px,3vw,32px) clamp(52px,8vw,96px)"}}>
-        <span style={{...monoStyle,fontSize:12,color:EMERALD}}>CampusLatina</span>
+        <span style={{...monoStyle,fontSize:12,color:EMERALD}}>Campus Latina</span>
         <h2 style={{fontFamily:"'CL Titulos',sans-serif",fontWeight:700,fontSize:"clamp(30px,4.2vw,48px)",lineHeight:1.04,letterSpacing:"-.03em",color:WHITE,margin:"14px 0 18px",maxWidth:680,textWrap:"balance"}}>
           {target&&alto?<>Validemos su resultado <em className="cl-hi-oscuro">con datos</em></>
             :target?<>Revisemos su diagnóstico <em className="cl-hi-oscuro">en 45 minutos</em></>:<>¿Quiere inscribir <em className="cl-hi-oscuro">más estudiantes</em> el próximo ciclo?</>}

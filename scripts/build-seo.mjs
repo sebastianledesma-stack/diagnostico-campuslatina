@@ -38,7 +38,7 @@ const FAQ = [
   ["¿Qué significa cada nivel?", NIVELES.map(([n, r]) => `${n} (${r}): ${NIVEL_DESC[n]}.`).join(" ")],
   ["¿Cuánto tarda y cuánto cuesta?", "Lleva unos 10 minutos y es gratuito. Al terminar se ve el informe en pantalla y se recibe por mail en PDF."],
   ["¿Qué incluye el informe?", "El puntaje global y por etapa, la etapa donde más inscriptos se pierden, las fricciones detectadas, 3 recomendaciones por etapa ordenadas por impacto y una calculadora para ver cuánto puede subir el puntaje."],
-  ["¿Quién creó este diagnóstico?", `CampusLatina, junto con CIeLatam. ${AUTORIDAD}`],
+  ["¿Quién creó este diagnóstico?", `Campus Latina, junto con CIE LATAM. ${AUTORIDAD}`],
 ];
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -109,7 +109,7 @@ const num2 = (n) => String(n).padStart(2, "0");
 const escalon = (n) => `<span class="esc" aria-hidden="true">${[1, 2, 3, 4].map((k) => `<i${k <= n ? ' class="on"' : ""}></i>`).join("")}</span>`;
 
 function page({ path, title, description, body, jsonld = [], type = "article" }) {
-  const full = `${title} | CampusLatina`;
+  const full = `${title} | Campus Latina`;
   return `<!doctype html>
 <html lang="es">
 <head>
@@ -122,7 +122,7 @@ function page({ path, title, description, body, jsonld = [], type = "article" })
 <link rel="alternate" hreflang="es" href="${url(path)}">
 <link rel="alternate" hreflang="x-default" href="${url(path)}">
 <meta property="og:type" content="${type}">
-<meta property="og:site_name" content="Diagnóstico del proceso de inscripción · CampusLatina">
+<meta property="og:site_name" content="Diagnóstico del proceso de inscripción · Campus Latina">
 <meta property="og:locale" content="es_LA">
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(description)}">
@@ -147,7 +147,7 @@ ${siteHeaderHTML()}
 <main>
 ${body}
 </main>
-<footer>Diagnóstico del proceso de inscripción universitaria · <a href="https://campuslatina.com">CampusLatina</a> &amp; CIeLatam · Actualizado ${HOY}</footer>
+<footer>Diagnóstico del proceso de inscripción universitaria · <a href="https://campuslatina.com">Campus Latina</a> &amp; CIE LATAM · Actualizado ${HOY}</footer>
 </body>
 </html>`;
 }
@@ -272,7 +272,7 @@ ${urls.map(([p, pr, f]) => `  <url><loc>${url(p)}</loc><lastmod>${HOY}</lastmod>
 // ── robots.txt (buscadores y crawlers de IA habilitados explícitamente) ──
 const bots = ["Googlebot", "Bingbot", "DuckDuckBot", "Applebot", "Applebot-Extended", "Google-Extended", "GPTBot", "OAI-SearchBot", "ChatGPT-User", "ClaudeBot", "Claude-SearchBot", "Claude-User", "anthropic-ai", "PerplexityBot", "Perplexity-User", "CCBot", "Meta-ExternalAgent", "Amazonbot", "cohere-ai", "YouBot"];
 const reglas = "Allow: /\nDisallow: /admin\nDisallow: /api/\n";
-writeFileSync("dist/robots.txt", `# Diagnóstico del proceso de inscripción · CampusLatina
+writeFileSync("dist/robots.txt", `# Diagnóstico del proceso de inscripción · Campus Latina
 # Contenido público: habilitado para buscadores y asistentes de IA.
 ${bots.map((b) => `User-agent: ${b}`).join("\n")}
 ${reglas}
@@ -282,9 +282,9 @@ Sitemap: ${url("/sitemap.xml")}
 `);
 
 // ── llms.txt (https://llmstxt.org) y llms-full.txt ─────────────
-writeFileSync("dist/llms.txt", `# Diagnóstico del proceso de inscripción universitaria — CampusLatina
+writeFileSync("dist/llms.txt", `# Diagnóstico del proceso de inscripción universitaria — Campus Latina
 
-> Autodiagnóstico gratuito para universidades de Latinoamérica: en 10 minutos (28 preguntas) muestra en qué etapa del recorrido del aspirante se pierden inscriptos y qué resolver primero. Creado por CampusLatina y CIeLatam.
+> Autodiagnóstico gratuito para universidades de Latinoamérica: en 10 minutos (28 preguntas) muestra en qué etapa del recorrido del aspirante se pierden inscriptos y qué resolver primero. Creado por Campus Latina y CIE LATAM.
 
 El recorrido del aspirante se divide en 7 etapas: descubrimiento, exploración, activación, acompañamiento, decisión, inscripción y retención temprana. Cada etapa se evalúa con 4 preguntas de opciones que describen el nivel de desarrollo del proceso (puntaje de 1 a 5). Niveles: ${NIVELES.map(([n, r]) => `${n} (${r})`).join(", ")}. ${AUTORIDAD}
 
@@ -303,7 +303,7 @@ ${NOTAS.map((n) => `- [${n.titulo}](${n.url}) (${n.fecha})`).join("\n")}
 - [Campus Latina](https://campuslatina.com/llms.txt): quiénes somos y cómo trabajamos.
 `);
 writeFileSync("dist/llms-full.txt", `# Las 7 etapas del proceso de inscripción universitaria
-Fuente: ${url("/guia/")} · CampusLatina & CIeLatam · Actualizado ${HOY}
+Fuente: ${url("/guia/")} · Campus Latina & CIE LATAM · Actualizado ${HOY}
 
 ${guiaD}
 

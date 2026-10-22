@@ -63,7 +63,7 @@ function Welcome({onStart}){
       <main className="wl" style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"44px 20px 40px",position:"relative",maxWidth:680,margin:"0 auto",width:"100%"}}>
         <div className="wl-head">
           <div className="cl-sube" style={{"--i":0,display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
-            <Mono color={SLATE}>CampusLatina & CIeLatam</Mono>
+            <Mono color={SLATE}>Campus Latina & CIE LATAM</Mono>
             <span style={{fontFamily:"'CL Etiquetas',sans-serif",fontSize:11,letterSpacing:".12em",textTransform:"uppercase",color:EMERALD,border:`1px solid ${EMERALD}`,padding:"3px 9px"}}>Gratis</span>
           </div>
           <h1 className="wl-h1 cl-sube" style={{"--i":1,...titular("clamp(34px,6vw,60px)"),lineHeight:1.02,letterSpacing:"-.035em",color:WHITE,margin:"16px 0 20px"}}>
@@ -102,7 +102,7 @@ function Welcome({onStart}){
             Si el proceso pierde aspirantes en el camino, invertir en campañas es llenar un balde agujereado. Este diagnóstico muestra dónde está el agujero.
           </p>
           <p style={{fontSize:15,color:"rgba(255,255,255,.6)",lineHeight:1.65,margin:"10px 0 0"}}>
-            Lo creamos en CampusLatina: ayudamos a inscribir a más de 200.000 estudiantes en Argentina, y ahora llevamos esa experiencia al resto de Latinoamérica.
+            Lo creamos en Campus Latina: ayudamos a inscribir a más de 200.000 estudiantes en Argentina, y ahora llevamos esa experiencia al resto de Latinoamérica.
           </p>
         </div>
         <div className="wl-datos cl-sube" style={{"--i":6,display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",marginBottom:32}}>
