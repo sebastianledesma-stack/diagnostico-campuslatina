@@ -26,7 +26,10 @@ export const VISTAS_ETAPA = [
   { id: "resultado", texto: "Resultado" },
   { id: "ideas", texto: "Ideas para subir" },
 ];
+// Los ids del cierre son los valores que acepta la base (003_taller.sql): "estadisticas" es el
+// recorrido de hoy y "mapa" (libre desde que se sacó el mapa de calor), el recorrido con las ideas.
 export const VISTAS_CIERRE = [
-  { id: "resumen", texto: "Resumen" },
-  { id: "estadisticas", texto: "Estadísticas" },
+  { id: "resumen", texto: "El viaje" },
+  { id: "estadisticas", texto: "El recorrido" },
+  { id: "mapa", texto: "Con las ideas" },
 ];

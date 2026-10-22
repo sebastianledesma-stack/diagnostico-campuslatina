@@ -4,9 +4,15 @@ import { Qr } from "../Qr.jsx";
 import { HERRAMIENTA, ETAPAS_DATA, urlParticipante, urlCorta } from "../datos.js";
 import { Pie } from "./proyector.jsx";
 import { EtapaAbierta, ResultadoEtapa, IdeasEtapa } from "./ProyeccionEtapa.jsx";
-import { ResumenSala, EstadisticasSala } from "./ProyeccionCierre.jsx";
+import { ViajeSala, RecorridoSala } from "./ProyeccionCierre.jsx";
 
-// Cualquier otra vista (como el mapa de calor, que ya no se usa) cae en el resultado o el resumen.
+const RECORRIDO = ["estadisticas", "mapa"];
+
+// Clave para montar la pantalla de nuevo al cambiar de paso. Los dos pasos del recorrido comparten la
+// clave: es el mismo haz, que se abre en movimiento al pasar a "Con las ideas".
+export const clavePantalla = (d) => `${d.fase}-${d.etapa}-${d.fase === "cierre" && RECORRIDO.includes(d.vista) ? "recorrido" : d.vista}`;
+
+// En las etapas, cualquier otra vista (como el mapa de calor, que ya no se usa) cae en el resultado.
 export function Pantalla({ datos, onElegir }) {
   if (datos.fase === "abierta") return <EtapaAbierta datos={datos} />;
   if (datos.fase === "resultados") {
@@ -14,8 +20,8 @@ export function Pantalla({ datos, onElegir }) {
     return <ResultadoEtapa datos={datos} />;
   }
   if (datos.fase === "cierre") {
-    if (datos.vista === "estadisticas") return <EstadisticasSala datos={datos} />;
-    return <ResumenSala datos={datos} />;
+    if (RECORRIDO.includes(datos.vista)) return <RecorridoSala datos={datos} plan={datos.vista === "mapa"} />;
+    return <ViajeSala datos={datos} />;
   }
   return <Espera datos={datos} />;
 }

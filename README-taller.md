@@ -103,9 +103,9 @@ Usa el mismo Supabase, Resend y Netlify que el diagnóstico (ver [README.md](REA
 Los pasos, en orden:
 1. Pantalla del QR.
 2. Por cada etapa: **etapa abierta** (contador en vivo) → **resultado** → **ideas para subir**.
-3. **Resultado final** → **estadísticas**.
+3. **Resultado final: el viaje** → **el recorrido** → **con las ideas**.
 
-La pantalla proyectada va en fondo claro. En el resultado de una etapa, cada pregunta tiene una barra con el promedio de la sala sobre la escala de 1 a 5, con los 4 niveles de fondo; la más baja va más oscura y con el rótulo "La más baja". En el resultado final, lo mismo por etapa, con el coral hasta donde llegaría cada etapa con las ideas elegidas.
+La pantalla proyectada va en fondo claro. En el resultado de una etapa, cada pregunta tiene una barra con el promedio de la sala sobre la escala de 1 a 5, con los 4 niveles de fondo; la más baja va más oscura y con el rótulo "La más baja". En el cierre, **el viaje** muestra las 7 etapas como un recorrido (petróleo, hoy; ámbar punteado, con las ideas elegidas) y **el recorrido** es el haz del diagnóstico con los puntajes de la sala: en cada etapa se angosta según su puntaje y los aspirantes que llegan se encienden en ámbar. Al pasar a **con las ideas**, el haz se abre en movimiento. Es ilustrativo y lo dice en pantalla.
 
 "Mostrar resultados" cierra la etapa: lo que llegue después ya no cuenta. En los teléfonos no aparece nada hasta que ustedes muestran los resultados.
 
@@ -126,9 +126,10 @@ Cada etapa lleva unos 9 minutos: 2 para responder, 3 para el resultado y 4 para 
 | 0:44 | Etapa 5 abierta | **→** | — |
 | 0:53 | Etapa 6 abierta | **→** | — |
 | 1:02 | Etapa 7 abierta | **→** | — |
-| 1:11 | Resultado final: las 7 etapas, hoy y con las ideas elegidas | **→** Resultado final | Dónde se pierden más aspirantes y cuánto subiría la sala con lo elegido. |
-| 1:18 | Estadísticas | **→** | Cómo ve cada persona a la universidad; la pregunta más fuerte, la más débil, la de más acuerdo y la de más desacuerdo. |
-| 1:25 | Estadísticas | — | Invitar a mirar el teléfono: su mirada frente a la sala, y el email para recibir el PDF (puede llegar a Notificaciones o a Spam). |
+| 1:11 | El viaje: las 7 etapas, hoy y con las ideas elegidas | **→** Resultado final | Dónde se pierden más aspirantes y cuánto subiría la sala con lo elegido. |
+| 1:17 | El recorrido, hoy | **→** | Cuántos aspirantes quedan en el camino en las universidades de la sala. |
+| 1:20 | El recorrido, con las ideas | **→** | El haz se abre: lo que cambia si se aplican las ideas que eligió la sala. |
+| 1:25 | El recorrido, con las ideas | — | Invitar a mirar el teléfono: su mirada frente a la sala, y el email para recibir el PDF (puede llegar a Notificaciones o a Spam). |
 | 1:30 | — | **Más → Exportar CSV** (después del taller) | Cierre. |
 
 ## Si algo sale mal

@@ -1,8 +1,8 @@
 // /f/<código> — Frontend del expositor (escritorio). Es lo que se proyecta en el salón, con los
 // controles encima: aparecen al mover el mouse y se esconden solos a los 3 s. Se avanza como en una
 // presentación: → (o el control remoto de diapositivas) pasa al paso siguiente del taller y ← vuelve.
-//   Pantalla del QR → por cada etapa: abierta · resultado · ideas para subir → cierre: resumen ·
-//   estadísticas.
+//   Pantalla del QR → por cada etapa: abierta · resultado · ideas para subir → cierre: el viaje · el
+//   recorrido · con las ideas.
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import * as api from "../api.js";
@@ -12,7 +12,7 @@ import { leerClave, guardarClave, borrarClave } from "../claves.js";
 import { ETAPAS_DATA, VISTAS_ETAPA, VISTAS_CIERRE, urlParticipante, rutaPantalla } from "../datos.js";
 import { completaron, conRespuestas, ideasEtapa } from "../sala.js";
 import { exportarCSV } from "../csv.js";
-import { Pantalla } from "../vistas/Pantalla.jsx";
+import { Pantalla, clavePantalla } from "../vistas/Pantalla.jsx";
 
 // Los pasos del taller, en orden.
 const PASOS = [
@@ -137,7 +137,7 @@ function Presentacion({ datos, codigo, clave, aplicar, enLinea, salir }) {
   return (
     <>
       <Escenario cursor={mostrarControles ? "auto" : "none"}>
-        <div key={`${datos.fase}-${datos.etapa}-${datos.vista}`} style={{ position: "absolute", inset: 0 }}>
+        <div key={clavePantalla(datos)} style={{ position: "absolute", inset: 0 }}>
           <Pantalla datos={datos} onElegir={elegir} />
         </div>
       </Escenario>
