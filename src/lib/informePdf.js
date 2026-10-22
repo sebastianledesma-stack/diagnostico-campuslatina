@@ -73,23 +73,34 @@ export function htmlInforme(d, registro, { origen = "", imprimir = true, fecha =
   const filas = d.etapas.map((e) => `<tr><td class="nn">${num2(e.num)}</td><td><strong>${e.name}</strong><span class="q">${e.pregunta}</span></td>
     <td class="niv">${escalon(e.score)}${getNivel(e.score).label}</td><td class="n">${fmt1(e.score)}</td><td class="tr"><div class="trw">${tramo(e.score, e.pot)}</div></td><td class="n p">${fmt1(e.pot)}</td></tr>`).join("");
   const ganancias = [...d.etapas].sort((a, b) => (b.pot - b.score) - (a.pot - a.score)).filter((e) => r1(e.pot) > r1(e.score)).slice(0, 3);
+  // El título de cada lista va pegado a su primer ítem (Safari no respeta break-after:avoid y lo dejaba solo al pie de página).
+  const bloque = (titulo, items, clase = "") => {
+    const [primero, ...resto] = items;
+    return `<div class="grupo"><span class="lbl">${titulo}</span><ol class="lista ${clase}">${primero}</ol></div>${resto.length ? `<ol class="lista sigue ${clase}">${resto.join("")}</ol>` : ""}`;
+  };
   const detalle = d.etapas.map((e) => {
-    const max = `<li class="vacia">Esta etapa ya está en el nivel más alto que mide el diagnóstico.</li>`;
-    const fricc = e.score < 5 ? (FRICCIONES[e.id] || []).map((f, k) => `<li><span class="k">${num2(k + 1)}</span><span>${f.texto}</span></li>`).join("") : max;
-    const recs = accionesDeEtapa(d.respuestas, e.id).map((r) => `<li><span class="box"></span><span>${r.tipo === "nivel" ? `<em class="mejora">Mejora: ${r.pregunta}</em>` : ""}${r.texto}</span><span class="pts">+${fmt1(r.impacto)}</span></li>`).join("") || max;
+    const max = [`<li class="vacia">Esta etapa ya está en el nivel más alto que mide el diagnóstico.</li>`];
+    const fricc = e.score < 5 ? (FRICCIONES[e.id] || []).map((f, k) => `<li><span class="k">${num2(k + 1)}</span><span>${f.texto}</span></li>`) : max;
+    const recs = accionesDeEtapa(d.respuestas, e.id).map((r) => `<li><span class="box"></span><span>${r.tipo === "nivel" ? `<em class="mejora">Mejora: ${r.pregunta}</em>` : ""}${r.texto}</span><span class="pts">+${fmt1(r.impacto)}</span></li>`);;
     return `<section class="etapa">
       <header><span class="num">${num2(e.num)}</span><div><h3>${e.name}</h3><p class="preg"><span>${e.pregunta}</span></p></div>
         <div class="hoyplan"><div><span class="lbl">Hoy</span><b>${fmt1(e.score)}</b><small>${getNivel(e.score).label}</small></div><div><span class="lbl">Con el plan</span><b class="p">${fmt1(e.pot)}</b><small>${getNivel(e.pot).label}</small></div></div></header>
       <div class="dos"><div><span class="lbl">El momento del aspirante</span><p>${e.resumen}</p></div><div><span class="lbl">Qué mide esta etapa</span><p>${e.contexto}</p></div></div>
-      <span class="lbl">Dónde suele perderse valor</span><ol class="lista">${fricc}</ol>
-      <span class="lbl">Acciones recomendadas</span><ol class="lista acc">${recs}</ol>
+      ${bloque("Dónde suele perderse valor", fricc.length ? fricc : max)}
+      ${bloque("Acciones recomendadas", recs.length ? recs : max, "acc")}
     </section>`;
   }).join("");
 
   return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Diagnóstico del proceso de inscripción — ${universidad}</title>
 <link rel="stylesheet" href="${origen}/marca.css"><style>
-@page{size:A4;margin:16mm 18mm 20mm;@bottom-left{content:"Campus Latina · Diagnóstico del proceso de inscripción";font:8pt 'Schibsted Grotesk',Arial,sans-serif;color:${GRIS}}@bottom-right{content:counter(page);font:8pt 'Schibsted Grotesk',Arial,sans-serif;color:${GRIS}}}
-@page :first{margin:0;@bottom-left{content:none}@bottom-right{content:none}}
+/* Márgenes y pie en reglas separadas: Safari no conoce los recuadros del pie (@bottom-*) y, si van en la misma regla, descarta también los márgenes. */
+@page{size:A4;margin:16mm 18mm 20mm}
+@page :first{margin:0}
+/* Safari aplica @page :first a todas las páginas (y no deja que la tapa salga de los márgenes): ahí se usan los
+   márgenes en todas y la tapa queda como bloque dentro de ellos. "font:-apple-system-body" solo existe en Safari. */
+@supports (font:-apple-system-body){@page :first{margin:16mm 18mm 20mm}@media print{.tapa{width:auto;height:257mm}}}
+@page{@bottom-left{content:"Campus Latina · Diagnóstico del proceso de inscripción";font:8pt 'Schibsted Grotesk',Arial,sans-serif;color:${GRIS}}@bottom-right{content:counter(page);font:8pt 'Schibsted Grotesk',Arial,sans-serif;color:${GRIS}}}
+@page :first{@bottom-left{content:none}@bottom-right{content:none}}
 *{box-sizing:border-box;margin:0;padding:0}html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 body{font-family:'Schibsted Grotesk',Arial,sans-serif;color:${TINTA};font-size:9.5pt;line-height:1.55}
 .lbl{display:block;font-family:'CL Etiquetas','Schibsted Grotesk',Arial,sans-serif;font-size:7pt;letter-spacing:.12em;text-transform:uppercase;color:${GRIS};margin:0 0 2mm}
@@ -105,7 +116,7 @@ body{font-family:'Schibsted Grotesk',Arial,sans-serif;color:${TINTA};font-size:9
 .campo{position:absolute;left:0;right:0;bottom:0;width:210mm;height:125mm}
 .tapa .pie{position:absolute;left:20mm;bottom:12mm;font-size:7.5pt;color:${SLATE};letter-spacing:.04em}
 h2{font-size:21pt;line-height:1.08;letter-spacing:-.03em;font-weight:700;margin:2mm 0 5mm;max-width:150mm}
-h2 em,.preg span{font-family:Newsreader,Georgia,serif;font-style:italic;font-weight:400;background:linear-gradient(transparent 60%,${AMBAR_CLARO} 60%,${AMBAR_CLARO} 92%,transparent 92%)}
+h2 em,.preg span{font-family:Newsreader,Georgia,serif;font-style:italic;font-weight:400;background:linear-gradient(#fff 60%,${AMBAR_CLARO} 60%,${AMBAR_CLARO} 92%,#fff 92%)}
 .lectura{font-size:11pt;line-height:1.55;color:#1F3A40;max-width:155mm;margin-bottom:7mm}
 .sec{margin-top:7mm}.foco .lbl{min-height:6.5mm}.regla{border-top:1.5pt solid ${TINTA};padding-top:3mm}
 table{width:100%;border-collapse:collapse;margin-top:1mm}td,th{padding:1.9mm 1.5mm;border-bottom:.5pt solid ${LINEA};text-align:left;vertical-align:middle}
@@ -119,17 +130,17 @@ th{font-family:'CL Etiquetas','Schibsted Grotesk',Arial,sans-serif;font-size:6.5
 .niveles b{display:block;color:${TINTA};font-size:9pt;margin-bottom:1mm}
 .foco{display:grid;grid-template-columns:repeat(3,1fr);margin-top:3mm}.foco div{padding:0 4mm;border-left:.5pt solid ${LINEA}}.foco div:first-child{border-left:none;padding-left:0}
 .foco b{display:block;font-size:24pt;letter-spacing:-.04em;color:${PETROLEO};line-height:1;margin:1.5mm 0}
-.etapa{padding-top:6mm;margin-bottom:8mm;border-top:1.5pt solid ${TINTA}}.etapa header,.dos,.lista li{break-inside:avoid}.lbl{break-after:avoid}.etapa header{break-after:avoid}
+.etapa{padding-top:6mm;margin-bottom:8mm;border-top:1.5pt solid ${TINTA}}.etapa header,.dos,.lista li{break-inside:avoid;page-break-inside:avoid}.lbl{break-after:avoid;page-break-after:avoid}.etapa header{break-after:avoid;page-break-after:avoid}
 .etapa header{display:grid;grid-template-columns:auto 1fr auto;gap:5mm;align-items:end;margin-bottom:5mm}
 .num{font-size:40pt;font-weight:700;color:${PETROLEO};line-height:.8;letter-spacing:-.05em}
 h3{font-size:17pt;letter-spacing:-.025em;line-height:1.1}.preg{font-size:12pt;margin-top:1mm}
 .hoyplan{display:flex;gap:7mm}.hoyplan b{display:block;font-size:20pt;letter-spacing:-.04em;line-height:1}.hoyplan small{display:block;font-size:7.5pt;color:${GRIS};margin-top:.8mm}
 .dos{display:grid;grid-template-columns:1fr 1fr;gap:8mm;margin-bottom:5mm}.dos p{color:#1F3A40}
-.lista{list-style:none;margin:0 0 5mm;border-top:.5pt solid ${LINEA}}.lista li{display:grid;grid-template-columns:8mm 1fr auto;gap:2mm;padding:2mm 0;border-bottom:.5pt solid ${LINEA}}
+.lista{list-style:none;margin:0 0 5mm;border-top:.5pt solid ${LINEA}}.grupo{break-inside:avoid;page-break-inside:avoid}.grupo .lista{margin-bottom:0}.grupo:has(+ .sigue) .lista{margin-bottom:0}.lista.sigue{border-top:none}.grupo:not(:has(+ .sigue)) .lista{margin-bottom:5mm}.lista li{display:grid;grid-template-columns:8mm 1fr auto;gap:2mm;padding:2mm 0;border-bottom:.5pt solid ${LINEA}}
 .lista .k{font-family:'CL Etiquetas',Arial,sans-serif;font-size:7pt;letter-spacing:.1em;color:${PETROLEO};padding-top:.6mm}
 .lista .box{width:3mm;height:3mm;border:.4mm solid ${PETROLEO};margin-top:.8mm}
 .lista .pts{font-weight:700;color:${PETROLEO}}.mejora{display:block;font-style:normal;color:${GRIS};font-size:8pt}.lista .vacia{display:block;color:${GRIS}}
-.cierre{background:${TINTA};color:#fff;padding:10mm 12mm;margin-top:8mm;break-inside:avoid}.cierre h2{color:#fff;margin:2mm 0 3mm}.cierre h2 em{background:linear-gradient(transparent 64%,rgba(240,140,26,.8) 64%,rgba(240,140,26,.8) 90%,transparent 90%)}
+.cierre{background:${TINTA};color:#fff;padding:10mm 12mm;margin-top:8mm;break-inside:avoid}.cierre h2{color:#fff;margin:2mm 0 3mm}.cierre h2 em{background:linear-gradient(${TINTA} 64%,#C2771D 64%,#C2771D 90%,${TINTA} 90%)}
 .cierre p{color:rgba(255,255,255,.75);max-width:150mm}.cierre .lbl{color:${AGUA}}
 .ilus{font-size:7.5pt;color:${GRIS};margin-top:2mm}
 </style></head><body>
