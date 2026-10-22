@@ -17,7 +17,7 @@ export function lecturaDiagnostico(score, b) {
   return `Hay una base sólida, pero todavía se pierden inscriptos en ${b.name}. Resolver ese momento y automatizar lo que hoy depende de la iniciativa de cada persona es el próximo salto.`;
 }
 
-export const AUTORIDAD = "Ayudamos a inscribir a más de 180.000 estudiantes en Argentina y ahora llevamos esa experiencia al resto de Latinoamérica.";
+export const AUTORIDAD = "Ayudamos a inscribir a más de 200.000 estudiantes en Argentina y ahora llevamos esa experiencia al resto de Latinoamérica.";
 
 // Cuando todas las respuestas están en D (puntaje 5): una autoevaluación así suele ser optimista,
 // así que en lugar de acciones se propone validarla con números reales.

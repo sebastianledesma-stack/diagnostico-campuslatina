@@ -8,12 +8,12 @@ import { supabase, authRedirectError, isRecoveryLink } from "../lib/supabase.js"
 
 const NIVELES = ["Inicial", "En desarrollo", "Consolidado", "Avanzado"];
 const PAGE_SIZE = 25;
-const MUTED = "#6A7090";
-const LINE = "#E8E6DF";
+const MUTED = "#5E7377";
+const LINE = "#D5E3E5";
 
-const mono = (size = 9, color = SLATE) => ({ fontFamily: "'Space Mono',monospace", fontSize: size, letterSpacing: ".12em", textTransform: "uppercase", color });
-const input = { padding: "10px 12px", border: "1.5px solid #D4D2CC", borderRadius: 8, fontSize: 14, fontFamily: "'DM Sans',sans-serif", color: NAVY, background: WHITE, outline: "none", minHeight: 44, width: "100%" };
-const btn = (primary) => ({ minHeight: 44, padding: "0 18px", borderRadius: 8, border: primary ? "none" : `1px solid ${LINE}`, background: primary ? NAVY : WHITE, color: primary ? WHITE : NAVY, fontSize: 14, fontWeight: 600, fontFamily: "'DM Sans',sans-serif", cursor: "pointer", whiteSpace: "nowrap" });
+const mono = (size = 9, color = SLATE) => ({ fontFamily: "'CL Etiquetas',sans-serif", fontSize: size, letterSpacing: ".12em", textTransform: "uppercase", color });
+const input = { padding: "10px 12px", border: "1.5px solid #CBDADC", borderRadius:2, fontSize: 14, fontFamily: "'Schibsted Grotesk',sans-serif", color: NAVY, background: WHITE, outline: "none", minHeight: 44, width: "100%" };
+const btn = (primary) => ({ minHeight: 44, padding: "0 18px", borderRadius:2, border: primary ? "none" : `1px solid ${LINE}`, background: primary ? NAVY : WHITE, color: primary ? WHITE : NAVY, fontSize: 14, fontWeight: 600, fontFamily: "'Schibsted Grotesk',sans-serif", cursor: "pointer", whiteSpace: "nowrap" });
 const fmtFecha = (iso) => new Date(iso).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" });
 const enCurso = (r) => r.estado === "en_curso";
 // Etapas con sus 4 respuestas (vale también para diagnósticos en curso).
@@ -34,11 +34,11 @@ function useSession() {
 
 function Shell({ children, email, onLogout }) {
   return (
-    <div style={{ minHeight: "100vh", background: CREAM, fontFamily: "'DM Sans',sans-serif", color: NAVY }}>
+    <div style={{ minHeight: "100vh", background: CREAM, fontFamily: "'Schibsted Grotesk',sans-serif", color: NAVY }}>
       <div style={{ background: NAVY_DK, padding: "14px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
         <div>
           <span style={mono(9, EMERALD)}>CampusLatina · Panel</span>
-          <div style={{ fontFamily: "'DM Serif Display',serif", fontSize: 20, color: WHITE }}>Diagnósticos de inscripción</div>
+          <div style={{ fontFamily: "'CL Titulos',serif", fontSize: 20, color: WHITE }}>Diagnósticos de inscripción</div>
         </div>
         {email && (
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -52,15 +52,15 @@ function Shell({ children, email, onLogout }) {
   );
 }
 
-const alerta = { fontSize: 13, color: "#CC3333", background: "#FFF0F0", borderRadius: 8, padding: "10px 12px", margin: "0 0 14px", lineHeight: 1.5 };
-const ok = { fontSize: 14, color: "#3A4070", background: "rgba(0,200,150,.08)", borderRadius: 8, padding: "10px 12px", margin: "0 0 14px", lineHeight: 1.6 };
+const alerta = { fontSize: 13, color: "#CC3333", background: "#FFF0F0", borderRadius:2, padding: "10px 12px", margin: "0 0 14px", lineHeight: 1.5 };
+const ok = { fontSize: 14, color: "#1F3A40", background: "rgba(127,214,222,.08)", borderRadius:2, padding: "10px 12px", margin: "0 0 14px", lineHeight: 1.6 };
 const label = { ...mono(10, NAVY), fontWeight: 700, display: "block", marginBottom: 6 };
 
 function Card({ titulo, children }) {
   return (
-    <div style={{ maxWidth: 420, margin: "40px auto", background: WHITE, border: `1px solid ${LINE}`, borderRadius: 14, padding: "28px 24px" }}>
+    <div style={{ maxWidth: 420, margin: "40px auto", background: WHITE, border: `1px solid ${LINE}`, borderRadius:2, padding: "28px 24px" }}>
       <span style={mono(9, EMERALD)}>Acceso restringido</span>
-      <div style={{ fontFamily: "'DM Serif Display',serif", fontSize: 24, margin: "6px 0 16px" }}>{titulo}</div>
+      <div style={{ fontFamily: "'CL Titulos',serif", fontSize: 24, margin: "6px 0 16px" }}>{titulo}</div>
       {children}
     </div>
   );
@@ -105,7 +105,7 @@ function Login() {
       <input id="admin-email" type="email" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="vos@campuslatina.com" style={{ ...input, background: CREAM }} />
     </>
   );
-  const linkBtn = { background: "none", border: "none", padding: 0, color: NAVY, textDecoration: "underline", cursor: "pointer", fontSize: 13, fontFamily: "'DM Sans',sans-serif", marginTop: 14 };
+  const linkBtn = { background: "none", border: "none", padding: 0, color: NAVY, textDecoration: "underline", cursor: "pointer", fontSize: 13, fontFamily: "'Schibsted Grotesk',sans-serif", marginTop: 14 };
 
   if (modo === "recuperar") {
     return (
@@ -202,8 +202,8 @@ function Metricas({ rows: todasLasFilas }) {
     return { todos, total, enCursoN, targetN, ultimoMes, promedio, porNivel, paises, critica: total ? etapas[0] : null };
   }, [todasLasFilas]);
 
-  const card = { background: WHITE, border: `1px solid ${LINE}`, borderRadius: 12, padding: "14px 16px" };
-  const big = { fontFamily: "'DM Serif Display',serif", fontSize: 30, lineHeight: 1.1, marginTop: 4 };
+  const card = { background: WHITE, border: `1px solid ${LINE}`, borderRadius:2, padding: "14px 16px" };
+  const big = { fontFamily: "'CL Titulos',serif", fontSize: 30, lineHeight: 1.1, marginTop: 4 };
   const maxNivel = Math.max(1, ...m.porNivel.map((x) => x.c));
   const maxPais = Math.max(1, ...m.paises.map((x) => x[1]));
 
@@ -221,7 +221,7 @@ function Metricas({ rows: todasLasFilas }) {
       </div>
       <div style={card}>
         <span style={mono(8)}>Etapa más crítica</span>
-        <div style={{ ...big, fontSize: 22 }}>{m.critica ? `${m.critica.emoji} ${m.critica.name}` : "—"}</div>
+        <div style={{ ...big, fontSize: 22 }}>{m.critica ? `${m.critica.num}. ${m.critica.name}` : "—"}</div>
         <div style={{ fontSize: 12, color: m.critica ? getNivel(m.critica.avg).color : MUTED }}>{m.critica ? `Promedio ${fmt1(m.critica.avg)}/5` : "Sin datos"}</div>
       </div>
       <div style={card}>
@@ -300,22 +300,22 @@ function Detalle({ d, onClose }) {
 
   return (
     <div role="dialog" aria-modal="true" aria-label={`Diagnóstico de ${d.universidad}`} onClick={onClose}
-      style={{ position: "fixed", inset: 0, background: "rgba(14,18,64,.55)", zIndex: 200, display: "flex", justifyContent: "flex-end" }}>
+      style={{ position: "fixed", inset: 0, background: "rgba(10,35,41,.55)", zIndex: 200, display: "flex", justifyContent: "flex-end" }}>
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 640, height: "100%", overflowY: "auto", background: CREAM }}>
         <div style={{ background: NAVY_DK, padding: "20px", position: "sticky", top: 0, zIndex: 1 }}>
           <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
             <div>
               <span style={mono(8)}>{fmtFechaHora(d.created_at)}</span>
-              <div style={{ fontFamily: "'DM Serif Display',serif", fontSize: 22, color: WHITE, lineHeight: 1.2, marginTop: 4 }}>{d.universidad}</div>
+              <div style={{ fontFamily: "'CL Titulos',serif", fontSize: 22, color: WHITE, lineHeight: 1.2, marginTop: 4 }}>{d.universidad}</div>
               <div style={{ fontSize: 12, color: "rgba(255,255,255,.5)" }}>{d.pais}</div>
             </div>
             <div style={{ textAlign: "right", flexShrink: 0 }}>
               <button onClick={onClose} aria-label="Cerrar" style={{ background: "none", border: "none", color: WHITE, fontSize: 22, cursor: "pointer", minHeight: 44, minWidth: 44 }}>✕</button>
               {enCurso(d) ? <>
-                <div style={{ fontFamily: "'DM Serif Display',serif", fontSize: 30, color: WHITE, lineHeight: 1 }}>{etapasListas(d)}/7</div>
+                <div style={{ fontFamily: "'CL Titulos',serif", fontSize: 30, color: WHITE, lineHeight: 1 }}>{etapasListas(d)}/7</div>
                 <span style={mono(8, EMERALD)}>En curso</span>
               </> : <>
-                <div style={{ fontFamily: "'DM Serif Display',serif", fontSize: 36, color: EMERALD, lineHeight: 1 }}>{fmt1(d.score_global)}</div>
+                <div style={{ fontFamily: "'CL Titulos',serif", fontSize: 36, color: EMERALD, lineHeight: 1 }}>{fmt1(d.score_global)}</div>
                 <span style={mono(8, EMERALD)}>{nivel.label}</span>
               </>}
             </div>
@@ -323,7 +323,7 @@ function Detalle({ d, onClose }) {
         </div>
 
         <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 14 }}>
-          <div style={{ background: WHITE, border: `1px solid ${LINE}`, borderRadius: 12, padding: 16 }}>
+          <div style={{ background: WHITE, border: `1px solid ${LINE}`, borderRadius:2, padding: 16 }}>
             <span style={mono(8)}>Directivo</span>
             <div style={{ fontSize: 16, fontWeight: 600, marginTop: 4 }}>{d.nombre}</div>
             {d.cargo && <div style={{ fontSize: 13, color: MUTED }}>{d.cargo}</div>}
@@ -340,7 +340,7 @@ function Detalle({ d, onClose }) {
             </div>
           </div>
 
-          <div style={{ background: WHITE, border: `1px solid ${LINE}`, borderRadius: 12, padding: 16 }}>
+          <div style={{ background: WHITE, border: `1px solid ${LINE}`, borderRadius:2, padding: 16 }}>
             <span style={mono(8)}>Calificación</span>
             <div style={{ fontSize: 14, marginTop: 8, lineHeight: 1.8 }}>
               🎓 Alumnos hoy: <strong>{textoRango(d.alumnos_actuales)}</strong><br />
@@ -357,7 +357,7 @@ function Detalle({ d, onClose }) {
             )}
           </div>
 
-          <div style={{ background: WHITE, border: `1px solid ${LINE}`, borderRadius: 12, padding: 16 }}>
+          <div style={{ background: WHITE, border: `1px solid ${LINE}`, borderRadius:2, padding: 16 }}>
             <span style={mono(8)}>{enCurso(d) ? "Etapas" : "Puntaje por etapa"}</span>
             <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
               {ETAPAS_DATA.map((e) => {
@@ -367,7 +367,7 @@ function Detalle({ d, onClose }) {
                 return (
                   <div key={e.id}>
                     <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 3 }}>
-                      <span>{e.emoji} {e.name}{por ? <span style={{ color: MUTED }}> · {por}</span> : null}</span>
+                      <span>{e.num}. {e.name}{por ? <span style={{ color: MUTED }}> · {por}</span> : null}</span>
                       <span style={mono(9, n.color)}>{enCurso(d) ? (d.respuestas?.[`${e.id}_3`] ? "Respondida" : "Pendiente") : `${fmt1(s)} · ${n.label}`}</span>
                     </div>
                     <div style={{ height: 6, background: LINE, borderRadius: 3 }}><div style={{ height: "100%", width: `${(s / 5) * 100}%`, background: n.color, borderRadius: 3 }} /></div>
@@ -377,19 +377,19 @@ function Detalle({ d, onClose }) {
             </div>
           </div>
 
-          <div style={{ background: WHITE, border: `1px solid ${LINE}`, borderRadius: 12, padding: 16 }}>
+          <div style={{ background: WHITE, border: `1px solid ${LINE}`, borderRadius:2, padding: 16 }}>
             <span style={mono(8)}>Respuestas</span>
             {ETAPAS_DATA.map((e) => (
               <div key={e.id} style={{ marginTop: 14 }}>
-                <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 6 }}>{e.emoji} {e.num}. {e.name}</div>
+                <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 6 }}>{e.num}. {e.name}</div>
                 {e.preguntas.map((p, i) => {
                   const letra = d.respuestas?.[`${e.id}_${i}`];
                   const op = p.opciones.find((o) => o.letra === letra);
                   return (
-                    <div key={i} style={{ padding: "10px 12px", background: CREAM, borderRadius: 8, marginBottom: 6 }}>
+                    <div key={i} style={{ padding: "10px 12px", background: CREAM, borderRadius:2, marginBottom: 6 }}>
                       <div style={{ fontSize: 12, color: MUTED, lineHeight: 1.5 }}>{p.texto}</div>
                       <div style={{ display: "flex", gap: 8, marginTop: 6, alignItems: "flex-start" }}>
-                        <span style={{ flexShrink: 0, width: 22, height: 22, borderRadius: "50%", background: op ? getNivel(op.valor).color : SLATE, color: WHITE, fontFamily: "'Space Mono',monospace", fontSize: 10, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{letra || "?"}</span>
+                        <span style={{ flexShrink: 0, width: 22, height: 22, borderRadius: "50%", background: op ? getNivel(op.valor).color : SLATE, color: WHITE, fontFamily: "'CL Etiquetas',sans-serif", fontSize: 10, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{letra || "?"}</span>
                         <span style={{ fontSize: 13, color: NAVY, lineHeight: 1.5 }}>{op ? <><strong>{op.etiqueta}</strong> {op.texto}</> : "Sin respuesta"}</span>
                       </div>
                     </div>
@@ -481,14 +481,14 @@ function Panel({ session }) {
   return (
     <>
       {error && (
-        <div role="alert" style={{ background: "#FFF0F0", border: "1px solid #CC333355", borderRadius: 10, padding: "12px 14px", marginBottom: 16, fontSize: 14, color: "#CC3333" }}>
+        <div role="alert" style={{ background: "#FFF0F0", border: "1px solid #CC333355", borderRadius:2, padding: "12px 14px", marginBottom: 16, fontSize: 14, color: "#CC3333" }}>
           {error === "Sin acceso al panel" ? "Tu email no tiene acceso al panel. Pedí que lo agreguen a ADMIN_EMAILS." : `No pudimos cargar los diagnósticos: ${error}`}
         </div>
       )}
 
       <Metricas rows={rows} />
 
-      <div style={{ background: WHITE, border: `1px solid ${LINE}`, borderRadius: 12, padding: 14, marginBottom: 12, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 10, alignItems: "end" }}>
+      <div style={{ background: WHITE, border: `1px solid ${LINE}`, borderRadius:2, padding: 14, marginBottom: 12, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 10, alignItems: "end" }}>
         <label style={{ gridColumn: "span 2" }}>
           <span style={mono(8)}>Buscar universidad o nombre</span>
           <input value={f.q} onChange={set("q")} placeholder="Ej: Córdoba, María…" style={{ ...input, marginTop: 4 }} />
@@ -537,7 +537,7 @@ function Panel({ session }) {
         </div>
       </div>
 
-      <div style={{ background: WHITE, border: `1px solid ${LINE}`, borderRadius: 12, overflowX: "auto" }}>
+      <div style={{ background: WHITE, border: `1px solid ${LINE}`, borderRadius:2, overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 900 }}>
           <thead>
             <tr style={{ background: NAVY }}>
@@ -558,18 +558,18 @@ function Panel({ session }) {
             {pagina.map((r) => {
               const n = getNivel(Number(r.score_global));
               return (
-                <tr key={r.id} onClick={() => abrir(r.id)} style={{ borderBottom: `1px solid #F0EEEA`, cursor: "pointer" }}>
-                  <td style={{ padding: "10px 12px", whiteSpace: "nowrap", fontFamily: "'Space Mono',monospace", fontSize: 11 }}>{fmtFecha(r.created_at)}</td>
+                <tr key={r.id} onClick={() => abrir(r.id)} style={{ borderBottom: `1px solid #F0F5F6`, cursor: "pointer" }}>
+                  <td style={{ padding: "10px 12px", whiteSpace: "nowrap", fontFamily: "'CL Etiquetas',sans-serif", fontSize: 11 }}>{fmtFecha(r.created_at)}</td>
                   <td style={{ padding: "10px 12px", fontWeight: 600 }}>{r.universidad}</td>
                   <td style={{ padding: "10px 12px" }}>{r.pais}</td>
                   <td style={{ padding: "10px 12px" }}>{r.nombre}</td>
                   <td style={{ padding: "10px 12px", whiteSpace: "nowrap" }}>{r.target ? "🎯 " : ""}{r.alumnos_actuales ? textoRango(r.alumnos_actuales) : "—"}</td>
                   {enCurso(r) ? <>
-                    <td style={{ padding: "10px 12px", fontFamily: "'Space Mono',monospace", fontSize: 12, color: MUTED }}>{etapasListas(r)}/7</td>
-                    <td style={{ padding: "10px 12px" }}><span style={{ background: "#EEF0F8", color: NAVY, borderRadius: 6, padding: "3px 8px", fontSize: 11, whiteSpace: "nowrap" }}>En curso</span></td>
+                    <td style={{ padding: "10px 12px", fontFamily: "'CL Etiquetas',sans-serif", fontSize: 12, color: MUTED }}>{etapasListas(r)}/7</td>
+                    <td style={{ padding: "10px 12px" }}><span style={{ background: "#EEF4F5", color: NAVY, borderRadius:2, padding: "3px 8px", fontSize: 11, whiteSpace: "nowrap" }}>En curso</span></td>
                   </> : <>
-                    <td style={{ padding: "10px 12px", fontFamily: "'DM Serif Display',serif", fontSize: 17, color: n.color }}>{fmt1(r.score_global)}</td>
-                    <td style={{ padding: "10px 12px" }}><span style={{ background: n.bg, color: n.color, borderRadius: 6, padding: "3px 8px", fontSize: 11, whiteSpace: "nowrap" }}>{r.nivel}</span></td>
+                    <td style={{ padding: "10px 12px", fontFamily: "'CL Titulos',serif", fontSize: 17, color: n.color }}>{fmt1(r.score_global)}</td>
+                    <td style={{ padding: "10px 12px" }}><span style={{ background: n.bg, color: n.color, borderRadius:2, padding: "3px 8px", fontSize: 11, whiteSpace: "nowrap" }}>{r.nivel}</span></td>
                   </>}
                   <td style={{ padding: "10px 12px" }} title={r.mail_enviado ? "Informe enviado" : enCurso(r) ? "Faltan etapas" : "Informe no enviado"}>{r.mail_enviado ? "✅" : enCurso(r) ? "…" : "⚠️"}</td>
                   <td style={{ padding: "6px 12px" }}>
