@@ -1,8 +1,6 @@
-// Gráficos de la pantalla proyectada para leer la salud de la sala de un vistazo: una barra por
-// pregunta (resultado de una etapa) o por etapa (resultado final) con el promedio de la sala, sobre
-// la escala de 1 a 5 con las bandas de los 4 niveles de fondo. En el resultado final, en coral, hasta
-// dónde llegaría cada etapa con las ideas elegidas. La más baja va más oscura y con un rótulo, nunca
-// en coral: coral es lo que se puede ganar.
+// Gráfico del resultado de una etapa en la pantalla proyectada: una barra por pregunta con el promedio
+// de la sala, sobre la escala de 1 a 5 con las bandas de los 4 niveles de fondo. La más baja va más
+// oscura y con un rótulo, nunca con el destaque: el destaque es lo que se puede ganar.
 import { fmt1 } from "../../lib/scoring.js";
 import { ETAPAS_DATA } from "../datos.js";
 import { distribucion } from "../sala.js";
@@ -36,9 +34,8 @@ function EjeNiveles({ ancho }) {
   );
 }
 
-// Una barra sobre la escala de 1 a 5, con las bandas de nivel de fondo y, si hay, la extensión en
-// coral hasta donde llegaría con las ideas.
-function Barra({ ancho, valor, conIdeas, oscura, demora, etiqueta }) {
+// Una barra sobre la escala de 1 a 5, con las bandas de nivel de fondo.
+function Barra({ ancho, valor, oscura, demora, etiqueta }) {
   const x = escala(ancho);
   const y = (ALTO - BARRA) / 2;
   return (
@@ -46,9 +43,6 @@ function Barra({ ancho, valor, conIdeas, oscura, demora, etiqueta }) {
       {NIVELES.map((b, i) => (
         <rect key={b.label} x={x(b.desde)} y={0} width={x(b.hasta) - x(b.desde)} height={ALTO} fill={i % 2 ? "#D9E7E9" : "#E2EDEE"} />
       ))}
-      {conIdeas != null && conIdeas > valor && (
-        <rect x={0} y={y} width={x(conIdeas)} height={BARRA} rx={6} fill="var(--coral)" className="t-crece-svg" style={{ animationDelay: `calc(${demora} + 500ms)` }} />
-      )}
       {valor != null && (
         <rect x={0} y={y} width={x(valor)} height={BARRA} rx={6} fill={oscura ? "var(--profundo)" : "var(--petroleo)"} className="t-crece-svg" style={{ animationDelay: demora }} />
       )}
@@ -89,42 +83,6 @@ export function SaludPreguntas({ filas, etapa, ancho = 1128 }) {
           </div>
         </div>
       ))}
-    </div>
-  );
-}
-
-// Resultado final: el promedio de la sala en cada etapa y, en coral, con las ideas que eligió.
-export function SaludEtapas({ dx, ancho = 1080 }) {
-  const NOMBRE = 290;
-  const pista = ancho - NOMBRE - VALOR - 20;
-  const hayIdeas = dx.etapas.some((e) => e.puntaje != null && e.conIdeas > e.puntaje + 0.04);
-  return (
-    <div style={{ width: ancho }}>
-      <div style={{ paddingLeft: NOMBRE }}><EjeNiveles ancho={pista} /></div>
-      {dx.etapas.map((e, i) => {
-        const fuga = dx.fuga?.id === e.id;
-        const sube = e.puntaje != null && e.conIdeas > e.puntaje + 0.04;
-        return (
-          <div key={e.id} className="t-sube" style={{ "--i": i + 1, display: "flex", alignItems: "center", gap: 20, marginTop: i ? 22 : 12 }}>
-            <div style={{ width: NOMBRE - 20, flex: "none" }}>
-              <p style={{ fontSize: 26, lineHeight: 1.2, fontWeight: fuga ? 700 : 500, color: fuga ? "var(--profundo)" : "var(--texto)" }}>{e.num}. {e.name}</p>
-              {fuga && <p style={{ fontSize: 18, fontWeight: 600, color: "var(--profundo)", marginTop: 4 }}>Acá se pierden más aspirantes</p>}
-            </div>
-            <Barra ancho={pista} valor={e.puntaje} conIdeas={sube ? e.conIdeas : null} oscura={fuga} demora={`${250 + i * 90}ms`}
-              etiqueta={`${e.name}: promedio ${e.puntaje == null ? "sin respuestas" : fmt1(e.puntaje)}${sube ? `, con las ideas ${fmt1(e.conIdeas)}` : ""}`} />
-            <p style={{ width: VALOR, flex: "none", textAlign: "right", lineHeight: 1.05 }}>
-              <b style={{ fontSize: 40, letterSpacing: "-.02em", color: "var(--profundo)" }}>{e.puntaje == null ? "—" : fmt1(e.puntaje)}</b>
-              {sube && <span style={{ display: "block", fontSize: 24, fontWeight: 700, color: "var(--coral)" }}>→ {fmt1(e.conIdeas)}</span>}
-            </p>
-          </div>
-        );
-      })}
-      {hayIdeas && (
-        <div style={{ display: "flex", gap: 32, fontSize: 20, color: "var(--apagado)", marginTop: 26, paddingLeft: NOMBRE }}>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}><i style={{ width: 28, height: 16, borderRadius: 4, background: "var(--petroleo)" }} />Hoy</span>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}><i style={{ width: 28, height: 16, borderRadius: 4, background: "var(--coral)" }} />Con las ideas elegidas</span>
-        </div>
-      )}
     </div>
   );
 }

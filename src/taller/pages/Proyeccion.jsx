@@ -5,7 +5,7 @@ import { useParams } from "react-router-dom";
 import { usePanel } from "../usePanel.js";
 import { Escenario, AccesoFacilitador, SinSesion } from "../componentes.jsx";
 import { leerClave, guardarClave } from "../claves.js";
-import { Pantalla } from "../vistas/Pantalla.jsx";
+import { Pantalla, clavePantalla } from "../vistas/Pantalla.jsx";
 
 export default function Proyeccion({ codigo: fijo }) {
   const params = useParams();
@@ -19,7 +19,7 @@ export default function Proyeccion({ codigo: fijo }) {
   }
   return (
     <Escenario cursor="none">
-      {datos && <div key={`${datos.fase}-${datos.etapa}-${datos.vista}`} style={{ position: "absolute", inset: 0 }}><Pantalla datos={datos} /></div>}
+      {datos && <div key={clavePantalla(datos)} style={{ position: "absolute", inset: 0 }}><Pantalla datos={datos} /></div>}
       {!enLinea && <p role="status" style={{ position: "absolute", top: 24, right: 32, fontSize: 18, color: "var(--error)" }}>Sin conexión, reintentando…</p>}
     </Escenario>
   );
