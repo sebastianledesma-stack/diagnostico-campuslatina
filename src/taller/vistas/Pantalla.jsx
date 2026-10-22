@@ -36,7 +36,7 @@ function Espera({ datos }) {
           <p style={{ fontSize: 36, color: "var(--pizarra)", marginTop: 56 }}>Escanee el código con su teléfono o entre a</p>
           <p style={{ fontSize: 48, fontWeight: 600, marginTop: 8 }}>{urlCorta(datos.codigo)}</p>
           <div style={{ display: "flex", alignItems: "baseline", gap: 24, marginTop: 48 }}>
-            <span style={{ fontSize: 120, fontWeight: 700, lineHeight: 1, color: "var(--coral)" }}>{n}</span>
+            <span style={{ fontSize: 120, fontWeight: 700, lineHeight: 1, color: "var(--ambar-luz)" }}>{n}</span>
             <span style={{ fontSize: 36, color: "var(--pizarra)" }}>{n === 1 ? "persona ya entró" : "personas ya entraron"}</span>
           </div>
           {datos.etapa > 0 && proxima && <p style={{ fontSize: 30, color: "var(--pizarra)", marginTop: 20 }}>Próxima: etapa {proxima.num}, {proxima.name}</p>}

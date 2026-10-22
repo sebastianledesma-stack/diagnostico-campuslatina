@@ -2,7 +2,7 @@
 import { ETAPAS_DATA } from "../datos.js";
 import { Logo } from "../componentes.jsx";
 
-export const AGUA_BARRA = "#5FB8C1"; // barras sobre fondo noche; la mayoría va en coral
+export const AGUA_BARRA = "#5FB8C1"; // barras sobre fondo noche; la mayoría va en ámbar
 
 // Nombre del evento arriba a la izquierda y, a la derecha, lo que se esté mostrando.
 export function Cabecera({ nombre, derecha }) {

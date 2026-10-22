@@ -59,11 +59,11 @@ export function EtapaAbierta({ datos }) {
         <div className="t-sube" style={{ "--i": 2 }}>
           <p style={{ fontSize: 30, color: "var(--pizarra)" }}>Respondieron</p>
           <p style={{ lineHeight: 1, marginTop: 8, fontWeight: 700 }}>
-            <span style={{ fontSize: 240, color: "var(--coral)", letterSpacing: "-.03em" }}>{listos}</span>
+            <span style={{ fontSize: 240, color: "var(--ambar-luz)", letterSpacing: "-.03em" }}>{listos}</span>
             <span style={{ fontSize: 80, color: "var(--pizarra)", fontWeight: 500 }}> / {total}</span>
           </p>
           <div style={{ height: 16, borderRadius: 8, background: "rgba(255,255,255,.14)", marginTop: 24, overflow: "hidden" }}>
-            <div style={{ height: "100%", width: `${total ? (listos / total) * 100 : 0}%`, background: "var(--coral)", borderRadius: 8, transition: "width .8s cubic-bezier(.2,.7,.2,1)" }} />
+            <div style={{ height: "100%", width: `${total ? (listos / total) * 100 : 0}%`, background: "var(--ambar-luz)", borderRadius: 8, transition: "width .8s cubic-bezier(.2,.7,.2,1)" }} />
           </div>
         </div>
       </div>
@@ -127,7 +127,7 @@ export function IdeasEtapa({ datos, onElegir }) {
               <p style={{ fontSize: 26, color: "var(--pizarra)" }}>Hoy</p>
               <Numero valor={hoy} tam={120} />
               <p style={{ fontSize: 26, color: "var(--pizarra)", marginTop: 28 }}>{claves.length ? `Con ${claves.length === 1 ? "la idea elegida" : `las ${claves.length} ideas elegidas`}` : "Elijan las ideas que aplicarían"}</p>
-              <p style={{ lineHeight: 1, fontWeight: 700, color: claves.length ? "var(--coral)" : "rgba(255,255,255,.3)" }}>
+              <p style={{ lineHeight: 1, fontWeight: 700, color: claves.length ? "var(--ambar-luz)" : "rgba(255,255,255,.3)" }}>
                 <span style={{ fontSize: 160, letterSpacing: "-.04em" }}>{fmt1(con)}</span>
                 {claves.length > 0 && <span style={{ fontSize: 40, fontWeight: 600 }}> +{fmt1(con - hoy)}</span>}
               </p>
@@ -147,7 +147,7 @@ export function IdeasEtapa({ datos, onElegir }) {
                     background: elegida ? "rgba(127,214,222,.14)" : "rgba(255,255,255,.05)", border: `2px solid ${elegida ? "var(--agua)" : "rgba(255,255,255,.12)"}`,
                     borderRadius: 22, padding: "26px 30px", minHeight: 300, display: "flex", flexDirection: "column", transition: "background .2s, border-color .2s" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16 }}>
-                    <span style={{ fontSize: 56, fontWeight: 700, lineHeight: 1, color: "var(--coral)" }}>{i.sube >= 0.05 ? `+${fmt1(i.sube)}` : "+0.0"}</span>
+                    <span style={{ fontSize: 56, fontWeight: 700, lineHeight: 1, color: "var(--ambar-luz)" }}>{i.sube >= 0.05 ? `+${fmt1(i.sube)}` : "+0.0"}</span>
                     <span aria-hidden="true" style={{ width: 44, height: 44, borderRadius: 12, border: `2px solid ${elegida ? "var(--agua)" : "rgba(255,255,255,.35)"}`,
                       background: elegida ? "var(--agua)" : "transparent", display: "grid", placeItems: "center" }}>
                       {elegida && <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--noche)" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>}

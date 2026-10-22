@@ -1,5 +1,5 @@
-/* Diagnóstico colectivo: identidad Campus Latina (verde petróleo con coral, Schibsted Grotesk).
-   Coral es el color de destaque: el dato que importa. Nunca significa pérdida ni error. */
+/* Diagnóstico colectivo: identidad Campus Latina (verde petróleo con ámbar, Schibsted Grotesk).
+   Ámbar es el color de destaque: el dato que importa. Nunca significa pérdida ni error. */
 @font-face{font-family:"Schibsted Grotesk";src:url(/fonts/schibsted-grotesk-400.woff2) format("woff2");font-weight:400;font-style:normal;font-display:swap}
 @font-face{font-family:"Schibsted Grotesk";src:url(/fonts/schibsted-grotesk-500.woff2) format("woff2");font-weight:500;font-style:normal;font-display:swap}
 @font-face{font-family:"Schibsted Grotesk";src:url(/fonts/schibsted-grotesk-600.woff2) format("woff2");font-weight:600;font-style:normal;font-display:swap}
@@ -12,8 +12,9 @@
   --noche:#0A2329;      /* fondos oscuros (pantalla proyectada) */
   --agua:#7FD6DE;       /* acento sobre fondos oscuros */
   --bruma:#EAF3F4;      /* fondo claro */
-  --coral:#FF6B4A;      /* destaque */
-  --coral-suave:#FFB9A8;
+  --ambar:#F08C1A;      /* destaque sobre fondos claros */
+  --ambar-luz:#FFAE4A;  /* destaque sobre petróleo noche */
+  --ambar-claro:#FFCF8A;
   --texto:#1F3A40;
   --apagado:#4D6166;
   --linea:#D5E3E5;
@@ -78,7 +79,7 @@ button:focus:not(:focus-visible){outline:none}
 .t-oscura > .t-celu{flex:1;display:flex;flex-direction:column}
 .t-barra{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:32px}
 .t-oscuro .t-red{color:var(--pizarra)}
-.t-oscuro .t-red[data-off]{color:var(--coral-suave)}
+.t-oscuro .t-red[data-off]{color:var(--ambar-claro)}
 
 .t-progreso{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:12px 0 16px}
 .t-progreso span{height:6px;border-radius:3px;background:var(--linea)}
@@ -105,7 +106,7 @@ button:focus:not(:focus-visible){outline:none}
 .t-dist-texto b{font-variant-numeric:tabular-nums;color:var(--profundo)}
 .t-dist-pista{height:10px;border-radius:5px;background:#DCE6E7;margin-top:5px;overflow:hidden}
 .t-dist-pista > span{display:block;height:100%;border-radius:5px;background:#6FA7AE;transform-origin:left;animation:t-crece .9s cubic-bezier(.2,.7,.2,1) both}
-.t-dist-fila[data-mayoria] .t-dist-pista > span{background:var(--coral)}
+.t-dist-fila[data-mayoria] .t-dist-pista > span{background:var(--ambar)}
 
 /* Escalón de niveles: Inicial · En desarrollo · Consolidado · Avanzado */
 .t-escalon{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}

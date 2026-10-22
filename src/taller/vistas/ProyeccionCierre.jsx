@@ -1,6 +1,6 @@
 // Cierre en la pantalla proyectada (1920×1080), en 2 pasos: resumen de la sala (la salud de las 7
 // etapas, hoy y con las ideas elegidas) y estadísticas. La etapa más baja se marca con peso y un
-// rótulo, no con coral: coral es lo que se puede ganar.
+// rótulo, no con ámbar: ámbar es lo que se puede ganar.
 import { getNivel, fmt1 } from "../../lib/scoring.js";
 import { diagnostico, estadisticas } from "../sala.js";
 import { Cabecera, Pie, EscalonGrande } from "./proyector.jsx";
@@ -35,7 +35,7 @@ export function ResumenSala({ datos }) {
           {hayIdeas && (
             <div className="t-sube" style={{ "--i": 3, marginTop: 40, paddingTop: 28, borderTop: "1px solid rgba(255,255,255,.14)" }}>
               <p style={{ fontSize: 26, color: "var(--pizarra)" }}>Con las ideas que eligió la sala</p>
-              <p style={{ fontSize: 96, fontWeight: 700, lineHeight: 1.05, color: "var(--coral)", marginTop: 6 }}>
+              <p style={{ fontSize: 96, fontWeight: 700, lineHeight: 1.05, color: "var(--ambar-luz)", marginTop: 6 }}>
                 {fmt1(dx.globalConIdeas)} <span style={{ fontSize: 32, color: "var(--pizarra)", fontWeight: 500 }}>+{fmt1(dx.globalConIdeas - dx.global)}</span>
               </p>
             </div>

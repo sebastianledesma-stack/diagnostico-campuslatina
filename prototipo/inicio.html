@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Taller REALCUP · link de prueba</title>
+<link rel="icon" href="/isotipo.svg" type="image/svg+xml">
+<style>
+@font-face{font-family:"Schibsted Grotesk";src:url(/fonts/schibsted-grotesk-400.woff2) format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"Schibsted Grotesk";src:url(/fonts/schibsted-grotesk-600.woff2) format("woff2");font-weight:600;font-display:swap}
+@font-face{font-family:"Schibsted Grotesk";src:url(/fonts/schibsted-grotesk-700.woff2) format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:"Newsreader";src:url(/fonts/newsreader-italic-400.woff2) format("woff2");font-style:italic;font-display:swap}
+:root{--noche:#0A2329;--petroleo:#0B6470;--agua:#7FD6DE;--ambar-luz:#FFAE4A;--pizarra:#A9C2C6;--linea:rgba(255,255,255,.14)}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--noche);color:#fff;font:400 16px/1.55 "Schibsted Grotesk",system-ui,sans-serif}
+main{max-width:760px;margin:0 auto;padding:48px max(20px,env(safe-area-inset-right)) 64px max(20px,env(safe-area-inset-left))}
+.et{font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--pizarra);margin:40px 0 10px}
+h1{font-size:clamp(34px,6vw,52px);line-height:1.02;letter-spacing:-.035em;margin:0;font-weight:700;text-wrap:balance}
+h1 em{font-family:Newsreader,Georgia,serif;font-weight:400;background:linear-gradient(transparent 64%,rgba(240,140,26,.8) 64%,rgba(240,140,26,.8) 90%,transparent 90%)}
+p{color:var(--pizarra);max-width:60ch;margin:18px 0 0}
+ul{list-style:none;margin:32px 0 0;padding:0;border-top:1px solid var(--linea)}
+li a{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 16px;align-items:center;padding:18px 0;border-bottom:1px solid var(--linea);color:#fff;text-decoration:none}
+li a b{font-size:19px;font-weight:600}
+li a span{grid-column:1;color:var(--pizarra);font-size:14px}
+li a i{grid-row:1/3;grid-column:2;font-style:normal;color:var(--ambar-luz);font-size:22px}
+li a:hover b,li a:focus-visible b{color:var(--agua)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--agua);outline-offset:3px}
+.clave{font-family:ui-monospace,Menlo,monospace;color:#fff}
+.nota{font-size:14px;margin-top:28px}
+button{font:600 14px "Schibsted Grotesk",sans-serif;color:var(--agua);background:none;border:1px solid var(--agua);padding:10px 16px;cursor:pointer;margin-top:28px}
+</style>
+</head>
+<body>
+<main>
+  <img src="/campus-latina-sobre-oscuro.svg" alt="Campus Latina" height="40">
+  <p class="et">Link de prueba · no es la versión publicada</p>
+  <h1>Diagnóstico colectivo <em>REALCUP</em> 2026</h1>
+  <p>Esta versión usa una sala de ejemplo (<b>DEMO</b>) con 46 participantes ficticios que ya respondieron. La sala vive en este navegador: no se conecta a la base real y no envía correos.</p>
+  <ul>
+    <li><a href="/f/DEMO" data-clave><b>Pantalla del expositor</b><span>La que se proyecta, con los controles arriba. Clave de la sala: <span class="clave">demo2026</span></span><i>→</i></a></li>
+    <li><a href="/p/DEMO" data-clave><b>Pantalla espejo</b><span>La misma pantalla, sin controles.</span><i>→</i></a></li>
+    <li><a href="/s/DEMO"><b>Celular de un asistente</b><span>Ábralo en otra pestaña de este navegador para verlo junto a la pantalla del expositor.</span><i>→</i></a></li>
+    <li><a href="/realcup2026/expositor"><b>Dirección del evento</b><span>/realcup2026: arranca una sala vacía, como el día del taller.</span><i>→</i></a></li>
+  </ul>
+  <p class="nota">Las pestañas de un mismo navegador comparten la sala. Cada teléfono o computadora tiene su propia sala de ejemplo, así que lo que responda un celular no aparece en otra computadora.</p>
+  <button type="button" id="reiniciar">Volver a empezar la sala de ejemplo</button>
+  <p class="nota" id="aviso" role="status"></p>
+</main>
+<script>
+document.querySelectorAll("a[data-clave]").forEach(function (a) {
+  a.addEventListener("click", function () { try { localStorage.setItem("taller-clave-DEMO", "demo2026"); } catch (e) {} });
+});
+document.getElementById("reiniciar").addEventListener("click", function () {
+  var aviso = document.getElementById("aviso");
+  var r = indexedDB.deleteDatabase("/pglite/campuslatina-taller-prueba");
+  r.onsuccess = function () { aviso.textContent = "Listo: la sala de ejemplo vuelve a empezar la próxima vez que abra una pantalla."; };
+  r.onblocked = function () { aviso.textContent = "Cierre las otras pestañas del taller y vuelva a intentar."; };
+  r.onerror = function () { aviso.textContent = "No se pudo reiniciar. Pruebe cerrando el navegador."; };
+});
+</script>
+</body>
+</html>

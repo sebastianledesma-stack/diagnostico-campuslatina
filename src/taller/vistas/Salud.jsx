@@ -1,7 +1,7 @@
 // Gráficos de la pantalla proyectada para leer la salud de la sala de un vistazo, sobre la escala de
 // 1 a 5 con las bandas de los 4 niveles: una fila por pregunta (resultado de una etapa) o por etapa
 // (resultado final). Los círculos son personas: el tamaño dice cuántas, el color (de pálido a
-// intenso) cuán desarrollado. La línea blanca es el promedio de la sala y, en coral, hasta dónde
+// intenso) cuán desarrollado. La línea blanca es el promedio de la sala y, en ámbar, hasta dónde
 // llegaría con las ideas elegidas. Reemplazan las tablas de porcentajes y el mapa de calor: el
 // reparto y el promedio se ven en el mismo lugar.
 import { fmt1, calcScore } from "../../lib/scoring.js";
@@ -80,7 +80,7 @@ function Leyenda({ ideas = false, personas }) {
       </span>
       <span style={item}><svg width="10" height="26" aria-hidden="true"><line x1="5" x2="5" y1="2" y2="24" stroke="#fff" strokeWidth="3" strokeLinecap="round" /></svg>Promedio de la sala</span>
       {ideas && (
-        <span style={item}><svg width="34" height="14" aria-hidden="true"><line x1="2" x2="24" y1="7" y2="7" stroke="var(--coral)" strokeWidth="4" strokeLinecap="round" /><circle cx="27" cy="7" r="6" fill="var(--coral)" /></svg>Con las ideas elegidas</span>
+        <span style={item}><svg width="34" height="14" aria-hidden="true"><line x1="2" x2="24" y1="7" y2="7" stroke="var(--ambar-luz)" strokeWidth="4" strokeLinecap="round" /><circle cx="27" cy="7" r="6" fill="var(--ambar-luz)" /></svg>Con las ideas elegidas</span>
       )}
     </div>
   );
@@ -131,7 +131,7 @@ export function SaludPreguntas({ filas, etapa, ancho = 1128 }) {
 }
 
 // Resultado final: una fila por etapa. Cada círculo junta a las personas que le dieron el mismo
-// puntaje a esa etapa; en coral, hasta dónde llegaría con las ideas que eligió la sala.
+// puntaje a esa etapa; en ámbar, hasta dónde llegaría con las ideas que eligió la sala.
 export function SaludEtapas({ filas, dx, ancho = 1080 }) {
   const NOMBRE = 290, VALOR = 130, ALTO = 84, CY = 42, PAD = 22, RMAX = 18;
   const pista = ancho - NOMBRE - VALOR;
@@ -165,15 +165,15 @@ export function SaludEtapas({ filas, dx, ancho = 1080 }) {
               {sube && (
                 <g style={{ animation: "t-aparece .5s ease both", animationDelay: `${1300 + i * 90}ms` }}>
                   <line x1={x(e.puntaje)} x2={x(e.conIdeas)} y1={CY} y2={CY} stroke="var(--noche)" strokeWidth="9" strokeLinecap="round" />
-                  <line x1={x(e.puntaje)} x2={x(e.conIdeas)} y1={CY} y2={CY} stroke="var(--coral)" strokeWidth="4" strokeLinecap="round" />
-                  <circle cx={x(e.conIdeas)} cy={CY} r="8" fill="var(--coral)" stroke="var(--noche)" strokeWidth="2" />
+                  <line x1={x(e.puntaje)} x2={x(e.conIdeas)} y1={CY} y2={CY} stroke="var(--ambar-luz)" strokeWidth="4" strokeLinecap="round" />
+                  <circle cx={x(e.conIdeas)} cy={CY} r="8" fill="var(--ambar-luz)" stroke="var(--noche)" strokeWidth="2" />
                 </g>
               )}
               {e.puntaje != null && <Promedio x={x} v={e.puntaje} alto={ALTO} demora={`${700 + i * 90}ms`} />}
             </svg>
             <p style={{ width: VALOR, flex: "none", textAlign: "right", lineHeight: 1.05 }}>
               <b style={{ fontSize: 40, letterSpacing: "-.02em" }}>{e.puntaje == null ? "—" : fmt1(e.puntaje)}</b>
-              {sube && <span style={{ display: "block", fontSize: 24, fontWeight: 700, color: "var(--coral)" }}>→ {fmt1(e.conIdeas)}</span>}
+              {sube && <span style={{ display: "block", fontSize: 24, fontWeight: 700, color: "var(--ambar-luz)" }}>→ {fmt1(e.conIdeas)}</span>}
             </p>
           </div>
         );
