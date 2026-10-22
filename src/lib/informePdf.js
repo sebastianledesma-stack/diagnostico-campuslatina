@@ -10,7 +10,7 @@ const TINTA = "#0A2329", PETROLEO = "#0B6470", AGUA = "#7FD6DE", AMBAR = "#F08C1
 const ORDEN_NIVEL = { "Inicial": 1, "En desarrollo": 2, "Consolidado": 3, "Avanzado": 4 };
 const num2 = (n) => String(n).padStart(2, "0");
 const capital = (s) => s.charAt(0).toUpperCase() + s.slice(1);
-const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+export const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const x = (s) => ((Math.max(1, Math.min(5, s)) - 1) / 4) * 100;
 
 // Todo lo que el informe necesita a partir de las respuestas.
@@ -46,13 +46,13 @@ export function trazosCampo(w = 210, h = 120) {
   }
   return { lineas, puntos };
 }
-function campo(w = 210, h = 120) {
+export function campo(w = 210, h = 120) {
   const { lineas, puntos } = trazosCampo(w, h);
   return `<svg class="campo" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">${lineas.map((l) => `<path d="${l.d}" stroke="${AGUA}" stroke-opacity="${l.opacidad}" stroke-width="${l.ancho}" fill="none"/>`).join("")}${puntos.map((q) => `<circle cx="${q.cx}" cy="${q.cy}" r="${q.r}" fill="${q.llega ? AMBAR_LUZ : AGUA}"${q.llega ? "" : ' fill-opacity=".8"'}/>`).join("")}</svg>`;
 }
 
 // Escalón de 4 barras (nivel) y tramo de 1 a 5 (hoy y con el plan), como en el informe en pantalla.
-const escalon = (score) => {
+export const escalon = (score) => {
   const n = ORDEN_NIVEL[getNivel(score).label];
   return `<svg class="esc" viewBox="0 0 17 10" aria-hidden="true">${[1, 2, 3, 4].map((k) => `<rect x="${(k - 1) * 4.4}" y="${10 - 2.5 * k}" width="3" height="${2.5 * k}" fill="${k <= n ? PETROLEO : LINEA}"/>`).join("")}</svg>`;
 };

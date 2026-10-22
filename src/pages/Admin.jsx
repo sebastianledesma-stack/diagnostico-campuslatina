@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
-import { NAVY, NAVY_DK, EMERALD, SLATE, CREAM, WHITE } from "../theme.js";
+import { NAVY, NAVY_DK, EMERALD, SLATE, CREAM, WHITE, ORANGE_TXT } from "../theme.js";
 import { ETAPAS_DATA } from "../data/etapas.js";
 import { getNivel, fmt1 } from "../lib/scoring.js";
 import { textoRango, RANGOS_ALUMNOS } from "../data/calificacion.js";
 import { supabase, authRedirectError, isRecoveryLink } from "../lib/supabase.js";
+import { baseConsolidado, datosConsolidado, htmlConsolidado, MIN_GRUPO } from "../lib/informeConsolidado.js";
 
 const NIVELES = ["Inicial", "En desarrollo", "Consolidado", "Avanzado"];
 const PAGE_SIZE = 25;
@@ -18,6 +19,8 @@ const fmtFecha = (iso) => new Date(iso).toLocaleDateString("es-AR", { day: "2-di
 const enCurso = (r) => r.estado === "en_curso";
 // Etapas con sus 4 respuestas (vale también para diagnósticos en curso).
 const etapasListas = (r) => ETAPAS_DATA.filter((e) => e.preguntas.every((_, i) => r.respuestas?.[`${e.id}_${i}`])).length;
+// Sugerencia (no se marca sola): email de Campus Latina o «test»/«prueba»/«demo» en la universidad o el nombre.
+const pareceTest = (r) => /@(campuslatina|campusargentina)\.com$/i.test(r.email || "") || /\b(tests?|pruebas?|demo|testing)\b/i.test(`${r.universidad} ${r.nombre}`);
 const fmtFechaHora = (iso) => new Date(iso).toLocaleString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
 
 // ── AUTH ─────────────────────────────────────────────────
@@ -260,7 +263,7 @@ function Metricas({ rows: todasLasFilas }) {
 function exportarCSV(rows) {
   const preguntas = ETAPAS_DATA.flatMap((e) => e.preguntas.map((_, i) => `${e.id}_${i}`));
   const headers = ["id", "fecha", "estado", "etapas_listas", "universidad", "pais", "alumnos_hoy", "alumnos_meta_3a5_anios", "target", "nombre", "cargo", "email", "whatsapp", "colegas", "score_global", "nivel",
-    ...ETAPAS_DATA.map((e) => `score_${e.id}`), "mail_enviado", "notif_enviada", ...preguntas];
+    ...ETAPAS_DATA.map((e) => `score_${e.id}`), "mail_enviado", "notif_enviada", "test", ...preguntas];
   const cell = (v) => {
     const s = v == null ? "" : String(v);
     return /[";\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
@@ -271,7 +274,7 @@ function exportarCSV(rows) {
     (r.colaboradores || []).map((c) => `${c.nombre} <${c.email}>`).join(", "),
     enCurso(r) ? "" : fmt1(r.score_global), r.nivel || "",
     ...ETAPAS_DATA.map((e) => (enCurso(r) ? "" : fmt1(r.scores?.[e.id] || 0))),
-    r.mail_enviado ? "sí" : "no", r.notif_enviada ? "sí" : "no",
+    r.mail_enviado ? "sí" : "no", r.notif_enviada ? "sí" : "no", r.es_test ? "sí" : "no",
     ...preguntas.map((k) => r.respuestas?.[k] || ""),
   ].map(cell).join(";"));
   // BOM + ";" para que Excel en español lo abra con acentos y columnas bien separadas.
@@ -284,7 +287,7 @@ function exportarCSV(rows) {
 }
 
 // ── DETALLE ──────────────────────────────────────────────
-function Detalle({ d, onClose }) {
+function Detalle({ d, onClose, onTest }) {
   useEffect(() => {
     const onKey = (e) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
@@ -323,6 +326,12 @@ function Detalle({ d, onClose }) {
         </div>
 
         <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 14 }}>
+          {d.es_test && (
+            <div style={{ background: "#FFF3E8", border: "1px solid #F2C9A5", borderRadius:2, padding: "12px 14px", fontSize: 14, lineHeight: 1.5, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+              <span>Marcado como test: no cuenta en las métricas, el CSV ni el informe consolidado.</span>
+              <button onClick={() => onTest(d, false)} style={{ ...btn(false), minHeight: 36 }}>Restaurar</button>
+            </div>
+          )}
           <div style={{ background: WHITE, border: `1px solid ${LINE}`, borderRadius:2, padding: 16 }}>
             <span style={mono(8)}>Directivo</span>
             <div style={{ fontSize: 16, fontWeight: 600, marginTop: 4 }}>{d.nombre}</div>
@@ -334,6 +343,7 @@ function Detalle({ d, onClose }) {
             <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
               {waNum && <a href={`https://wa.me/${waNum}?text=${encodeURIComponent(waMsg)}`} target="_blank" rel="noopener noreferrer" style={{ ...btn(true), background: EMERALD, color: NAVY_DK, display: "inline-flex", alignItems: "center", textDecoration: "none" }}>Contactar por WhatsApp →</a>}
               <a href={`mailto:${d.email}?subject=${encodeURIComponent(`Su diagnóstico del proceso de inscripción — ${d.universidad}`)}`} style={{ ...btn(false), display: "inline-flex", alignItems: "center", textDecoration: "none" }}>Escribir mail</a>
+              {!d.es_test && <button onClick={() => onTest(d, true)} style={{ ...btn(false), color: MUTED }}>Marcar como test</button>}
             </div>
             <div style={{ fontSize: 12, color: MUTED, marginTop: 10 }}>
               Informe por mail: {d.mail_enviado ? "✅ enviado" : enCurso(d) ? "pendiente (faltan etapas)" : "⚠️ no enviado"} · Aviso interno: {d.notif_enviada ? "✅" : enCurso(d) ? "pendiente" : "⚠️"}
@@ -425,14 +435,134 @@ function comparar(a, b, key) {
   return String(a[key] || "").localeCompare(String(b[key] || ""), "es", { sensitivity: "base" });
 }
 
+// ── SOLAPAS ──────────────────────────────────────────────
+function Solapas({ vista, ir, cantidades }) {
+  const items = [["diagnosticos", "Diagnósticos"], ["informe", "Informe consolidado"], ["tests", "Tests"]];
+  return (
+    <div role="tablist" aria-label="Secciones del panel" style={{ display: "flex", gap: 4, borderBottom: `1px solid ${LINE}`, marginBottom: 20, overflowX: "auto" }}>
+      {items.map(([id, texto]) => {
+        const activa = vista === id;
+        return (
+          <button key={id} role="tab" aria-selected={activa} onClick={() => ir(id)}
+            style={{ background: "none", border: "none", borderBottom: `3px solid ${activa ? NAVY : "transparent"}`, marginBottom: -1, padding: "0 14px", minHeight: 48, fontSize: 15, fontWeight: activa ? 700 : 500, color: activa ? NAVY : MUTED, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Schibsted Grotesk',sans-serif" }}>
+            {texto}{cantidades[id] != null && <span style={{ ...mono(9, activa ? NAVY : MUTED), marginLeft: 8 }}>{cantidades[id]}</span>}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// Aviso abajo de la pantalla después de marcar o restaurar, con la opción de deshacer.
+function Aviso({ aviso, onClose }) {
+  useEffect(() => {
+    const t = setTimeout(onClose, 7000);
+    return () => clearTimeout(t);
+  }, [aviso, onClose]);
+  return (
+    <div role="status" style={{ position: "fixed", left: "50%", bottom: 20, transform: "translateX(-50%)", zIndex: 300, width: "calc(100% - 32px)", maxWidth: 560, background: NAVY_DK, color: WHITE, borderRadius: 2, padding: "12px 14px 12px 18px", display: "flex", alignItems: "center", gap: 12, boxShadow: "0 6px 24px rgba(10,35,41,.3)", fontSize: 14, lineHeight: 1.5 }}>
+      <span style={{ flex: 1 }}>{aviso.texto}</span>
+      <button onClick={() => { aviso.deshacer(); onClose(); }} style={{ ...btn(false), background: "transparent", color: EMERALD, borderColor: "rgba(255,255,255,.25)", minHeight: 36 }}>Deshacer</button>
+    </div>
+  );
+}
+
+// ── INFORME CONSOLIDADO ──────────────────────────────────
+function InformeConsolidado({ rows }) {
+  const [periodo, setPeriodo] = useState({ desde: "", hasta: "" });
+  const [instId, setInstId] = useState("");
+  const base = useMemo(() => baseConsolidado(rows, periodo), [rows, periodo]);
+  const instituciones = useMemo(() => [...base.filas].sort((a, b) => a.universidad.localeCompare(b.universidad, "es", { sensitivity: "base" })), [base]);
+  const institucion = instituciones.find((r) => r.id === instId) || null;
+  // Si el período deja afuera a la institución elegida, se vuelve a la versión general.
+  useEffect(() => { if (instId && !institucion) setInstId(""); }, [instId, institucion]);
+  const datos =useMemo(() => (base.filas.length ? datosConsolidado(base.filas, { institucion }) : null), [base, institucion]);
+  const vistaPrevia = useMemo(() => (datos ? htmlConsolidado(datos, { origen: window.location.origin, imprimir: false }) : ""), [datos]);
+  const descargar = () => {
+    const win = window.open("", "_blank");
+    if (win) { win.document.write(htmlConsolidado(datos, { origen: window.location.origin })); win.document.close(); }
+  };
+  const set = (k) => (e) => setPeriodo((p) => ({ ...p, [k]: e.target.value }));
+  const card = { background: WHITE, border: `1px solid ${LINE}`, borderRadius: 2, padding: 16, marginBottom: 12 };
+  const n = base.filas.length;
+
+  return (
+    <>
+      <div style={card}>
+        <span style={mono(8)}>Informe regional · sin nombres de instituciones ni de personas</span>
+        <div style={{ fontFamily: "'CL Titulos',serif", fontSize: 22, margin: "4px 0 6px" }}>La salud de la inscripción universitaria en Latinoamérica</div>
+        <p style={{ fontSize: 14, color: MUTED, lineHeight: 1.6, margin: 0, maxWidth: 780 }}>
+          Junta todos los diagnósticos completos en una lectura regional para compartir con todas las universidades, hayan respondido o no.
+          La versión personalizada agrega las respuestas de una institución frente a la región, para enviársela a quien participó.
+        </p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 10, alignItems: "end", marginTop: 14 }}>
+          <label>
+            <span style={mono(8)}>Desde</span>
+            <input type="date" value={periodo.desde} onChange={set("desde")} style={{ ...input, marginTop: 4 }} />
+          </label>
+          <label>
+            <span style={mono(8)}>Hasta</span>
+            <input type="date" value={periodo.hasta} onChange={set("hasta")} style={{ ...input, marginTop: 4 }} />
+          </label>
+          <label style={{ gridColumn: "span 2" }}>
+            <span style={mono(8)}>Versión</span>
+            <select value={instId} onChange={(e) => setInstId(e.target.value)} style={{ ...input, marginTop: 4 }}>
+              <option value="">General, para compartir con todas</option>
+              {instituciones.map((r) => <option key={r.id} value={r.id}>Personalizada · {r.universidad} ({r.pais})</option>)}
+            </select>
+          </label>
+          <button onClick={descargar} disabled={!datos} style={{ ...btn(true), opacity: datos ? 1 : 0.5 }}>Descargar PDF</button>
+        </div>
+      </div>
+
+      <div style={{ ...card, fontSize: 14, lineHeight: 1.6 }}>
+        <strong>{n} {n === 1 ? "institución" : "instituciones"}</strong> de {base.paises} {base.paises === 1 ? "país" : "países"} · {base.completos} diagnósticos completos
+        <div style={{ color: MUTED, fontSize: 13 }}>
+          No entran: {base.repetidos} repetidos (de cada institución se toma el más reciente), {base.enCurso} en curso y {base.tests} marcados como test.
+        </div>
+        {n > 0 && n < 10 && (
+          <p style={{ ...alerta, color: ORANGE_TXT, background: "#FFF3E8", margin: "10px 0 0" }}>
+            Con {n} {n === 1 ? "institución" : "instituciones"} el informe es preliminar: conviene tener al menos 10 antes de compartirlo. Las aperturas por país y por tamaño aparecen solo con grupos de {MIN_GRUPO} o más.
+          </p>
+        )}
+        {n > 0 && (
+          <details style={{ marginTop: 10 }}>
+            <summary style={{ cursor: "pointer", fontSize: 13, color: NAVY }}>Ver qué instituciones entran (solo en el panel: el informe no las nombra)</summary>
+            <div style={{ columns: "280px", columnGap: 24, fontSize: 13, marginTop: 8 }}>
+              {instituciones.map((r) => (
+                <div key={r.id} style={{ breakInside: "avoid", padding: "3px 0" }}>
+                  {r.universidad} <span style={{ color: MUTED }}>· {r.pais} · {fmtFecha(r.created_at)} · {fmt1(r.score_global)}</span>
+                </div>
+              ))}
+            </div>
+          </details>
+        )}
+      </div>
+
+      {datos ? (
+        // allow-same-origin para que carguen las fuentes de marca; sin allow-scripts, el HTML no ejecuta nada.
+        <iframe title="Vista previa del informe consolidado" sandbox="allow-same-origin" srcDoc={vistaPrevia}
+          style={{ width: "100%", height: "80vh", border: `1px solid ${LINE}`, display: "block", background: "#C9D6D8" }} />
+      ) : (
+        <p style={{ color: MUTED }}>Todavía no hay diagnósticos completos en este período.</p>
+      )}
+    </>
+  );
+}
+
+// ── PANEL ────────────────────────────────────────────────
+const SIN_FILTROS = { q: "", estado: "", pais: "", nivel: "", desde: "", hasta: "" };
+
 function Panel({ session }) {
   const [rows, setRows] = useState(null);
   const [error, setError] = useState("");
-  const [f, setF] = useState({ q: "", estado: "", pais: "", nivel: "", desde: "", hasta: "" });
+  const [aviso, setAviso] = useState(null);
+  const [f, setF] = useState(SIN_FILTROS);
   const [sort, setSort] = useState({ key: "created_at", dir: "desc" });
   const [page, setPage] = useState(0);
   const [params, setParams] = useSearchParams();
   const selId = params.get("id");
+  const vista = ["informe", "tests"].includes(params.get("vista")) ? params.get("vista") : "diagnosticos";
 
   const cargar = useCallback(async () => {
     setError("");
@@ -442,35 +572,66 @@ function Panel({ session }) {
       if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
       setRows(data.diagnosticos);
     } catch (err) {
-      setError(err.message);
+      setError(err.message === "Sin acceso al panel" ? "Tu email no tiene acceso al panel. Pedí que lo agreguen a ADMIN_EMAILS." : `No pudimos cargar los diagnósticos: ${err.message}`);
       setRows([]);
     }
   }, [session.access_token]);
 
-  useEffect(() => { cargar(); }, [cargar]);
-  useEffect(() => { setPage(0); }, [f, sort]);
+  // Se marca en pantalla al instante y se vuelve atrás si el servidor no lo guarda.
+  const marcarTest = useCallback(async (r, valor) => {
+    setError("");
+    setRows((rs) => rs.map((x) => (x.id === r.id ? { ...x, es_test: valor } : x)));
+    try {
+      const res = await fetch("/api/admin-test", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ id: r.id, es_test: valor }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+      setAviso({
+        texto: valor ? `«${r.universidad}» pasó a Tests: ya no cuenta en las métricas, el CSV ni el informe.` : `«${r.universidad}» volvió a Diagnósticos.`,
+        deshacer: () => marcarTest({ ...r, es_test: valor }, !valor),
+      });
+    } catch (err) {
+      setRows((rs) => rs.map((x) => (x.id === r.id ? { ...x, es_test: r.es_test } : x)));
+      setError(`No pudimos ${valor ? "marcarlo como test" : "quitarle la marca de test"}: ${err.message}`);
+    }
+  }, [session.access_token]);
+  const cerrarAviso = useCallback(() => setAviso(null), []);
 
+  useEffect(() => { cargar(); }, [cargar]);
+  useEffect(() => { setPage(0); }, [f, sort, vista]);
+
+  const reales = useMemo(() => (rows || []).filter((r) => !r.es_test), [rows]);
+  const tests = useMemo(() => (rows || []).filter((r) => r.es_test), [rows]);
+  const sugeridos = useMemo(() => reales.filter(pareceTest), [reales]);
+  const lista = vista === "tests" ? tests : reales;
   const paises = useMemo(() => [...new Set((rows || []).map((r) => r.pais))].sort((a, b) => a.localeCompare(b, "es")), [rows]);
 
   const filtrados = useMemo(() => {
-    if (!rows) return [];
     const q = f.q.trim().toLowerCase();
     const desde = f.desde ? new Date(`${f.desde}T00:00:00`) : null;
     const hasta = f.hasta ? new Date(`${f.hasta}T23:59:59.999`) : null;
-    return rows
+    return lista
       .filter((r) => !q || `${r.universidad} ${r.nombre}`.toLowerCase().includes(q))
-      .filter((r) => !f.estado || (f.estado === "target" ? r.target : f.estado === "en_curso" ? enCurso(r) : !enCurso(r)))
+      .filter((r) => !f.estado || (f.estado === "target" ? r.target : f.estado === "posible_test" ? pareceTest(r) : f.estado === "en_curso" ? enCurso(r) : !enCurso(r)))
       .filter((r) => !f.pais || r.pais === f.pais)
       .filter((r) => !f.nivel || r.nivel === f.nivel)
       .filter((r) => !desde || new Date(r.created_at) >= desde)
       .filter((r) => !hasta || new Date(r.created_at) <= hasta)
       .sort((a, b) => comparar(a, b, sort.key) * (sort.dir === "asc" ? 1 : -1));
-  }, [rows, f, sort]);
+  }, [lista, f, sort]);
 
   const totalPages = Math.max(1, Math.ceil(filtrados.length / PAGE_SIZE));
   const pagina = filtrados.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
   const seleccionado = selId && rows ? rows.find((r) => r.id === selId) : null;
-  const abrir = (id) => setParams(id ? { id } : {});
+  const ir = (v) => { setF(SIN_FILTROS); setParams(v === "diagnosticos" ? {} : { vista: v }); };
+  const abrir = (id) => setParams((p) => {
+    const n = new URLSearchParams(p);
+    if (id) n.set("id", id); else n.delete("id");
+    return n;
+  });
   const set = (k) => (e) => setF((p) => ({ ...p, [k]: e.target.value }));
   const hayFiltros = Object.values(f).some(Boolean);
 
@@ -481,12 +642,24 @@ function Panel({ session }) {
   return (
     <>
       {error && (
-        <div role="alert" style={{ background: "#FFF0F0", border: "1px solid #CC333355", borderRadius:2, padding: "12px 14px", marginBottom: 16, fontSize: 14, color: "#CC3333" }}>
-          {error === "Sin acceso al panel" ? "Tu email no tiene acceso al panel. Pedí que lo agreguen a ADMIN_EMAILS." : `No pudimos cargar los diagnósticos: ${error}`}
-        </div>
+        <div role="alert" style={{ background: "#FFF0F0", border: "1px solid #CC333355", borderRadius:2, padding: "12px 14px", marginBottom: 16, fontSize: 14, color: "#CC3333" }}>{error}</div>
       )}
 
-      <Metricas rows={rows} />
+      <Solapas vista={vista} ir={ir} cantidades={{ diagnosticos: reales.length, tests: tests.length }} />
+
+      {vista === "informe" ? <InformeConsolidado rows={rows} /> : <>
+      {vista === "diagnosticos" ? <Metricas rows={reales} /> : (
+        <p style={{ fontSize: 14, color: MUTED, lineHeight: 1.6, margin: "0 0 16px", maxWidth: 760 }}>
+          Los diagnósticos marcados como test no cuentan en las métricas, el CSV ni el informe consolidado. Quedan guardados acá por si hace falta revisarlos o restaurarlos.
+        </p>
+      )}
+
+      {vista === "diagnosticos" && sugeridos.length > 0 && f.estado !== "posible_test" && (
+        <div style={{ background: "#FFF3E8", border: "1px solid #F2C9A5", borderRadius:2, padding: "12px 14px", marginBottom: 12, fontSize: 14, lineHeight: 1.5, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+          <span>{sugeridos.length === 1 ? "1 diagnóstico parece" : `${sugeridos.length} diagnósticos parecen`} de prueba (email de Campus Latina o «test» en el nombre). Revisalos y marcalos como test para que no cuenten en el informe.</span>
+          <button onClick={() => setF({ ...SIN_FILTROS, estado: "posible_test" })} style={{ ...btn(false), minHeight: 36 }}>Ver cuáles</button>
+        </div>
+      )}
 
       <div style={{ background: WHITE, border: `1px solid ${LINE}`, borderRadius:2, padding: 14, marginBottom: 12, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 10, alignItems: "end" }}>
         <label style={{ gridColumn: "span 2" }}>
@@ -500,6 +673,7 @@ function Panel({ session }) {
             <option value="completo">Completos</option>
             <option value="en_curso">En curso</option>
             <option value="target">Solo target</option>
+            {vista === "diagnosticos" && <option value="posible_test">Parecen test</option>}
           </select>
         </label>
         <label>
@@ -528,8 +702,8 @@ function Panel({ session }) {
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 10, flexWrap: "wrap" }}>
         <span style={{ fontSize: 13, color: MUTED }}>
-          {filtrados.length} de {rows.length} diagnósticos
-          {hayFiltros && <button onClick={() => setF({ q: "", estado: "", pais: "", nivel: "", desde: "", hasta: "" })} style={{ background: "none", border: "none", color: NAVY, textDecoration: "underline", cursor: "pointer", fontSize: 13, marginLeft: 8 }}>Limpiar filtros</button>}
+          {filtrados.length} de {lista.length} {vista === "tests" ? "tests" : "diagnósticos"}
+          {hayFiltros && <button onClick={() => setF(SIN_FILTROS)} style={{ background: "none", border: "none", color: NAVY, textDecoration: "underline", cursor: "pointer", fontSize: 13, marginLeft: 8 }}>Limpiar filtros</button>}
         </span>
         <div style={{ display: "flex", gap: 8 }}>
           <button onClick={cargar} style={btn(false)}>Actualizar</button>
@@ -538,7 +712,7 @@ function Panel({ session }) {
       </div>
 
       <div style={{ background: WHITE, border: `1px solid ${LINE}`, borderRadius:2, overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 900 }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 980 }}>
           <thead>
             <tr style={{ background: NAVY }}>
               {COLUMNAS.map((c) => (
@@ -553,14 +727,19 @@ function Panel({ session }) {
           </thead>
           <tbody>
             {pagina.length === 0 && (
-              <tr><td colSpan={COLUMNAS.length + 1} style={{ padding: 28, textAlign: "center", color: MUTED }}>{rows.length ? "Ningún diagnóstico coincide con los filtros." : "Todavía no hay diagnósticos."}</td></tr>
+              <tr><td colSpan={COLUMNAS.length + 1} style={{ padding: 28, textAlign: "center", color: MUTED }}>
+                {lista.length ? "Ningún diagnóstico coincide con los filtros." : vista === "tests" ? "Todavía no hay diagnósticos marcados como test." : "Todavía no hay diagnósticos."}
+              </td></tr>
             )}
             {pagina.map((r) => {
               const n = getNivel(Number(r.score_global));
               return (
                 <tr key={r.id} onClick={() => abrir(r.id)} style={{ borderBottom: `1px solid #F0F5F6`, cursor: "pointer" }}>
                   <td style={{ padding: "10px 12px", whiteSpace: "nowrap", fontFamily: "'CL Etiquetas',sans-serif", fontSize: 11 }}>{fmtFecha(r.created_at)}</td>
-                  <td style={{ padding: "10px 12px", fontWeight: 600 }}>{r.universidad}</td>
+                  <td style={{ padding: "10px 12px", fontWeight: 600 }}>
+                    {r.universidad}
+                    {!r.es_test && pareceTest(r) && <span title="Email de Campus Latina o «test» en el nombre" style={{ marginLeft: 8, background: "#FFF3E8", color: ORANGE_TXT, borderRadius: 2, padding: "2px 6px", fontSize: 11, fontWeight: 500, whiteSpace: "nowrap" }}>¿Test?</span>}
+                  </td>
                   <td style={{ padding: "10px 12px" }}>{r.pais}</td>
                   <td style={{ padding: "10px 12px" }}>{r.nombre}</td>
                   <td style={{ padding: "10px 12px", whiteSpace: "nowrap" }}>{r.target ? "🎯 " : ""}{r.alumnos_actuales ? textoRango(r.alumnos_actuales) : "—"}</td>
@@ -572,8 +751,12 @@ function Panel({ session }) {
                     <td style={{ padding: "10px 12px" }}><span style={{ background: n.bg, color: n.color, borderRadius:2, padding: "3px 8px", fontSize: 11, whiteSpace: "nowrap" }}>{r.nivel}</span></td>
                   </>}
                   <td style={{ padding: "10px 12px" }} title={r.mail_enviado ? "Informe enviado" : enCurso(r) ? "Faltan etapas" : "Informe no enviado"}>{r.mail_enviado ? "✅" : enCurso(r) ? "…" : "⚠️"}</td>
-                  <td style={{ padding: "6px 12px" }}>
+                  <td style={{ padding: "6px 12px", whiteSpace: "nowrap" }}>
                     <button onClick={(e) => { e.stopPropagation(); abrir(r.id); }} style={{ ...btn(false), minHeight: 34, padding: "0 12px", fontSize: 12 }}>Ver</button>
+                    <button onClick={(e) => { e.stopPropagation(); marcarTest(r, !r.es_test); }}
+                      aria-label={`${r.es_test ? "Restaurar" : "Es test"}: ${r.universidad}`}
+                      title={r.es_test ? "Volver a contarlo en las métricas y el informe" : "Que no cuente en las métricas, el CSV ni el informe"}
+                      style={{ ...btn(false), minHeight: 34, padding: "0 12px", fontSize: 12, marginLeft: 6, color: MUTED }}>{r.es_test ? "Restaurar" : "Es test"}</button>
                   </td>
                 </tr>
               );
@@ -589,8 +772,10 @@ function Panel({ session }) {
           <button onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1} style={{ ...btn(false), opacity: page >= totalPages - 1 ? 0.4 : 1 }}>Siguiente →</button>
         </div>
       )}
+      </>}
 
-      {seleccionado && <Detalle d={seleccionado} onClose={() => abrir(null)} />}
+      {seleccionado && <Detalle d={seleccionado} onClose={() => abrir(null)} onTest={marcarTest} />}
+      {aviso && <Aviso aviso={aviso} onClose={cerrarAviso} />}
     </>
   );
 }
