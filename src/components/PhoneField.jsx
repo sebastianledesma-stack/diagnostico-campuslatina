@@ -4,8 +4,7 @@ import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import es from "react-phone-number-input/locale/es.json";
 // Solo las banderas que más se usan (LATAM + países frecuentes): las ~250 completas sumaban ~100 KB.
 import { AR, BO, BR, CL, CO, CR, CU, EC, SV, GT, HN, MX, NI, PA, PY, PE, PR, DO, UY, VE, ES, US, PT, IT, FR, DE, GB, CA } from "country-flag-icons/react/3x2";
-import "react-phone-number-input/style.css";
-import "./PhoneField.css";
+// Sus estilos se cargan desde src/main.jsx, con el CSS principal.
 
 
 
