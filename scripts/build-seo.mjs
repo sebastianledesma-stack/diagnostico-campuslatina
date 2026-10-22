@@ -16,7 +16,7 @@ import { trazosCampo } from "../src/lib/informePdf.js";
 const SITE = "https://diagnostico.campuslatina.com";
 const HOY = new Date().toISOString().slice(0, 10);
 // Misma entidad que en campuslatina.com (mismo @id), para que buscadores e IA la reconozcan como una sola.
-const ORG = { "@type": "Organization", "@id": "https://campuslatina.com/#organizacion", name: "Campus Latina", alternateName: "CampusLatina", url: "https://campuslatina.com/", logo: "https://campuslatina.com/logo.png" };
+const ORG = { "@type": "Organization", "@id": "https://campuslatina.com/#organizacion", name: "Campus Latina", alternateName: "CampusLatina", url: "https://campuslatina.com/", logo: "https://campuslatina.com/logo.png", sameAs: ["https://www.linkedin.com/company/campuslatina"] };
 const NIVELES = [["Inicial", "1.0–1.9"], ["En desarrollo", "2.0–3.0"], ["Consolidado", "3.1–4.0"], ["Avanzado", "4.1–5.0"]];
 const NIVEL_POR_LETRA = { A: "Inicial", B: "En desarrollo", C: "Consolidado", D: "Avanzado" };
 
