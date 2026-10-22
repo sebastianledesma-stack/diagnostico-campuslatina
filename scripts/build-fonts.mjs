@@ -10,10 +10,11 @@ const fonts = {
   NEWSREADER_ITALIC: "scripts/fuentes-pdf/newsreader-italic-400.ttf",
 };
 
-// Logo: grupos { fill, transform, paths } del SVG sobre oscuro (ala en agua, nombre en blanco).
+// Logo: grupos { fill, transform, paths } del SVG sobre oscuro (ala en tres tonos de agua, nombre en blanco).
+// Cada path es { d, fill }: las plumas del ala traen su propio tono; el nombre hereda el del grupo.
 function grupos(svg) {
   return [...svg.matchAll(/<g fill="([^"]+)"><g transform="([^"]+)">(.*?)<\/g><\/g>/g)].map(([, fill, transform, cuerpo]) => ({
-    fill, transform, paths: [...cuerpo.matchAll(/<path d="([^"]+)"\/>/g)].map((m) => m[1]),
+    fill, transform, paths: [...cuerpo.matchAll(/<path(?: fill="([^"]+)")? d="([^"]+)"\/>/g)].map((m) => ({ d: m[2], fill: m[1] || fill })),
   }));
 }
 const svg = readFileSync("public/campus-latina-sobre-oscuro.svg", "utf8");

@@ -20,7 +20,7 @@ mkdirSync(tmp, { recursive: true });
 cpSync("public/fonts", join(tmp, "fonts"), { recursive: true });
 writeFileSync(join(tmp, "marca.css"), readFileSync("public/marca.css", "utf8").replaceAll("url(/fonts/", "url(fonts/"));
 const logo = readFileSync("public/campus-latina-sobre-oscuro.svg", "utf8");
-const ala = logo.match(/<g fill="#7FD6DE"><g transform="[^"]+">(.*?)<\/g><\/g>/)[1]; // el isotipo, en coordenadas 0–100
+const ala = logo.match(/<g fill="#9FE3EA"><g transform="[^"]+">(.*?)<\/g><\/g>/)[1]; // el isotipo en sus tres tonos, en coordenadas 0–100
 
 // Campo de líneas en SVG (mismo trazado que la tapa del informe). `grosor` engrosa las líneas en formatos chicos.
 function campo(w, h, grosor = 1) {
@@ -54,7 +54,7 @@ foto("public/og.png", 1200, 630, `
   <div class="lbl" style="position:absolute;left:80px;bottom:56px;font-size:19px;color:${AGUA}">diagnostico.campuslatina.com</div>`);
 
 foto("public/apple-touch-icon.png", 180, 180, `
-  <svg viewBox="0 0 100 100" style="position:absolute;left:38px;top:38px;width:104px;height:104px"><g fill="${AGUA}">${ala}</g></svg>`);
+  <svg viewBox="0 0 100 100" style="position:absolute;left:38px;top:38px;width:104px;height:104px">${ala}</svg>`);
 
 foto("public/email/logo-sobre-oscuro.png", 120, 34, `<div style="width:120px">${logo}</div>`, { escala: 2, transparente: true });
 foto("public/email/campo.png", 600, 110, campo(600, 110, 1.6), { escala: 2 });

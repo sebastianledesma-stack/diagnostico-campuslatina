@@ -45,7 +45,7 @@ function Logo({ ancho }) {
   const { viewBox, grupos } = MARCA.LOGO_SOBRE_OSCURO;
   const [, , w, alto] = viewBox.split(" ").map(Number);
   return h(Svg, { viewBox, width: ancho, height: (ancho * alto) / w },
-    grupos.map((g, i) => h(G, { key: i, transform: g.transform, fill: g.fill }, g.paths.map((d, k) => h(Path, { key: k, d, fill: g.fill })))));
+    grupos.map((g, i) => h(G, { key: i, transform: g.transform, fill: g.fill }, g.paths.map((p, k) => h(Path, { key: k, d: p.d, fill: p.fill })))));
 }
 
 function Campo({ ancho, alto }) {
