@@ -1,6 +1,6 @@
 // Agregados al informe pedidos por la spec (secciones 2 y 4.1), con los tokens visuales del v3.
 import { useEffect, useRef } from "react";
-import { NAVY_DK, EMERALD, WHITE, MUTED, CORAL } from "../theme.js";
+import { NAVY_DK, EMERALD, WHITE, MUTED, AMBAR_LUZ } from "../theme.js";
 import { montarCampo } from "../lib/campo.js";
 import { track } from "../lib/analytics.js";
 import { AUTORIDAD } from "../data/textos.js";
@@ -43,7 +43,7 @@ function agendaHref(universidad){
 export function ContactoCTA({universidad,target,alto,ancho=680}){
   const href=target?agendaHref(universidad):contactoHref(universidad);
   const campo=useRef(null);
-  useEffect(()=>montarCampo(campo.current,{linea:EMERALD,destaque:CORAL}),[]);
+  useEffect(()=>montarCampo(campo.current,{linea:EMERALD,destaque:AMBAR_LUZ}),[]);
   return(
     <section className="cl-oscuro" style={{background:NAVY_DK,position:"relative",overflow:"hidden"}}>
       <canvas ref={campo} aria-hidden="true" style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block",pointerEvents:"none"}}/>

@@ -11,7 +11,7 @@ import { join, resolve } from "node:path";
 import { trazosCampo } from "../src/lib/informePdf.js";
 
 const CHROME = process.env.CHROME || "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
-const TINTA = "#0A2329", AGUA = "#7FD6DE", CORAL = "#FF6B4A", SLATE = "#A9C2C6";
+const TINTA = "#0A2329", AGUA = "#7FD6DE", AMBAR_LUZ = "#FFAE4A", SLATE = "#A9C2C6";
 
 // Carpeta temporal con las fuentes y el logo, para que el HTML las cargue desde archivos locales.
 const tmp = join(tmpdir(), "campuslatina-imagenes");
@@ -27,7 +27,7 @@ function campo(w, h, grosor = 1) {
   const { lineas, puntos } = trazosCampo(w, h);
   return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%">${
     lineas.map((l) => `<path d="${l.d}" stroke="${AGUA}" stroke-opacity="${l.opacidad}" stroke-width="${l.ancho * grosor}" fill="none"/>`).join("")}${
-    puntos.map((p) => `<circle cx="${p.cx}" cy="${p.cy}" r="${p.r * grosor}" fill="${p.coral ? CORAL : AGUA}"/>`).join("")}</svg>`;
+    puntos.map((p) => `<circle cx="${p.cx}" cy="${p.cy}" r="${p.r * grosor}" fill="${p.llega ? AMBAR_LUZ : AGUA}"/>`).join("")}</svg>`;
 }
 
 function foto(salida, ancho, alto, cuerpo, { escala = 1, transparente = false } = {}) {
@@ -35,7 +35,7 @@ function foto(salida, ancho, alto, cuerpo, { escala = 1, transparente = false } 
   writeFileSync(archivo, `<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="marca.css"><style>
 *{box-sizing:border-box;margin:0}html,body{width:${ancho}px;height:${alto}px;overflow:hidden;${transparente ? "background:transparent" : `background:${TINTA}`}}
 body{font-family:'Schibsted Grotesk',sans-serif;color:#fff;position:relative}
-.hi{font-family:Newsreader,serif;font-style:italic;font-weight:400;background:linear-gradient(transparent 64%,rgba(255,107,74,.6) 64%,rgba(255,107,74,.6) 90%,transparent 90%)}
+.hi{font-family:Newsreader,serif;font-style:italic;font-weight:400;background:linear-gradient(transparent 64%,rgba(240,140,26,.8) 64%,rgba(240,140,26,.8) 90%,transparent 90%)}
 .lbl{font-family:'CL Etiquetas',sans-serif;letter-spacing:.14em;text-transform:uppercase}</style></head><body>${cuerpo}</body></html>`);
   mkdirSync(resolve(salida, ".."), { recursive: true });
   execFileSync(CHROME, ["--headless", "--disable-gpu", "--hide-scrollbars", "--allow-file-access-from-files", `--force-device-scale-factor=${escala}`,

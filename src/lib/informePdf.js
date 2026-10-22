@@ -6,7 +6,7 @@ import { FRICCIONES } from "../data/fricciones.js";
 import { getNivel, calcScore, accionesDeEtapa, recsDeEtapa, sinAcciones, r1, fmt1, potencialEtapa, calcGlobalPotential } from "./scoring.js";
 import { NIVEL_DESC, lecturaDiagnostico, AUTORIDAD } from "../data/textos.js";
 
-const TINTA = "#0A2329", PETROLEO = "#0B6470", AGUA = "#7FD6DE", CORAL = "#FF6B4A", CORAL_CLARO = "#FFB9A8", GRIS = "#4D6166", LINEA = "#D5E3E5", BRUMA = "#EAF3F4", SLATE = "#A9C2C6";
+const TINTA = "#0A2329", PETROLEO = "#0B6470", AGUA = "#7FD6DE", AMBAR = "#F08C1A", AMBAR_LUZ = "#FFAE4A", AMBAR_CLARO = "#FFCF8A", GRIS = "#4D6166", LINEA = "#D5E3E5", BRUMA = "#EAF3F4", SLATE = "#A9C2C6";
 const ORDEN_NIVEL = { "Inicial": 1, "En desarrollo": 2, "Consolidado": 3, "Avanzado": 4 };
 const num2 = (n) => String(n).padStart(2, "0");
 const capital = (s) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -41,14 +41,14 @@ export function trazosCampo(w = 210, h = 120) {
     const y0 = h * (0.02 + R() * 0.98), ye = h * (0.74 + (R() - 0.5) * 0.05);
     const p = [[-2, y0], [w * (0.22 + R() * 0.2), y0 + (R() - 0.5) * h * 0.45], [w * (0.58 + R() * 0.16), ye + (R() - 0.5) * h * 0.06], [w + 2, ye]].map((q) => q.map(f));
     lineas.push({ d: `M${p[0].join(" ")} C${p[1].join(" ")} ${p[2].join(" ")} ${p[3].join(" ")}`, opacidad: f(0.1 + R() * 0.3), ancho: f(0.12 + R() * 0.22) });
-    if (i % 5 === 0) { const [cx, cy] = en(p, 0.15 + R() * 0.6); puntos.push({ cx: f(cx), cy: f(cy), r: f(0.5 + R() * 0.5), coral: false }); }
-    if (i % 13 === 0) { const [cx, cy] = en(p, 0.9 + R() * 0.08); puntos.push({ cx: f(cx), cy: f(cy), r: 0.9, coral: true }); }
+    if (i % 5 === 0) { const [cx, cy] = en(p, 0.15 + R() * 0.6); puntos.push({ cx: f(cx), cy: f(cy), r: f(0.5 + R() * 0.5), llega: false }); }
+    if (i % 13 === 0) { const [cx, cy] = en(p, 0.9 + R() * 0.08); puntos.push({ cx: f(cx), cy: f(cy), r: 0.9, llega: true }); }
   }
   return { lineas, puntos };
 }
 function campo(w = 210, h = 120) {
   const { lineas, puntos } = trazosCampo(w, h);
-  return `<svg class="campo" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">${lineas.map((l) => `<path d="${l.d}" stroke="${AGUA}" stroke-opacity="${l.opacidad}" stroke-width="${l.ancho}" fill="none"/>`).join("")}${puntos.map((q) => `<circle cx="${q.cx}" cy="${q.cy}" r="${q.r}" fill="${q.coral ? CORAL : AGUA}"${q.coral ? "" : ' fill-opacity=".8"'}/>`).join("")}</svg>`;
+  return `<svg class="campo" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">${lineas.map((l) => `<path d="${l.d}" stroke="${AGUA}" stroke-opacity="${l.opacidad}" stroke-width="${l.ancho}" fill="none"/>`).join("")}${puntos.map((q) => `<circle cx="${q.cx}" cy="${q.cy}" r="${q.r}" fill="${q.llega ? AMBAR_LUZ : AGUA}"${q.llega ? "" : ' fill-opacity=".8"'}/>`).join("")}</svg>`;
 }
 
 // Escalón de 4 barras (nivel) y tramo de 1 a 5 (hoy y con el plan), como en el informe en pantalla.
@@ -61,7 +61,7 @@ const tramo = (hoy, plan) => {
   return `<svg class="tramo" viewBox="-3 0 106 10" preserveAspectRatio="none" aria-hidden="true">
     <line x1="0" x2="100" y1="5" y2="5" stroke="${LINEA}" stroke-width="1" vector-effect="non-scaling-stroke"/>
     <line x1="0" x2="${x(hoy)}" y1="5" y2="5" stroke="${PETROLEO}" stroke-width="2" vector-effect="non-scaling-stroke"/>
-    ${sube ? `<line x1="${x(hoy)}" x2="${x(plan)}" y1="5" y2="5" stroke="${CORAL}" stroke-width="2" stroke-dasharray="3 3" vector-effect="non-scaling-stroke"/>` : ""}
+    ${sube ? `<line x1="${x(hoy)}" x2="${x(plan)}" y1="5" y2="5" stroke="${AMBAR}" stroke-width="2" stroke-dasharray="3 3" vector-effect="non-scaling-stroke"/>` : ""}
   </svg><span class="pt" style="left:${x(hoy)}%"></span>${sube ? `<span class="pt plan" style="left:${x(plan)}%"></span>` : ""}`;
 };
 
@@ -99,13 +99,13 @@ body{font-family:'Schibsted Grotesk',Arial,sans-serif;color:${TINTA};font-size:9
 .tapa h1{font-size:30pt;line-height:1.04;letter-spacing:-.03em;font-weight:700;margin:4mm 0 3mm;max-width:160mm}
 .tapa .quien{color:${SLATE};font-size:10pt}
 .tapa .cifras{display:flex;gap:18mm;margin-top:24mm;align-items:flex-end}
-.dato{font-size:76pt;font-weight:700;line-height:.82;letter-spacing:-.05em}.dato.coral{color:${CORAL}}
+.dato{font-size:76pt;font-weight:700;line-height:.82;letter-spacing:-.05em}.dato.destaque{color:${AMBAR_LUZ}}
 .tapa .sub{color:${SLATE};font-size:10pt;margin-top:3mm}
 .tapa .flecha{width:20mm;height:1px;background:${SLATE};margin-bottom:12mm;position:relative}
 .campo{position:absolute;left:0;right:0;bottom:0;width:210mm;height:125mm}
 .tapa .pie{position:absolute;left:20mm;bottom:12mm;font-size:7.5pt;color:${SLATE};letter-spacing:.04em}
 h2{font-size:21pt;line-height:1.08;letter-spacing:-.03em;font-weight:700;margin:2mm 0 5mm;max-width:150mm}
-h2 em,.preg span{font-family:Newsreader,Georgia,serif;font-style:italic;font-weight:400;background:linear-gradient(transparent 60%,${CORAL_CLARO} 60%,${CORAL_CLARO} 92%,transparent 92%)}
+h2 em,.preg span{font-family:Newsreader,Georgia,serif;font-style:italic;font-weight:400;background:linear-gradient(transparent 60%,${AMBAR_CLARO} 60%,${AMBAR_CLARO} 92%,transparent 92%)}
 .lectura{font-size:11pt;line-height:1.55;color:#1F3A40;max-width:155mm;margin-bottom:7mm}
 .sec{margin-top:7mm}.foco .lbl{min-height:6.5mm}.regla{border-top:1.5pt solid ${TINTA};padding-top:3mm}
 table{width:100%;border-collapse:collapse;margin-top:1mm}td,th{padding:1.9mm 1.5mm;border-bottom:.5pt solid ${LINEA};text-align:left;vertical-align:middle}
@@ -114,7 +114,7 @@ th{font-family:'CL Etiquetas','Schibsted Grotesk',Arial,sans-serif;font-size:6.5
 .niv{white-space:nowrap;font-size:8.5pt;color:${GRIS}}.esc{width:4.6mm;height:2.8mm;margin-right:1.6mm;vertical-align:-.2mm}
 .n{text-align:right;font-weight:700;font-size:11pt;width:11mm}th.n{font-size:6.5pt}.p{color:${PETROLEO}}
 .tr{width:34mm}.trw{position:relative;height:3mm}.tramo{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
-.pt{position:absolute;top:50%;width:2.2mm;height:2.2mm;margin:-1.1mm 0 0 -1.1mm;border-radius:50%;background:${PETROLEO}}.pt.plan{background:#fff;border:.5mm solid ${CORAL}}
+.pt{position:absolute;top:50%;width:2.2mm;height:2.2mm;margin:-1.1mm 0 0 -1.1mm;border-radius:50%;background:${PETROLEO}}.pt.plan{background:#fff;border:.5mm solid ${AMBAR}}
 .niveles{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:3mm}.niveles div{padding:0 3mm;border-left:.5pt solid ${LINEA};font-size:8pt;color:${GRIS}}.niveles div:first-child{border-left:none;padding-left:0}
 .niveles b{display:block;color:${TINTA};font-size:9pt;margin-bottom:1mm}
 .foco{display:grid;grid-template-columns:repeat(3,1fr);margin-top:3mm}.foco div{padding:0 4mm;border-left:.5pt solid ${LINEA}}.foco div:first-child{border-left:none;padding-left:0}
@@ -129,7 +129,7 @@ h3{font-size:17pt;letter-spacing:-.025em;line-height:1.1}.preg{font-size:12pt;ma
 .lista .k{font-family:'CL Etiquetas',Arial,sans-serif;font-size:7pt;letter-spacing:.1em;color:${PETROLEO};padding-top:.6mm}
 .lista .box{width:3mm;height:3mm;border:.4mm solid ${PETROLEO};margin-top:.8mm}
 .lista .pts{font-weight:700;color:${PETROLEO}}.mejora{display:block;font-style:normal;color:${GRIS};font-size:8pt}.lista .vacia{display:block;color:${GRIS}}
-.cierre{background:${TINTA};color:#fff;padding:10mm 12mm;margin-top:8mm;break-inside:avoid}.cierre h2{color:#fff;margin:2mm 0 3mm}.cierre h2 em{background:linear-gradient(transparent 64%,rgba(255,107,74,.6) 64%,rgba(255,107,74,.6) 90%,transparent 90%)}
+.cierre{background:${TINTA};color:#fff;padding:10mm 12mm;margin-top:8mm;break-inside:avoid}.cierre h2{color:#fff;margin:2mm 0 3mm}.cierre h2 em{background:linear-gradient(transparent 64%,rgba(240,140,26,.8) 64%,rgba(240,140,26,.8) 90%,transparent 90%)}
 .cierre p{color:rgba(255,255,255,.75);max-width:150mm}.cierre .lbl{color:${AGUA}}
 .ilus{font-size:7.5pt;color:${GRIS};margin-top:2mm}
 </style></head><body>
@@ -142,7 +142,7 @@ h3{font-size:17pt;letter-spacing:-.025em;line-height:1.1}.preg{font-size:12pt;ma
     <div class="quien">${quien}</div>
     <div class="cifras">
       <div><span class="lbl">Hoy</span><div class="dato">${fmt1(d.global)}</div><div class="sub">de 5 · ${nivel}</div></div>
-      ${d.hayMejora ? `<div class="flecha"></div><div><span class="lbl">Con el plan</span><div class="dato coral">${fmt1(d.potencial)}</div><div class="sub">${getNivel(d.potencial).label}</div></div>` : ""}
+      ${d.hayMejora ? `<div class="flecha"></div><div><span class="lbl">Con el plan</span><div class="dato destaque">${fmt1(d.potencial)}</div><div class="sub">${getNivel(d.potencial).label}</div></div>` : ""}
     </div>
   </div>
   <div class="pie">CampusLatina × CIeLatam × Salesforce</div>

@@ -20,7 +20,7 @@ Font.register({ family: "Schibsted Grotesk", fonts: [
 Font.register({ family: "Newsreader", fonts: [{ src: MARCA.NEWSREADER_ITALIC, fontStyle: "italic" }] });
 Font.registerHyphenationCallback((w) => [w]); // no cortar palabras con guiones
 
-const TINTA = "#0A2329", PETROLEO = "#0B6470", AGUA = "#7FD6DE", CORAL = "#FF6B4A";
+const TINTA = "#0A2329", PETROLEO = "#0B6470", AGUA = "#7FD6DE", AMBAR = "#F08C1A", AMBAR_LUZ = "#FFAE4A";
 const GRIS = "#4D6166", LINEA = "#D5E3E5", SLATE = "#A9C2C6", TEXTO = "#1F3A40", BLANCO = "#FFFFFF";
 const ORDEN_NIVEL = { "Inicial": 1, "En desarrollo": 2, "Consolidado": 3, "Avanzado": 4 };
 const mm = (v) => v * 2.8346;
@@ -33,7 +33,7 @@ const s = StyleSheet.create({
   parrafo: { fontSize: 9.5, lineHeight: 1.45 }, // con fontSize explícito: sin él, react-pdf calcula el interlineado sobre 18 pt
   lbl: { fontFamily: "Schibsted Grotesk", fontWeight: 600, fontSize: 6.8, lineHeight: 1.3, letterSpacing: 0.8, textTransform: "uppercase", color: GRIS, marginBottom: mm(2) },
   h2: { fontWeight: 700, fontSize: 21, lineHeight: 1.1, letterSpacing: -0.6, marginTop: mm(1), marginBottom: mm(4) },
-  resaltado: { fontFamily: "Newsreader", fontStyle: "italic", fontWeight: 400, backgroundColor: "#FFE0D7" },
+  resaltado: { fontFamily: "Newsreader", fontStyle: "italic", fontWeight: 400, backgroundColor: "#FFE6C2" },
   regla: { borderTopWidth: 1.5, borderTopColor: TINTA, paddingTop: mm(3) },
   fila: { flexDirection: "row", alignItems: "center", borderBottomWidth: 0.5, borderBottomColor: LINEA, paddingVertical: mm(1.7) },
   pie: { position: "absolute", bottom: mm(9), left: mm(18), right: mm(18), flexDirection: "row", justifyContent: "space-between", fontSize: 7.5, color: GRIS },
@@ -52,7 +52,7 @@ function Campo({ ancho, alto }) {
   const { lineas, puntos } = trazosCampo(210, 125);
   return h(Svg, { viewBox: "0 0 210 125", preserveAspectRatio: "none", width: ancho, height: alto, style: { position: "absolute", left: 0, bottom: 0 } },
     lineas.map((l, i) => h(Path, { key: `l${i}`, d: l.d, stroke: AGUA, strokeOpacity: l.opacidad, strokeWidth: l.ancho, fill: "none" })),
-    puntos.map((p, i) => h(Circle, { key: `p${i}`, cx: p.cx, cy: p.cy, r: p.r, fill: p.coral ? CORAL : AGUA, fillOpacity: p.coral ? 1 : 0.8 })));
+    puntos.map((p, i) => h(Circle, { key: `p${i}`, cx: p.cx, cy: p.cy, r: p.r, fill: p.llega ? AMBAR_LUZ : AGUA, fillOpacity: p.llega ? 1 : 0.8 })));
 }
 
 // Escalón de 4 barras (nivel) y tramo de 1 a 5 (hoy y con el plan), como en el informe en pantalla.
@@ -67,8 +67,8 @@ function Tramo({ hoy, plan, ancho = 96 }) {
   return h(Svg, { width: ancho, height: 9 },
     h(Line, { x1: 4, x2: ancho - 4, y1: 4.5, y2: 4.5, stroke: LINEA, strokeWidth: 0.8 }),
     h(Line, { x1: 4, x2: x(hoy), y1: 4.5, y2: 4.5, stroke: PETROLEO, strokeWidth: 1.6 }),
-    sube && h(Line, { x1: x(hoy), x2: x(plan), y1: 4.5, y2: 4.5, stroke: CORAL, strokeWidth: 1.6, strokeDasharray: "2.5 2.5" }),
-    sube && h(Circle, { cx: x(plan), cy: 4.5, r: 2.6, fill: BLANCO, stroke: CORAL, strokeWidth: 1.2 }),
+    sube && h(Line, { x1: x(hoy), x2: x(plan), y1: 4.5, y2: 4.5, stroke: AMBAR, strokeWidth: 1.6, strokeDasharray: "2.5 2.5" }),
+    sube && h(Circle, { cx: x(plan), cy: 4.5, r: 2.6, fill: BLANCO, stroke: AMBAR, strokeWidth: 1.2 }),
     h(Circle, { cx: x(hoy), cy: 4.5, r: 3, fill: PETROLEO }));
 }
 
@@ -93,7 +93,7 @@ function Tapa({ d, registro, fecha }) {
       h(View, { style: { flexDirection: "row", alignItems: "flex-end", marginTop: mm(24) } },
         h(View, null, Etiqueta("Hoy", { color: SLATE }), h(Text, { style: dato }, fmt1(d.global)), h(Text, { style: { color: SLATE, fontSize: 10, marginTop: mm(6) } }, `de 5 · ${getNivel(d.global).label}`)),
         d.hayMejora ? h(View, { style: { width: mm(20), height: 1, backgroundColor: SLATE, marginHorizontal: mm(9), marginBottom: mm(17) } }) : null,
-        d.hayMejora ? h(View, null, Etiqueta("Con el plan", { color: SLATE }), h(Text, { style: [dato, { color: CORAL }] }, fmt1(d.potencial)), h(Text, { style: { color: SLATE, fontSize: 10, marginTop: mm(6) } }, getNivel(d.potencial).label)) : null,
+        d.hayMejora ? h(View, null, Etiqueta("Con el plan", { color: SLATE }), h(Text, { style: [dato, { color: AMBAR_LUZ }] }, fmt1(d.potencial)), h(Text, { style: { color: SLATE, fontSize: 10, marginTop: mm(6) } }, getNivel(d.potencial).label)) : null,
       ),
     ),
     h(Text, { style: { position: "absolute", left: mm(20), bottom: mm(12), fontSize: 7.5, color: SLATE, letterSpacing: 0.3 } }, "CampusLatina × CIeLatam × Salesforce"),
@@ -178,7 +178,7 @@ function Cierre({ d, registro, contacto }) {
   return h(View, { wrap: false, style: { backgroundColor: TINTA, color: BLANCO, paddingVertical: mm(10), paddingHorizontal: mm(12), marginTop: mm(4) } },
     Etiqueta("CampusLatina", { color: AGUA }),
     h(Text, { style: { fontWeight: 700, fontSize: 19, lineHeight: 1.12, letterSpacing: -0.5, marginTop: mm(1), marginBottom: mm(3) } },
-      antes, resaltado ? h(Text, { style: { fontFamily: "Newsreader", fontStyle: "italic", fontWeight: 400, color: BLANCO, textDecoration: "underline", textDecorationColor: CORAL } }, resaltado) : null, despues),
+      antes, resaltado ? h(Text, { style: { fontFamily: "Newsreader", fontStyle: "italic", fontWeight: 400, color: BLANCO, textDecoration: "underline", textDecorationColor: AMBAR_LUZ } }, resaltado) : null, despues),
     h(Text, { style: { color: "#C9D6D8", lineHeight: 1.55, maxWidth: mm(150) } }, texto),
     h(Text, { style: { color: BLANCO, fontWeight: 700, marginTop: mm(3) } }, contacto || "campuslatina.com"),
   );

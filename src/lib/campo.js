@@ -22,7 +22,7 @@ function rng(seed) {
 const suave = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 const rgb = (hex) => { const n = parseInt(hex.replace("#", ""), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
 
-export function montarCampo(cv, { linea = "#7FD6DE", destaque = "#FF6B4A", tipo = "fondo", orden = 0 } = {}) {
+export function montarCampo(cv, { linea = "#7FD6DE", destaque = "#FFAE4A", tipo = "fondo", orden = 0 } = {}) {
   if (!cv || typeof window === "undefined") return () => {};
   const ctx = cv.getContext("2d");
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;

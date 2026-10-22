@@ -1,6 +1,6 @@
-// Paleta de marca Campus Latina: verde petróleo con coral como destaque (manual de identidad).
+// Paleta de marca Campus Latina: verde petróleo con ámbar como destaque (manual de identidad).
 // Los nombres se conservan para no tocar cada pantalla: NAVY y NAVY_DK son ahora petróleo noche,
-// EMERALD es el celeste agua (acento sobre fondos oscuros) y CORAL el color de destaque.
+// EMERALD es el celeste agua (acento sobre fondos oscuros) y AMBAR el color de destaque (AMBAR_LUZ sobre fondos oscuros).
 export const NAVY = "#123A42";     // petróleo profundo: títulos sobre fondos claros, paneles oscuros
 export const NAVY_DK = "#0A2329";  // petróleo noche: fondos oscuros
 export const EMERALD = "#7FD6DE";  // celeste agua: acento sobre fondos oscuros
@@ -9,7 +9,8 @@ export const CREAM = "#EAF3F4";    // bruma: fondo claro de la app
 export const ORANGE = "#E8833A";
 export const WHITE = "#FFFFFF";
 export const PETROLEO = "#0B6470"; // color principal: botones y acentos sobre fondos claros
-export const CORAL = "#FF6B4A";    // destaque: el dato o la palabra que importa (nunca para pérdidas)
+export const AMBAR = "#F08C1A";      // destaque sobre fondos claros: el dato o la palabra que importa (nunca para pérdidas)
+export const AMBAR_LUZ = "#FFAE4A";  // el mismo destaque sobre petróleo noche
 
 // Colores de TEXTO sobre fondos claros (bruma o blanco), con contraste WCAG AA (≥ 4.5:1).
 // EMERALD, ORANGE y SLATE sirven como texto solo sobre NAVY/NAVY_DK; sobre fondo claro usar estos.

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback, lazy, Suspense } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { NAVY, NAVY_DK, EMERALD, SLATE, CREAM, WHITE, EMERALD_TXT, SLATE_TXT, MUTED, TEXT, LINE, BTN_PRIMARY, BTN_DARK, BTN_DISABLED, TOUCH, CORAL, PETROLEO } from "../theme.js";
+import { NAVY, NAVY_DK, EMERALD, SLATE, CREAM, WHITE, EMERALD_TXT, SLATE_TXT, MUTED, TEXT, LINE, BTN_PRIMARY, BTN_DARK, BTN_DISABLED, TOUCH, AMBAR_LUZ, PETROLEO } from "../theme.js";
 import { montarCampo } from "../lib/campo.js";
 import { PAISES_LATAM } from "../data/paises.js";
 import { ETAPAS_DATA } from "../data/etapas.js";
@@ -29,7 +29,7 @@ function CampoFondo({orden=0}){
   const meta=useRef(orden); meta.current=orden;
   useEffect(()=>{
     let actual=typeof meta.current==="function"?meta.current():meta.current;
-    return montarCampo(ref.current,{linea:EMERALD,destaque:CORAL,orden:()=>{
+    return montarCampo(ref.current,{linea:EMERALD,destaque:AMBAR_LUZ,orden:()=>{
       const m=typeof meta.current==="function"?meta.current():meta.current;
       actual+=(m-actual)*0.04; return actual;
     }});

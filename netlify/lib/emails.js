@@ -1,7 +1,7 @@
 // Templates HTML de los mails (tablas + estilos inline para compatibilidad con clientes de correo).
 // Identidad de marca: cabecera petróleo noche con el logo y el campo de líneas, Schibsted Grotesk
 // (con Helvetica/Arial de respaldo, porque la mayoría de los clientes no carga fuentes web),
-// esquinas rectas, filetes en lugar de tarjetas y el coral solo como destaque. Sin emojis.
+// esquinas rectas, filetes en lugar de tarjetas y el ámbar solo como destaque. Sin emojis.
 import { ETAPAS_DATA } from "../../src/data/etapas.js";
 import { getNivel, etapasCriticas, topRecomendaciones, sinAcciones as todoEnD, fmt1, r1 } from "../../src/lib/scoring.js";
 import { datosInforme } from "../../src/lib/informePdf.js";
@@ -12,7 +12,7 @@ import { env } from "./env.js";
 const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const f1 = fmt1;
 const num2 = (n) => String(n).padStart(2, "0");
-const TINTA = "#0A2329", PETROLEO = "#0B6470", AGUA = "#7FD6DE", CORAL = "#FF6B4A", BRUMA = "#EAF3F4";
+const TINTA = "#0A2329", PETROLEO = "#0B6470", AGUA = "#7FD6DE", AMBAR = "#F08C1A", AMBAR_LUZ = "#FFAE4A", BRUMA = "#EAF3F4";
 const GRIS = "#4D6166", LINEA = "#D5E3E5", SLATE = "#A9C2C6", TEXTO = "#1F3A40";
 const SANS = "'Schibsted Grotesk',Helvetica,Arial,sans-serif";
 const SERIF = "Newsreader,Georgia,'Times New Roman',serif";
@@ -21,8 +21,8 @@ const ETIQUETA = `font-family:${SANS};font-size:11px;font-weight:600;letter-spac
 // apuntarlas a otra carpeta para las vistas previas sin publicar el sitio.
 const imagen = (nombre) => `${process.env.MAIL_ASSETS_URL || env.SITE_URL || "https://diagnostico.campuslatina.com"}/email/${nombre}`;
 
-// Palabra destacada: cursiva serif con un subrayado coral (el resaltador del manual, en versión para mail).
-const destacado = (texto) => `<span style="font-family:${SERIF};font-style:italic;font-weight:400;border-bottom:3px solid ${CORAL};">${texto}</span>`;
+// Palabra destacada: cursiva serif con un subrayado ámbar (el resaltador del manual, en versión para mail).
+const destacado = (texto) => `<span style="font-family:${SERIF};font-style:italic;font-weight:400;border-bottom:3px solid ${AMBAR_LUZ};">${texto}</span>`;
 
 function layout({ preheader, body }) {
   return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -70,7 +70,7 @@ function filaEtapa(e) {
 <td style="padding:11px 0;border-bottom:1px solid ${LINEA};width:150px;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="height:6px;"><tr>
     ${hoy ? `<td width="${hoy}%" style="background:${PETROLEO};height:6px;font-size:0;line-height:0;">&nbsp;</td>` : ""}
-    ${plan > hoy ? `<td width="${plan - hoy}%" style="background:${CORAL};height:6px;font-size:0;line-height:0;opacity:.85;">&nbsp;</td>` : ""}
+    ${plan > hoy ? `<td width="${plan - hoy}%" style="background:${AMBAR};height:6px;font-size:0;line-height:0;opacity:.85;">&nbsp;</td>` : ""}
     ${plan < 100 ? `<td style="background:${LINEA};height:6px;font-size:0;line-height:0;">&nbsp;</td>` : ""}
   </tr></table>
 </td>
@@ -118,7 +118,7 @@ ${cabecera({
   extra: `<div style="font-size:13px;color:${SLATE};margin-top:6px;">${esc([d.nombre, d.cargo, d.pais].filter(Boolean).join(" · "))}</div>
   <table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:26px;"><tr>
     ${cifra("Hoy", f1(d.score_global), `de 5 · ${nivel.label}`, "#ffffff")}
-    ${info.hayMejora ? cifra("Con el plan", f1(info.potencial), getNivel(info.potencial).label, CORAL) : ""}
+    ${info.hayMejora ? cifra("Con el plan", f1(info.potencial), getNivel(info.potencial).label, AMBAR_LUZ) : ""}
   </tr></table>`,
 })}
 
@@ -132,7 +132,7 @@ ${cabecera({
 <tr><td class="px" style="padding:30px 40px 6px;">
   <div style="${ETIQUETA}color:${GRIS};padding-bottom:10px;border-bottom:2px solid ${TINTA};">Las 7 etapas del recorrido del aspirante</div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${info.etapas.map(filaEtapa).join("")}</table>
-  ${info.hayMejora ? `<div style="font-size:12px;color:${GRIS};margin-top:8px;">En petróleo, el puntaje de hoy; en coral, lo que suma el plan de acción.</div>` : ""}
+  ${info.hayMejora ? `<div style="font-size:12px;color:${GRIS};margin-top:8px;">En petróleo, el puntaje de hoy; en ámbar, lo que suma el plan de acción.</div>` : ""}
 </td></tr>
 
 <tr><td class="px" style="padding:30px 40px 8px;">

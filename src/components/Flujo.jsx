@@ -5,7 +5,7 @@
 import { useEffect, useRef } from "react";
 import { sinMovimiento } from "../lib/movimiento.js";
 
-const AGUA = [127, 214, 222], PETROLEO = [11, 100, 112], CORAL = [255, 107, 74], PERDIDA = [154, 168, 171];
+const AGUA = [127, 214, 222], PETROLEO = [11, 100, 112], AMBAR = [255, 174, 74], PERDIDA = [154, 168, 171];
 const N = 7;
 export const FIN = 0.93;                            // el haz ocupa el 93 % del largo; el resto es la llegada
 export const posEtapa = (i) => FIN * (i + 0.5) / N; // centro de cada etapa, para ubicar los rótulos
@@ -101,15 +101,15 @@ export default function Flujo({ puntajes, vertical = false, oscuro = true, style
       }
       // Brillo de llegada: más intenso cuantos más aspirantes llegan.
       const [fx, fy] = punto(1, 0), rg = ctx.createRadialGradient(fx, fy, 0, fx, fy, cruce() * 0.35);
-      rg.addColorStop(0, `rgba(${CORAL},${0.06 + 0.22 * cum[N - 1]})`); rg.addColorStop(1, `rgba(${CORAL},0)`);
+      rg.addColorStop(0, `rgba(${AMBAR},${0.06 + 0.22 * cum[N - 1]})`); rg.addColorStop(1, `rgba(${AMBAR},0)`);
       ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H);
       for (const p of P) {
         let x, y, c = tinta, al = 0.9, brillo = 0;
         if (p.est === "va") { [x, y] = punto(p.u, p.v); al = 0.85 * Math.min(1, p.u * 12); }
         else if (p.est === "cae") { x = p.x; y = p.y; c = mezcla(tinta, PERDIDA, Math.min(1, p.vida / 0.35)); al = 0.8 * (1 - p.vida / 1.7); }
-        else { x = p.x; y = p.y; c = CORAL; al = 1 - p.vida / 1.4; brillo = 10; }
+        else { x = p.x; y = p.y; c = AMBAR; al = 1 - p.vida / 1.4; brillo = 10; }
         ctx.save(); ctx.fillStyle = `rgba(${c},${Math.max(0, al)})`;
-        if (brillo) { ctx.shadowColor = `rgba(${CORAL},${al})`; ctx.shadowBlur = brillo; }
+        if (brillo) { ctx.shadowColor = `rgba(${AMBAR},${al})`; ctx.shadowBlur = brillo; }
         ctx.beginPath(); ctx.arc(x, y, p.r, 0, 6.283); ctx.fill(); ctx.restore();
       }
     };

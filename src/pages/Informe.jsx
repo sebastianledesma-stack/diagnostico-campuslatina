@@ -3,7 +3,7 @@
 // protagonista y movimiento en la primera lectura (cifras que cuentan, el flujo del aspirante,
 // líneas que se dibujan). Los niveles se leen en escalones de petróleo, no con colores de semáforo.
 import { useState, useEffect, useLayoutEffect, useRef, Fragment } from "react";
-import { NAVY_DK, EMERALD, SLATE, WHITE, PETROLEO, CORAL, MUTED, TEXT, LINE, BTN_PRIMARY, BTN_DISABLED, TOUCH } from "../theme.js";
+import { NAVY_DK, EMERALD, SLATE, WHITE, PETROLEO, AMBAR, AMBAR_LUZ, MUTED, TEXT, LINE, BTN_PRIMARY, BTN_DISABLED, TOUCH } from "../theme.js";
 import { ETAPAS_DATA } from "../data/etapas.js";
 import { FRICCIONES } from "../data/fricciones.js";
 import { getNivel, calcEtapaProjected, accionesDeEtapa, r1, fmt1 } from "../lib/scoring.js";
@@ -91,7 +91,7 @@ function FlujoEtapas({ d, plan, desk }) {
             <RotuloEtapa e={e} plan={plan} d={d} />
           </div>
         ))}
-        <Etiqueta color={CORAL} style={{ position: "absolute", top: 0, right: 0 }}>Se inscriben</Etiqueta>
+        <Etiqueta color={AMBAR_LUZ} style={{ position: "absolute", top: 0, right: 0 }}>Se inscriben</Etiqueta>
       </div>
     </div>
   );
@@ -103,7 +103,7 @@ function FlujoEtapas({ d, plan, desk }) {
           <RotuloEtapa e={e} plan={plan} d={d} vertical />
         </div>
       ))}
-      <Etiqueta color={CORAL} style={{ position: "absolute", left: "46%", top: `${(FIN + 0.035) * 100}%`, transform: "translateY(-50%)" }}>Se inscriben</Etiqueta>
+      <Etiqueta color={AMBAR_LUZ} style={{ position: "absolute", left: "46%", top: `${(FIN + 0.035) * 100}%`, transform: "translateY(-50%)" }}>Se inscriben</Etiqueta>
     </div>
   );
 }
@@ -150,7 +150,7 @@ function Resumen({ d, desk, registroData, irA }) {
             </div>
             <FlujoEtapas d={d} plan={plan} desk={desk} />
             <p style={{ fontSize: 13, color: SLATE, lineHeight: 1.55, margin: desk ? "4px 0 0" : "18px 0 0", maxWidth: desk ? "none" : 720 }}>
-              Ilustrativo: en cada etapa el haz se angosta según su puntaje. En gris, los aspirantes que quedan en el camino; en coral, los que llegan a inscribirse.
+              Ilustrativo: en cada etapa el haz se angosta según su puntaje. En gris, los aspirantes que quedan en el camino; en ámbar, los que llegan a inscribirse.
             </p>
           </div>
         </Contenedor>
@@ -182,7 +182,7 @@ function Mapa({ d, desk, irA }) {
   return (
     <Contenedor desk={desk} style={{ paddingTop: desk ? "clamp(24px,5svh,64px)" : 36 }}>
       <Encabezado desk={desk} etiqueta="Mapa de niveles" titulo={<>Dónde está <em className="cl-hi">cada etapa</em></>}
-        bajada="Cada fila es una etapa del recorrido. El punto marca su puntaje de hoy; el aro coral, hasta dónde llega con las acciones del plan." />
+        bajada="Cada fila es una etapa del recorrido. El punto marca su puntaje de hoy; el aro ámbar, hasta dónde llega con las acciones del plan." />
       <div {...sube(3, { display: "grid", gridTemplateColumns: `${COL}px minmax(0,1fr)`, marginTop: desk ? "clamp(16px,4svh,48px)" : 32 })}>
         <div />
         <div style={{ position: "relative", height: desk ? 50 : 24 }}>
@@ -212,14 +212,14 @@ function Mapa({ d, desk, irA }) {
           {d.etapas.map((e, i) => <div key={e.id} style={{ position: "absolute", left: 0, right: 0, top: FILA * i, borderTop: `1px solid ${LINE}` }} />)}
           <svg viewBox={`0 0 100 ${alto}`} preserveAspectRatio="none" aria-hidden="true"
             style={{ position: "absolute", inset: 0, width: "100%", height: "100%", overflow: "visible", clipPath: listo ? "inset(0 0 0 0)" : "inset(0 0 100% 0)", transition: "clip-path 1.6s cubic-bezier(.4,0,.2,1) .5s" }}>
-            {d.hayMejora && <polyline points={linea("pot")} fill="none" stroke={CORAL} strokeWidth="1.5" strokeDasharray="4 5" vectorEffect="non-scaling-stroke" />}
+            {d.hayMejora && <polyline points={linea("pot")} fill="none" stroke={AMBAR} strokeWidth="1.5" strokeDasharray="4 5" vectorEffect="non-scaling-stroke" />}
             <polyline points={linea("score")} fill="none" stroke={PETROLEO} strokeWidth="2" vectorEffect="non-scaling-stroke" />
           </svg>
           {d.etapas.map((e, i) => {
             const y = FILA * i + FILA / 2, crece = r1(e.pot) > r1(e.score);
             return (
               <Fragment key={e.id}>
-                {crece && <span aria-hidden="true" style={{ position: "absolute", top: y, left: listo ? pct(e.pot) : pct(e.score), width: 12, height: 12, margin: "-6px 0 0 -6px", border: `2px solid ${CORAL}`, borderRadius: "50%", background: WHITE, opacity: listo ? 1 : 0, transition: `left 1s cubic-bezier(.2,.7,.2,1) ${1.3 + i * 0.07}s, opacity .4s ${1.3 + i * 0.07}s` }} />}
+                {crece && <span aria-hidden="true" style={{ position: "absolute", top: y, left: listo ? pct(e.pot) : pct(e.score), width: 12, height: 12, margin: "-6px 0 0 -6px", border: `2px solid ${AMBAR}`, borderRadius: "50%", background: WHITE, opacity: listo ? 1 : 0, transition: `left 1s cubic-bezier(.2,.7,.2,1) ${1.3 + i * 0.07}s, opacity .4s ${1.3 + i * 0.07}s` }} />}
                 <span aria-hidden="true" style={{ position: "absolute", top: y, left: listo ? pct(e.score) : "0%", width: 14, height: 14, margin: "-7px 0 0 -7px", borderRadius: "50%", background: PETROLEO, boxShadow: `0 0 0 3px ${WHITE}`, transition: `left 1.1s cubic-bezier(.2,.7,.2,1) ${i * 0.07}s` }} />
               </Fragment>
             );
@@ -229,7 +229,7 @@ function Mapa({ d, desk, irA }) {
       <p className="sr-only" style={{ position: "absolute", left: -9999 }}>{d.etapas.map((e) => `${e.name}: ${fmt1(e.score)} de 5 (${getNivel(e.score).label}), con el plan ${fmt1(e.pot)}.`).join(" ")}</p>
       <div {...sube(4, { display: "flex", gap: 22, flexWrap: "wrap", marginTop: 18, fontSize: 14, color: MUTED, paddingLeft: desk ? COL : 0 })}>
         <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}><span style={{ width: 12, height: 12, borderRadius: "50%", background: PETROLEO }} />Hoy</span>
-        {d.hayMejora && <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}><span style={{ width: 10, height: 10, borderRadius: "50%", border: `2px solid ${CORAL}` }} />Con el plan</span>}
+        {d.hayMejora && <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}><span style={{ width: 10, height: 10, borderRadius: "50%", border: `2px solid ${AMBAR}` }} />Con el plan</span>}
         <span>Toque una etapa para ver su detalle.</span>
       </div>
       <div {...sube(5, { marginTop: desk ? 56 : 40, display: "grid", gridTemplateColumns: desk ? `${COL}px repeat(4,minmax(0,1fr))` : "1fr", borderTop: `2px solid ${NAVY_DK}` })}>
@@ -390,7 +390,7 @@ function Barra({ hoy, plan }) {
   return (
     <div aria-hidden="true" style={{ position: "relative", height: 6, background: "rgba(255,255,255,.14)" }}>
       <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: pct(hoy), background: EMERALD }} />
-      <div style={{ position: "absolute", top: 0, bottom: 0, left: pct(hoy), width: `calc(${pct(Math.max(plan, hoy))} - ${pct(hoy)})`, background: CORAL, transition: "width .6s cubic-bezier(.2,.7,.2,1)" }} />
+      <div style={{ position: "absolute", top: 0, bottom: 0, left: pct(hoy), width: `calc(${pct(Math.max(plan, hoy))} - ${pct(hoy)})`, background: AMBAR_LUZ, transition: "width .6s cubic-bezier(.2,.7,.2,1)" }} />
       {BORDES.map((b) => <div key={b} style={{ position: "absolute", top: -3, bottom: -3, left: pct(b), width: 1, background: "rgba(255,255,255,.35)" }} />)}
     </div>
   );
@@ -433,7 +433,7 @@ function Acciones({ d, desk, checked, setChecked, registroData }) {
       <div style={{ display: "flex", alignItems: "baseline", gap: 14, marginTop: 16 }}>
         <span style={{ ...cifraGrande(desk ? 40 : 34), color: SLATE }}>{fmt1(d.global)}</span>
         <span aria-hidden="true" style={{ color: SLATE, fontSize: 20 }}>→</span>
-        <span aria-live="polite" aria-label={`Puntaje proyectado: ${fmt1(proyectado)}`} style={{ ...cifraGrande(desk ? 80 : 60), color: sube_ ? CORAL : WHITE, transition: "color .4s" }}>{cifra.toFixed(1)}</span>
+        <span aria-live="polite" aria-label={`Puntaje proyectado: ${fmt1(proyectado)}`} style={{ ...cifraGrande(desk ? 80 : 60), color: sube_ ? AMBAR_LUZ : WHITE, transition: "color .4s" }}>{cifra.toFixed(1)}</span>
       </div>
       <div style={{ marginTop: 16 }}><Nivel score={proyectado} oscuro color={WHITE} puntaje={false} /></div>
       <div style={{ marginTop: 20 }}><Barra hoy={d.global} plan={proyectado} /></div>
@@ -484,7 +484,7 @@ function Acciones({ d, desk, checked, setChecked, registroData }) {
       {!desk && (
         <div className="cl-oscuro" style={{ position: "sticky", bottom: 0, zIndex: 20, background: NAVY_DK, color: WHITE, marginTop: 24, padding: "12px 20px calc(12px + env(safe-area-inset-bottom))", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
           <Etiqueta color={SLATE}>{total} {total === 1 ? "acción" : "acciones"}</Etiqueta>
-          <span style={{ fontSize: 16 }}><span style={{ color: SLATE }}>{fmt1(d.global)} → </span><strong style={{ fontSize: 22, color: sube_ ? CORAL : WHITE }}>{cifra.toFixed(1)}</strong></span>
+          <span style={{ fontSize: 16 }}><span style={{ color: SLATE }}>{fmt1(d.global)} → </span><strong style={{ fontSize: 22, color: sube_ ? AMBAR_LUZ : WHITE }}>{cifra.toFixed(1)}</strong></span>
         </div>
       )}
     </>
@@ -515,7 +515,7 @@ function InformeFinal({ d, desk, registroData, envio }) {
           <div {...sube(3, { display: "flex", alignItems: "flex-end", gap: desk ? 40 : 28, marginTop: desk ? 0 : 28, flexWrap: "wrap" })}>
             <div><Etiqueta color={SLATE}>Hoy</Etiqueta><div style={{ ...cifraGrande(desk ? "clamp(72px,14svh,120px)" : 84), color: WHITE, marginTop: 14 }}>{fmt1(d.global)}</div></div>
             <svg width={desk ? 80 : 60} height="20" aria-hidden="true" style={{ marginBottom: desk ? 26 : 26 }}><line x1="0" x2="100%" y1="10" y2="10" stroke={SLATE} strokeWidth="1" /><path d={`M${desk ? 70 : 50} 4l8 6-8 6`} fill="none" stroke={SLATE} strokeWidth="1" /></svg>
-            <div><Etiqueta color={SLATE}>Con el plan</Etiqueta><div style={{ ...cifraGrande(desk ? "clamp(72px,14svh,120px)" : 84), color: CORAL, marginTop: 14 }}>{fmt1(d.potencial)}</div></div>
+            <div><Etiqueta color={SLATE}>Con el plan</Etiqueta><div style={{ ...cifraGrande(desk ? "clamp(72px,14svh,120px)" : 84), color: AMBAR_LUZ, marginTop: 14 }}>{fmt1(d.potencial)}</div></div>
           </div>
           {!desk && <p {...sube(4, { fontSize: 17, color: "rgba(255,255,255,.72)", lineHeight: 1.55, margin: "24px 0 0", maxWidth: 620 })}>
             {d.hayMejora ? <>Implementando todas las acciones del plan, su proceso suma <strong style={{ color: WHITE }}>+{fmt1(r1(d.potencial) - r1(d.global))} puntos</strong> y pasa a {getNivel(d.potencial).label.toLowerCase()}.</> : "Su proceso ya está en el máximo de referencia de este diagnóstico. Las recomendaciones ayudan a sostenerlo."}

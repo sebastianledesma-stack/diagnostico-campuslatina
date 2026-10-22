@@ -10,7 +10,7 @@ export const NAV_LINKS = [
 ];
 export const NAV_CTA = { href: "/", texto: "Diagnóstico gratuito →" };
 
-// Mismo diseño que el nav de campuslatina.com (identidad petróleo y coral), con zonas táctiles de 44 px.
+// Mismo diseño que el nav de campuslatina.com (identidad petróleo y ámbar), con zonas táctiles de 44 px.
 export const SITE_HEADER_CSS = `
 .cl-nav{position:sticky;top:0;z-index:1000;background:rgba(255,255,255,.97);border-bottom:1px solid #D5E3E5;font-family:'Schibsted Grotesk',system-ui,sans-serif}
 .cl-nav-in{max-width:1200px;margin:0 auto;padding:0 clamp(20px,5vw,64px);height:72px;display:flex;align-items:center;justify-content:space-between}

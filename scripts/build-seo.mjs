@@ -59,7 +59,7 @@ main{max-width:780px;margin:0 auto;padding:40px 20px 64px}
 .crumbs a{color:#4D6166;display:inline-flex;align-items:center;min-height:44px}
 .eyebrow{font:600 12px/1.4 'CL Etiquetas',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#4D6166;margin:0}
 h1{font:700 clamp(34px,5.5vw,54px)/1.04 'Schibsted Grotesk',sans-serif;letter-spacing:-.03em;margin:12px 0 22px;text-wrap:balance}
-h1 em,h2 em{font-family:Newsreader,Georgia,serif;font-weight:400;font-style:italic;background:linear-gradient(transparent 60%,#FFB9A8 60%,#FFB9A8 92%,transparent 92%);padding:0 .06em}
+h1 em,h2 em{font-family:Newsreader,Georgia,serif;font-weight:400;font-style:italic;background:linear-gradient(transparent 60%,#FFCF8A 60%,#FFCF8A 92%,transparent 92%);padding:0 .06em}
 h2{font:700 28px/1.15 'Schibsted Grotesk',sans-serif;letter-spacing:-.02em;margin:56px 0 16px;padding-top:16px;border-top:2px solid #0A2329;text-wrap:balance}
 h3{font-size:19px;line-height:1.35;margin:0 0 6px}
 .lead{font-size:20px;line-height:1.6;color:#1F3A40}
@@ -103,7 +103,7 @@ footer a{display:inline-flex;align-items:center;min-height:44px}
 // Campo de líneas quieto para el bloque de cierre (mismo trazado que la tapa del informe).
 const campoSvg = () => {
   const { lineas, puntos } = trazosCampo(300, 110);
-  return `<svg viewBox="0 0 300 110" preserveAspectRatio="none" aria-hidden="true">${lineas.map((l) => `<path d="${l.d}" stroke="#7FD6DE" stroke-opacity="${l.opacidad}" stroke-width="${l.ancho * 2.2}" fill="none" vector-effect="non-scaling-stroke"/>`).join("")}${puntos.filter((q) => q.coral).map((q) => `<circle cx="${q.cx}" cy="${q.cy}" r="1.4" fill="#FF6B4A"/>`).join("")}</svg>`;
+  return `<svg viewBox="0 0 300 110" preserveAspectRatio="none" aria-hidden="true">${lineas.map((l) => `<path d="${l.d}" stroke="#7FD6DE" stroke-opacity="${l.opacidad}" stroke-width="${l.ancho * 2.2}" fill="none" vector-effect="non-scaling-stroke"/>`).join("")}${puntos.filter((q) => q.llega).map((q) => `<circle cx="${q.cx}" cy="${q.cy}" r="1.4" fill="#FFAE4A"/>`).join("")}</svg>`;
 };
 const num2 = (n) => String(n).padStart(2, "0");
 const escalon = (n) => `<span class="esc" aria-hidden="true">${[1, 2, 3, 4].map((k) => `<i${k <= n ? ' class="on"' : ""}></i>`).join("")}</span>`;
