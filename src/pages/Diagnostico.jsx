@@ -43,8 +43,8 @@ function Welcome({onStart}){
   useEffect(()=>{try{setEnCurso(JSON.parse(localStorage.getItem("diag-en-curso")||"null"));}catch{/* nada que retomar */}},[]);
   // Responsive con CSS (clases wl-* en index.html), no con JavaScript: así el HTML prerenderizado
   // es uno solo para celular y escritorio (sin contenido duplicado para buscadores).
-  // Precarga el selector de teléfono (pesado) mientras se lee la bienvenida.
-  useEffect(()=>{const t=setTimeout(()=>{import("../components/PhoneField.jsx");},1500);return()=>clearTimeout(t);},[]);
+  // Precarga el selector de teléfono (pesado) con la primera interacción: llega antes del registro sin frenar la carga.
+  useEffect(()=>{const pre=()=>{import("../components/PhoneField.jsx");};const ev=["pointerdown","keydown","touchstart"];ev.forEach(e=>addEventListener(e,pre,{once:true,passive:true}));return()=>ev.forEach(e=>removeEventListener(e,pre));},[]);
 
   const BENEFICIOS=[
     ["Dónde se van los aspirantes","Los 7 momentos del recorrido, de un vistazo: dónde el proceso es fuerte y dónde se pierden inscriptos."],

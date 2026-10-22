@@ -8,8 +8,11 @@ export const GA_ID = "G-3R3PVW6BMY";
 export const GA_SNIPPET = `<script>
 (function () {
   if (location.hostname !== "diagnostico.campuslatina.com" || location.pathname.indexOf("/admin") === 0) return;
-  var s = document.createElement("script"); s.async = true;
-  s.src = "https://www.googletagmanager.com/gtag/js?id=${GA_ID}"; document.head.appendChild(s);
+  // La librería se carga después de la carga de la página (no frena la primera pintura); los eventos esperan en dataLayer.
+  addEventListener("load", function () { setTimeout(function () {
+    var s = document.createElement("script"); s.async = true;
+    s.src = "https://www.googletagmanager.com/gtag/js?id=${GA_ID}"; document.head.appendChild(s);
+  }, 1200); });
   window.dataLayer = window.dataLayer || [];
   window.gtag = function () { dataLayer.push(arguments); };
   gtag("js", new Date());
