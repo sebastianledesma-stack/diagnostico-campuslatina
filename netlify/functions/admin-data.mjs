@@ -1,6 +1,5 @@
-// GET /api/admin-data  (Authorization: Bearer <access_token de Supabase Auth>)
-// Verifica la sesión del magic link, controla que el email esté en ADMIN_EMAILS
-// y devuelve todos los diagnósticos leídos con la service key.
+// GET /api/admin-data  (cookie de sesión del panel, ver /api/admin-login)
+// Devuelve todos los diagnósticos leídos con la service key.
 import { json } from "../lib/env.js";
 import { verificarAdmin } from "../lib/adminAuth.js";
 
@@ -10,7 +9,7 @@ const MAX_ROWS = 50000; // tope de seguridad
 export default async (req) => {
   if (req.method !== "GET") return json({ error: "Método no permitido" }, 405);
 
-  const { db, email, error: sinAcceso } = await verificarAdmin(req);
+  const { db, error: sinAcceso } = await verificarAdmin(req);
   if (sinAcceso) return sinAcceso;
 
   const rows = [];
@@ -28,7 +27,7 @@ export default async (req) => {
     if (data.length < PAGE || rows.length >= MAX_ROWS) break;
   }
 
-  return json({ email, diagnosticos: rows });
+  return json({ diagnosticos: rows });
 };
 
 export const config = { path: "/api/admin-data" };

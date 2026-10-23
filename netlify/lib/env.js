@@ -12,17 +12,17 @@ export const env = {
   // Link público para agendar la reunión de 45 min (Google Calendar, Calendly…).
   // Sin él, el botón abre un mail a CONTACT_EMAIL pidiendo la reunión.
   AGENDA_URL: process.env.AGENDA_URL || process.env.VITE_AGENDA_URL || "",
-  // Emails con acceso a /admin, separados por coma.
-  ADMIN_EMAILS: list(process.env.ADMIN_EMAILS),
+  // Clave compartida para entrar a /admin (la cambia quien administra el sitio; cambiarla cierra las sesiones).
+  ADMIN_CLAVE: process.env.ADMIN_CLAVE || "",
 };
 
 function list(v) {
   return String(v || "").split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
 }
 
-export function json(body, status = 200) {
+export function json(body, status = 200, headers = {}) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+    headers: { "Content-Type": "application/json", "Cache-Control": "no-store", ...headers },
   });
 }

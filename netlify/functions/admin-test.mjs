@@ -1,4 +1,4 @@
-// POST /api/admin-test  { id, es_test }  (Authorization: Bearer <access_token de Supabase Auth>)
+// POST /api/admin-test  { id, es_test }  (cookie de sesión del panel, ver /api/admin-login)
 // Marca un diagnóstico como test (o le quita la marca). Los tests no cuentan en las métricas,
 // el CSV ni el informe consolidado del panel. Necesita la columna de supabase/migrations/004_tests.sql.
 import { json } from "../lib/env.js";
@@ -9,7 +9,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export default async (req) => {
   if (req.method !== "POST") return json({ error: "Método no permitido" }, 405);
 
-  const { db, email, error: sinAcceso } = await verificarAdmin(req);
+  const { db, error: sinAcceso } = await verificarAdmin(req);
   if (sinAcceso) return sinAcceso;
 
   const body = await req.json().catch(() => ({}));
@@ -24,7 +24,7 @@ export default async (req) => {
   }
   if (!data?.length) return json({ error: "Diagnóstico no encontrado" }, 404);
 
-  console.log(`[admin-test] ${email} ${body.es_test ? "marcó" : "desmarcó"} ${body.id}`);
+  console.log(`[admin-test] ${body.es_test ? "marcado" : "desmarcado"} ${body.id}`);
   return json(data[0]);
 };
 

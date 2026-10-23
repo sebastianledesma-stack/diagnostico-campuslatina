@@ -26,7 +26,7 @@ Browser (/)                         Netlify Function /api/notify                
 
 - El navegador **solo puede INSERTAR** (RLS). No puede leer diagnósticos, ni siquiera el suyo; por eso el `id` se genera en el cliente.
 - `/api/notify` recibe **solo el id**. El destinatario sale de la base, así que el endpoint no sirve para mandar mails a terceros. Solo notifica diagnósticos creados en los últimos 30 minutos y usa claves de idempotencia de Resend para no duplicar envíos.
-- `/admin` usa magic link de Supabase. `/api/admin-data` valida el token **y** que el email esté en `ADMIN_EMAILS`, y recién ahí lee con la service key.
+- `/admin` se abre con una clave compartida (`ADMIN_CLAVE`). `/api/admin-login` la compara y deja una cookie de sesión HttpOnly, firmada con la clave, que vence a los 30 días; `/api/admin-data` y `/api/admin-test` la validan y recién ahí usan la service key. Cambiar la clave cierra todas las sesiones.
 
 ## Estructura
 
@@ -34,16 +34,15 @@ Browser (/)                         Netlify Function /api/notify                
 src/
   App.jsx                 router: / y /admin (admin se carga aparte)
   pages/Diagnostico.jsx   app_diagnostico_v3.jsx adaptada (diseño y scoring sin cambios)
-  pages/Admin.jsx         login, métricas, filtros, tabla, CSV, detalle
+  pages/Admin.jsx         clave de acceso, métricas, filtros, tabla, CSV, detalle, informe consolidado, tests
   components/ReportExtras.jsx  banner de envío + CTA de contacto del informe
   lib/scoring.js          getNivel, calcScore, calcEtapaProjected, … (lo usa también el servidor)
-  lib/supabase.js         cliente con anon key
   lib/persist.js          INSERT con reintento + llamada a /api/notify
   data/                   etapas, fricciones, recs, paises (contenido original)
   theme.js                colores de marca
 netlify/
   functions/notify.mjs      PDF + mails + flags
-  functions/admin-data.mjs  datos del panel (auth + allowlist)
+  functions/admin-*.mjs     panel: acceso con clave (login/logout), datos y marca de test
   lib/                      pdf, emails, mailer, supabaseAdmin, env, fonts.generated.js
 supabase/schema.sql       tabla, índices y RLS
 scripts/                  PDF de ejemplo y smoke tests de las functions (sin servicios reales)
@@ -72,13 +71,8 @@ node scripts/test-admin-data.mjs            # auth, allowlist y paginación del 
 ### 1. Supabase
 1. Crear el proyecto (región São Paulo es la más cercana para LATAM).
 2. **SQL Editor** → pegar y ejecutar `supabase/schema.sql`.
-3. **Authentication → Sign In / Providers → Email**: dejar habilitado. **Desactivar "Allow new users to sign up".**
-4. **Authentication → Users → Add user → Send invitation** para cada persona del equipo que use `/admin`. Sus emails también van en `ADMIN_EMAILS`.
-5. **Authentication → URL Configuration**:
-   - Site URL: `https://diagnostico.campuslatina.com`
-   - Redirect URLs: `https://diagnostico.campuslatina.com/admin`, `http://localhost:8888/admin`, `http://localhost:5173/admin`
-6. **Authentication → Emails → SMTP Settings**: configurar el SMTP de Resend (`smtp.resend.com`, puerto 465, usuario `resend`, contraseña = API key). Sin SMTP propio, Supabase solo envía magic links a miembros del proyecto y con un límite de pocos mails por hora.
-7. **Project Settings → API**: copiar `Project URL`, `anon public` y `service_role` (esta última es secreta).
+3. **Authentication → Sign In / Providers → Email**: **desactivar "Allow new users to sign up".** El panel ya no usa Supabase Auth (entra con `ADMIN_CLAVE`).
+4. **Project Settings → API**: copiar `Project URL`, `anon public` y `service_role` (esta última es secreta).
 
 ### 2. Resend
 1. **Domains → Add domain** `campuslatina.com` y cargar en el DNS los registros SPF/DKIM que indica. Esperar a que figure *Verified*.
@@ -102,16 +96,16 @@ node scripts/test-admin-data.mjs            # auth, allowlist y paginación del 
 | `MAIL_INTERNAL_TO` | functions | quién recibe el aviso de cada diagnóstico (coma para varios) |
 | `CONTACT_EMAIL` | functions | Reply-To del informe y botón "Hablemos" |
 | `SITE_URL` | functions | `https://diagnostico.campuslatina.com` |
-| `ADMIN_EMAILS` | functions | emails con acceso a `/admin` (coma para varios) |
+| `ADMIN_CLAVE` | functions (**secreta**) | clave compartida para entrar a `/admin` (larga; cambiarla cierra las sesiones abiertas) |
 
    Las `VITE_*` se incrustan al compilar: si cambian hay que **redeployar**.
-   Marcar `SUPABASE_SERVICE_KEY` y `RESEND_API_KEY` como *secret* y con alcance *Functions*.
+   Marcar `SUPABASE_SERVICE_KEY`, `RESEND_API_KEY` y `ADMIN_CLAVE` como *secret* y con alcance *Functions*.
 4. **Domain management → Add domain** `diagnostico.campuslatina.com` → crear en el DNS el `CNAME` que indica Netlify. HTTPS se emite solo (Let's Encrypt).
 
 ### 4. Verificación post-deploy
 - [ ] Completar un diagnóstico real con un email propio → llega el mail con el PDF adjunto y llega el aviso interno.
 - [ ] En Supabase → Table editor: la fila tiene `mail_enviado = true` y `notif_enviada = true`.
-- [ ] `/admin` → pedir magic link → entra y lista el diagnóstico. Un email que no está en `ADMIN_EMAILS` ve "sin acceso".
+- [ ] `/admin` → ingresar con `ADMIN_CLAVE` → lista el diagnóstico. Con otra clave dice "La clave no es correcta".
 - [ ] Netlify → Functions → `notify` → revisar los logs (ahí quedan los errores de Resend y del PDF).
 
 ## Pendiente / decisiones abiertas

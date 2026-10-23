@@ -4,7 +4,6 @@ import { NAVY, NAVY_DK, EMERALD, SLATE, CREAM, WHITE, ORANGE_TXT } from "../them
 import { ETAPAS_DATA } from "../data/etapas.js";
 import { getNivel, fmt1 } from "../lib/scoring.js";
 import { textoRango, RANGOS_ALUMNOS } from "../data/calificacion.js";
-import { supabase, authRedirectError, isRecoveryLink } from "../lib/supabase.js";
 import { baseConsolidado, datosConsolidado, htmlConsolidado, MIN_GRUPO } from "../lib/informeConsolidado.js";
 
 const NIVELES = ["Inicial", "En desarrollo", "Consolidado", "Avanzado"];
@@ -23,19 +22,9 @@ const etapasListas = (r) => ETAPAS_DATA.filter((e) => e.preguntas.every((_, i) =
 const pareceTest = (r) => /@(campuslatina|campusargentina)\.com$/i.test(r.email || "") || /\b(tests?|pruebas?|demo|testing)\b/i.test(`${r.universidad} ${r.nombre}`);
 const fmtFechaHora = (iso) => new Date(iso).toLocaleString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
 
-// ── AUTH ─────────────────────────────────────────────────
-function useSession() {
-  const [session, setSession] = useState(undefined);
-  useEffect(() => {
-    if (!supabase) { setSession(null); return; }
-    supabase.auth.getSession().then(({ data }) => setSession(data.session));
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
-    return () => sub.subscription.unsubscribe();
-  }, []);
-  return session;
-}
-
-function Shell({ children, email, onLogout }) {
+// ── ACCESO ───────────────────────────────────────────────
+// Una clave compartida: /api/admin-login la valida y deja una cookie de sesión (HttpOnly) por 30 días.
+function Shell({ children, onLogout }) {
   return (
     <div style={{ minHeight: "100vh", background: CREAM, fontFamily: "'Schibsted Grotesk',sans-serif", color: NAVY }}>
       <div style={{ background: NAVY_DK, padding: "14px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
@@ -43,12 +32,7 @@ function Shell({ children, email, onLogout }) {
           <span style={mono(9, EMERALD)}>Campus Latina · Panel</span>
           <div style={{ fontFamily: "'CL Titulos',serif", fontSize: 20, color: WHITE }}>Diagnósticos de inscripción</div>
         </div>
-        {email && (
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <span style={{ fontSize: 12, color: "rgba(255,255,255,.55)" }}>{email}</span>
-            <button onClick={onLogout} style={{ ...btn(false), background: "transparent", color: WHITE, borderColor: "rgba(255,255,255,.2)", minHeight: 36 }}>Salir</button>
-          </div>
-        )}
+        {onLogout && <button onClick={onLogout} style={{ ...btn(false), background: "transparent", color: WHITE, borderColor: "rgba(255,255,255,.2)", minHeight: 36 }}>Salir</button>}
       </div>
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "24px 16px 48px" }}>{children}</div>
     </div>
@@ -56,7 +40,6 @@ function Shell({ children, email, onLogout }) {
 }
 
 const alerta = { fontSize: 13, color: "#CC3333", background: "#FFF0F0", borderRadius:2, padding: "10px 12px", margin: "0 0 14px", lineHeight: 1.5 };
-const ok = { fontSize: 14, color: "#1F3A40", background: "rgba(127,214,222,.08)", borderRadius:2, padding: "10px 12px", margin: "0 0 14px", lineHeight: 1.6 };
 const label = { ...mono(10, NAVY), fontWeight: 700, display: "block", marginBottom: 6 };
 
 function Card({ titulo, children }) {
@@ -69,119 +52,36 @@ function Card({ titulo, children }) {
   );
 }
 
-function traducirError(error) {
-  if (error.status === 429 || /security purposes|rate limit/i.test(error.message)) return "Hiciste varios pedidos seguidos. Esperá un minuto y volvé a intentar.";
-  if (/invalid login credentials/i.test(error.message)) return "Email o contraseña incorrectos.";
-  if (/email not confirmed/i.test(error.message)) return "Tu usuario todavía no está confirmado en Supabase.";
-  if (/should be different/i.test(error.message)) return "La contraseña nueva tiene que ser distinta de la anterior.";
-  if (/at least|weak|short/i.test(error.message)) return "La contraseña es muy corta o débil. Usá al menos 8 caracteres.";
-  return error.message;
-}
-
-function Login() {
-  const [modo, setModo] = useState("clave"); // clave | recuperar
-  const [email, setEmail] = useState("");
+function Login({ onListo }) {
   const [clave, setClave] = useState("");
-  const [estado, setEstado] = useState("idle"); // idle | enviando | enviado | error
+  const [estado, setEstado] = useState("idle"); // idle | enviando | error
   const [msg, setMsg] = useState("");
 
   const ingresar = async (e) => {
     e.preventDefault();
     setEstado("enviando");
-    const { error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password: clave });
-    if (error) { setEstado("error"); setMsg(traducirError(error)); return; }
-    // onAuthStateChange lleva al panel
+    try {
+      const res = await fetch("/api/admin-login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ clave }) });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+      onListo();
+    } catch (err) {
+      setEstado("error");
+      setMsg(err.message === "Clave incorrecta" ? "La clave no es correcta." : `No pudimos ingresar: ${err.message}`);
+      setClave("");
+    }
   };
-
-  const recuperar = async (e) => {
-    e.preventDefault();
-    setEstado("enviando");
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), { redirectTo: `${window.location.origin}/admin` });
-    if (error) { setEstado("error"); setMsg(traducirError(error)); return; }
-    setEstado("enviado");
-  };
-
-  const cambiarModo = (m) => { setModo(m); setEstado("idle"); setMsg(""); setClave(""); };
-  const campoEmail = (
-    <>
-      <label htmlFor="admin-email" style={label}>Email</label>
-      <input id="admin-email" type="email" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="vos@campuslatina.com" style={{ ...input, background: CREAM }} />
-    </>
-  );
-  const linkBtn = { background: "none", border: "none", padding: 0, color: NAVY, textDecoration: "underline", cursor: "pointer", fontSize: 13, fontFamily: "'Schibsted Grotesk',sans-serif", marginTop: 14 };
-
-  if (modo === "recuperar") {
-    return (
-      <Card titulo="Crear o recuperar contraseña">
-        {estado === "enviado" ? (
-          <p style={ok}>Si <strong>{email}</strong> tiene acceso, te llegó un mail con un link para elegir tu contraseña. Usá el último mail que recibas.</p>
-        ) : (
-          <form onSubmit={recuperar}>
-            <p style={{ fontSize: 14, color: MUTED, lineHeight: 1.6, marginTop: 0 }}>Te mandamos un link por mail para que elijas una contraseña nueva.</p>
-            {campoEmail}
-            {estado === "error" && <p role="alert" style={{ ...alerta, margin: "10px 0 0" }}>{msg}</p>}
-            <button type="submit" disabled={estado === "enviando"} style={{ ...btn(true), width: "100%", marginTop: 16, opacity: estado === "enviando" ? 0.6 : 1 }}>
-              {estado === "enviando" ? "Enviando…" : "Enviarme el link →"}
-            </button>
-          </form>
-        )}
-        <button type="button" onClick={() => cambiarModo("clave")} style={linkBtn}>← Volver a ingresar</button>
-      </Card>
-    );
-  }
 
   return (
     <Card titulo="Ingresar al panel">
-      {authRedirectError && (
-        <p role="alert" style={alerta}>
-          {authRedirectError.code === "otp_expired"
-            ? "Ese link ya se usó o venció. Pedí uno nuevo y abrí el último mail que te llegue."
-            : `No pudimos iniciar sesión: ${authRedirectError.message || authRedirectError.code}`}
-        </p>
-      )}
       <form onSubmit={ingresar}>
-        {campoEmail}
-        <label htmlFor="admin-clave" style={{ ...label, marginTop: 14 }}>Contraseña</label>
-        <input id="admin-clave" type="password" autoComplete="current-password" required value={clave} onChange={(e) => setClave(e.target.value)} style={{ ...input, background: CREAM }} />
+        {/* Usuario fijo y oculto: así el gestor de contraseñas del navegador puede recordar la clave. */}
+        <input type="text" name="username" autoComplete="username" value="panel-diagnosticos" readOnly hidden />
+        <label htmlFor="admin-clave" style={label}>Clave de acceso</label>
+        <input id="admin-clave" type="password" autoComplete="current-password" required autoFocus value={clave} onChange={(e) => setClave(e.target.value)} style={{ ...input, background: CREAM }} />
         {estado === "error" && <p role="alert" style={{ ...alerta, margin: "10px 0 0" }}>{msg}</p>}
         <button type="submit" disabled={estado === "enviando"} style={{ ...btn(true), width: "100%", marginTop: 16, opacity: estado === "enviando" ? 0.6 : 1 }}>
           {estado === "enviando" ? "Ingresando…" : "Ingresar →"}
-        </button>
-      </form>
-      <button type="button" onClick={() => cambiarModo("recuperar")} style={linkBtn}>¿Primera vez u olvidaste tu contraseña?</button>
-    </Card>
-  );
-}
-
-// Se muestra al entrar desde el link de "crear/recuperar contraseña".
-function NuevaClave({ email, onListo }) {
-  const [clave, setClave] = useState("");
-  const [repetir, setRepetir] = useState("");
-  const [estado, setEstado] = useState("idle");
-  const [msg, setMsg] = useState("");
-
-  const guardar = async (e) => {
-    e.preventDefault();
-    if (clave.length < 8) { setEstado("error"); setMsg("Usá al menos 8 caracteres."); return; }
-    if (clave !== repetir) { setEstado("error"); setMsg("Las contraseñas no coinciden."); return; }
-    setEstado("enviando");
-    const { error } = await supabase.auth.updateUser({ password: clave });
-    if (error) { setEstado("error"); setMsg(traducirError(error)); return; }
-    onListo();
-  };
-
-  return (
-    <Card titulo="Elegí tu contraseña">
-      <form onSubmit={guardar}>
-        <p style={{ fontSize: 14, color: MUTED, lineHeight: 1.6, marginTop: 0 }}>Para <strong>{email}</strong>. Mínimo 8 caracteres.</p>
-        <input type="email" autoComplete="username" value={email} readOnly hidden />
-        <label htmlFor="nueva-clave" style={label}>Contraseña nueva</label>
-        <input id="nueva-clave" type="password" autoComplete="new-password" required value={clave} onChange={(e) => setClave(e.target.value)} style={{ ...input, background: CREAM }} />
-        <label htmlFor="repetir-clave" style={{ ...label, marginTop: 14 }}>Repetila</label>
-        <input id="repetir-clave" type="password" autoComplete="new-password" required value={repetir} onChange={(e) => setRepetir(e.target.value)} style={{ ...input, background: CREAM }} />
-        {estado === "error" && <p role="alert" style={{ ...alerta, margin: "10px 0 0" }}>{msg}</p>}
-        <button type="submit" disabled={estado === "enviando"} style={{ ...btn(true), width: "100%", marginTop: 16, opacity: estado === "enviando" ? 0.6 : 1 }}>
-          {estado === "enviando" ? "Guardando…" : "Guardar y entrar →"}
         </button>
       </form>
     </Card>
@@ -553,7 +453,7 @@ function InformeConsolidado({ rows }) {
 // ── PANEL ────────────────────────────────────────────────
 const SIN_FILTROS = { q: "", estado: "", pais: "", nivel: "", desde: "", hasta: "" };
 
-function Panel({ session }) {
+function Panel({ onSinSesion }) {
   const [rows, setRows] = useState(null);
   const [error, setError] = useState("");
   const [aviso, setAviso] = useState(null);
@@ -567,15 +467,16 @@ function Panel({ session }) {
   const cargar = useCallback(async () => {
     setError("");
     try {
-      const res = await fetch("/api/admin-data", { headers: { Authorization: `Bearer ${session.access_token}` } });
+      const res = await fetch("/api/admin-data");
+      if (res.status === 401) return onSinSesion();
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
       setRows(data.diagnosticos);
     } catch (err) {
-      setError(err.message === "Sin acceso al panel" ? "Tu email no tiene acceso al panel. Pedí que lo agreguen a ADMIN_EMAILS." : `No pudimos cargar los diagnósticos: ${err.message}`);
+      setError(`No pudimos cargar los diagnósticos: ${err.message}`);
       setRows([]);
     }
-  }, [session.access_token]);
+  }, [onSinSesion]);
 
   // Se marca en pantalla al instante y se vuelve atrás si el servidor no lo guarda.
   const marcarTest = useCallback(async (r, valor) => {
@@ -584,9 +485,10 @@ function Panel({ session }) {
     try {
       const res = await fetch("/api/admin-test", {
         method: "POST",
-        headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: r.id, es_test: valor }),
       });
+      if (res.status === 401) { setRows((rs) => rs.map((x) => (x.id === r.id ? { ...x, es_test: r.es_test } : x))); return onSinSesion(); }
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
       setAviso({
@@ -597,7 +499,7 @@ function Panel({ session }) {
       setRows((rs) => rs.map((x) => (x.id === r.id ? { ...x, es_test: r.es_test } : x)));
       setError(`No pudimos ${valor ? "marcarlo como test" : "quitarle la marca de test"}: ${err.message}`);
     }
-  }, [session.access_token]);
+  }, [onSinSesion]);
   const cerrarAviso = useCallback(() => setAviso(null), []);
 
   useEffect(() => { cargar(); }, [cargar]);
@@ -781,22 +683,16 @@ function Panel({ session }) {
 }
 
 export default function Admin() {
-  const session = useSession();
-  const [recuperando, setRecuperando] = useState(isRecoveryLink);
-  const logout = () => supabase.auth.signOut();
-
-  // Si el evento llega después de montar (no siempre pasa: el cliente puede procesar el link antes).
-  useEffect(() => {
-    if (!supabase) return;
-    const { data: sub } = supabase.auth.onAuthStateChange((ev) => { if (ev === "PASSWORD_RECOVERY") setRecuperando(true); });
-    return () => sub.subscription.unsubscribe();
-  }, []);
+  // El panel prueba la sesión al cargar los datos: sin cookie válida, /api/admin-data responde 401 y se pide la clave.
+  const [acceso, setAcceso] = useState("panel"); // panel | clave
+  const pedirClave = useCallback(() => setAcceso("clave"), []);
+  const salir = async () => {
+    await fetch("/api/admin-logout", { method: "POST" }).catch(() => {});
+    setAcceso("clave");
+  };
 
   useEffect(() => { document.title = "Panel · Diagnósticos Campus Latina"; }, []);
 
-  if (!supabase) return <Shell><p>Falta configurar <code>VITE_SUPABASE_URL</code> y <code>VITE_SUPABASE_ANON_KEY</code>.</p></Shell>;
-  if (session === undefined) return <Shell><p style={{ color: MUTED }}>Cargando…</p></Shell>;
-  if (!session) return <Shell><Login /></Shell>;
-  if (recuperando) return <Shell><NuevaClave email={session.user.email} onListo={() => setRecuperando(false)} /></Shell>;
-  return <Shell email={session.user.email} onLogout={logout}><Panel session={session} /></Shell>;
+  if (acceso === "clave") return <Shell><Login onListo={() => setAcceso("panel")} /></Shell>;
+  return <Shell onLogout={salir}><Panel onSinSesion={pedirClave} /></Shell>;
 }

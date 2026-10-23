@@ -7,7 +7,7 @@ function apiLocal() {
   const rutas = [
     [/^\/api\/diagnostico$/, "diagnostico", () => ({})],
     [/^\/api\/d\/([^/]+)(?:\/([^/]+))?$/, "diagnostico", (m) => ({ clave: m[1], accion: m[2] })],
-    [/^\/api\/(notify|guardar|admin-data|admin-test)$/, null, () => ({})],
+    [/^\/api\/(notify|guardar|admin-data|admin-test|admin-login|admin-logout)$/, null, () => ({})],
     // Con `npm run taller:local` el informe lo atiende la base local (scripts/taller-local.mjs).
     ...(process.env.TALLER_LOCAL ? [] : [[/^\/api\/taller\/informe$/, "taller-informe", () => ({})]]),
   ];
