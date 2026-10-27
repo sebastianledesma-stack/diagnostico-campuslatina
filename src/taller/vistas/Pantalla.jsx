@@ -4,7 +4,7 @@ import { Qr } from "../Qr.jsx";
 import { HERRAMIENTA, ETAPAS_DATA, urlParticipante, urlCorta } from "../datos.js";
 import { Pie } from "./proyector.jsx";
 import { EtapaAbierta, ResultadoEtapa, IdeasEtapa } from "./ProyeccionEtapa.jsx";
-import { ViajeSala, RecorridoSala } from "./ProyeccionCierre.jsx";
+import { ViajeSala, RecorridoSala, InformeSala } from "./ProyeccionCierre.jsx";
 
 const RECORRIDO = ["estadisticas", "mapa"];
 
@@ -21,6 +21,7 @@ export function Pantalla({ datos, onElegir }) {
   }
   if (datos.fase === "cierre") {
     if (RECORRIDO.includes(datos.vista)) return <RecorridoSala datos={datos} plan={datos.vista === "mapa"} />;
+    if (datos.vista === "informe") return <InformeSala datos={datos} />;
     return <ViajeSala datos={datos} />;
   }
   return <Espera datos={datos} />;

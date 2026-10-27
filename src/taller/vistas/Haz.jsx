@@ -4,15 +4,11 @@
 // al final se encienden en ámbar (el destaque de la marca). Cuando cambian los puntajes (hoy → con las ideas), el haz se abre de
 // a poco. Es una ilustración del puntaje, no una medición. Con movimiento reducido se dibuja quieto.
 import { useEffect, useRef } from "react";
+import { N, FIN, retencion, acumulada, anchoEn } from "../recorrido.js";
+
+export { posEtapa } from "../recorrido.js";
 
 const PETROLEO = [11, 100, 112], AMBAR = [240, 140, 26], PERDIDA = [154, 168, 171]; // ámbar: #F08C1A, sobre fondo claro
-const N = 7;
-export const FIN = 0.93;                            // el haz ocupa el 93 % del largo; el resto es la llegada
-export const posEtapa = (i) => FIN * (i + 0.5) / N; // centro de cada etapa, para ubicar los rótulos
-const PERDIDA_MAX = 0.36;                           // con puntaje 1 la etapa retiene el 64 %; con 5, todos siguen
-const retencion = (s) => 1 - PERDIDA_MAX * (5 - Math.max(1, Math.min(5, s || 1))) / 4;
-const acumulada = (ps) => { let c = 1; return ps.map((s) => (c *= retencion(s))); };
-const suave = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 const mezcla = (a, b, t) => a.map((v, k) => Math.round(v + (b[k] - v) * t));
 const sinMovimiento = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -33,18 +29,8 @@ export function Haz({ puntajes, ancho = 1696, alto = 480 }) {
     const lineas = Array.from({ length: 30 }, (_, k) => ({ v: -1 + 2 * k / 29, ph: R() * 6.28, f: 1.5 + R() * 2.5, a: 0.1 + R() * 0.13, w: 0.7 + R() * 0.8 }));
     let P = [];
     const centro = H * 0.44, semi = H * 0.38;
-    // Ancho relativo del haz en u (0–1 sobre el tramo de etapas): baja a la retención acumulada en cada etapa.
-    const anchoEn = (u) => {
-      let w = 1;
-      for (let i = 0; i < N; i++) {
-        const c = (i + 0.5) / N, a = c - 0.03, b = c + 0.05;
-        if (u <= a) return w;
-        if (u < b) return w + (cum[i] - w) * suave(a, b, u);
-        w = cum[i];
-      }
-      return w;
-    };
-    const punto = (u, v, onda = 0) => [Math.min(u, 1.05) * FIN * W, centro + v * semi * (0.1 + 0.9 * anchoEn(Math.min(u, 1))) + onda];
+    const anchoU = (u) => anchoEn(cum, u);
+    const punto = (u, v, onda = 0) => [Math.min(u, 1.05) * FIN * W, centro + v * semi * (0.1 + 0.9 * anchoU(Math.min(u, 1))) + onda];
     const nacer = () => {
       const ps = objetivo.current; let cae = N;
       for (let i = 0; i < N; i++) if (R() > retencion(ps[i])) { cae = i; break; }

@@ -16,7 +16,7 @@ Son la sesión de código `REALCUP` con direcciones fijas, sin código que escri
 
 | Quién | Dirección | Para qué |
 |---|---|---|
-| Asistente (teléfono) | `diagnostico.campuslatina.com/s/<CÓDIGO>` | Entra por el QR, sin login ni datos. Responde las 4 preguntas de la etapa abierta. En los resultados ve solo el puntaje de la sala y su mirada al lado (el detalle está en la pantalla del salón) y, al final, el formulario para recibir el PDF. |
+| Asistente (teléfono) | `diagnostico.campuslatina.com/s/<CÓDIGO>` | Entra por el QR, sin login ni datos. Responde las 4 preguntas de la etapa abierta. En los resultados ve su mirada en grande y el puntaje de la sala al lado (el detalle está en la pantalla del salón) y, al final, el formulario para recibir el PDF; una vez enviado, el formulario se esconde y queda solo la opción de corregir el email. |
 | Expositor (escritorio) | `diagnostico.campuslatina.com/f/<CÓDIGO>` | Lo que se proyecta en el salón, con una barra de controles que aparece al mover el mouse. Pide la clave de la sesión. |
 
 Además:
@@ -64,7 +64,7 @@ Corre las pruebas de la base (permisos, flujo, topes del email) y de los cálcul
 
 Usa el mismo Supabase, Resend y Netlify que el diagnóstico (ver [README.md](README.md)). Las tablas del taller son propias (`taller_*`) y están separadas de los diagnósticos.
 
-1. **Supabase → SQL Editor:** pegar y ejecutar [supabase/migrations/003_taller.sql](supabase/migrations/003_taller.sql). Crea las tablas, las funciones y el bucket privado `taller-informes`, donde quedan los PDF enviados. Se puede correr dos veces sin problema.
+1. **Supabase → SQL Editor:** pegar y ejecutar [supabase/migrations/003_taller.sql](supabase/migrations/003_taller.sql). Crea las tablas, las funciones y el bucket privado `taller-informes`, donde quedan los PDF enviados. Si la base ya tenía el taller, ejecutar además [006_taller_informe.sql](supabase/migrations/006_taller_informe.sql), que suma el paso «El informe» del cierre. Las dos se pueden correr dos veces sin problema.
 2. **Variables de entorno:** no hace falta ninguna nueva. El email usa `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `RESEND_API_KEY` y `MAIL_FROM`, las mismas del diagnóstico. Si se quiere otro remitente para el taller, cambiar `MAIL_FROM`.
 3. **Deploy:** las rutas `/s`, `/f`, `/p` y `/realcup2026` ya están en [netlify.toml](netlify.toml) y se sirven con `taller.html`, fuera de buscadores y sin Analytics. El envío del PDF es la function `/api/taller/informe`.
 4. **Sesión de demo en producción (opcional):** en el SQL Editor, `select public.taller_sembrar('DEMO', 'una-clave-larga');`. Para dejarla en el cierre, agregar `p_cierre => true`.
@@ -98,14 +98,14 @@ Usa el mismo Supabase, Resend y Netlify que el diagnóstico (ver [README.md](REA
 | Mover el mouse | Muestra la barra: código, conectados, quiénes respondieron, anterior y siguiente, **Etapas** y **Más** |
 | **Etapas** | Saltar a cualquier etapa: abrirla, reabrirla o ver sus resultados; ir al resultado final |
 | **Más** | Volver al QR, copiar el link, abrir la pantalla espejo, exportar CSV con emails, simular respuestas (solo en sesiones de prueba) |
-| En **Ideas para subir** | Clic en una idea para elegirla o quitarla; **Elegir todas** o **Ninguna** |
+| En **Ideas para subir** | Clic en una idea para elegirla o quitarla (de a una) |
 
 Los pasos, en orden:
 1. Pantalla del QR.
 2. Por cada etapa: **etapa abierta** (contador en vivo) → **resultado** → **ideas para subir**.
-3. **Resultado final: el viaje** → **el recorrido** → **con las ideas**.
+3. **Resultado final: el viaje** → **el recorrido** → **con las ideas** → **el informe**.
 
-La pantalla proyectada va en fondo claro. En el resultado de una etapa, cada pregunta tiene una barra con el promedio de la sala sobre la escala de 1 a 5, con los 4 niveles de fondo; la más baja va más oscura y con el rótulo "La más baja". En el cierre, **el viaje** muestra las 7 etapas como un recorrido (petróleo, hoy; ámbar punteado, con las ideas elegidas) y **el recorrido** es el haz del diagnóstico con los puntajes de la sala: en cada etapa se angosta según su puntaje y los aspirantes que llegan se encienden en ámbar. Al pasar a **con las ideas**, el haz se abre en movimiento. Es ilustrativo y lo dice en pantalla.
+La pantalla proyectada va en fondo claro. En el resultado de una etapa, cada pregunta tiene una barra con el promedio de la sala sobre la escala de 1 a 5, con los 4 niveles de fondo; la más baja va más oscura y con el rótulo "La más baja". En el cierre, **el viaje** muestra las 7 etapas como un recorrido (petróleo, hoy; ámbar punteado, con las ideas elegidas) y **el recorrido** es el haz del diagnóstico con los puntajes de la sala: en cada etapa se angosta según su puntaje y los aspirantes que llegan se encienden en ámbar. Arriba a la derecha, cuántos de cada 100 aspirantes llegarían a inscribirse con ese recorrido; al pasar a **con las ideas**, el haz se abre en movimiento y el número sube. Es ilustrativo y lo dice en pantalla. **El informe** muestra 4 páginas de ejemplo del PDF que recibe cada asistente (imágenes en `public/taller/`; si cambia el PDF, regenerarlas).
 
 "Mostrar resultados" cierra la etapa: lo que llegue después ya no cuenta. En los teléfonos no aparece nada hasta que ustedes muestran los resultados.
 
@@ -129,7 +129,7 @@ Cada etapa lleva unos 9 minutos: 2 para responder, 3 para el resultado y 4 para 
 | 1:11 | El viaje: las 7 etapas, hoy y con las ideas elegidas | **→** Resultado final | Dónde se pierden más aspirantes y cuánto subiría la sala con lo elegido. |
 | 1:17 | El recorrido, hoy | **→** | Cuántos aspirantes quedan en el camino en las universidades de la sala. |
 | 1:20 | El recorrido, con las ideas | **→** | El haz se abre: lo que cambia si se aplican las ideas que eligió la sala. |
-| 1:25 | El recorrido, con las ideas | — | Invitar a mirar el teléfono: su mirada frente a la sala, y el email para recibir el PDF (puede llegar a Notificaciones o a Spam). |
+| 1:24 | El informe | **→** | Qué le llega a cada uno por email. Invitar a mirar el teléfono: su mirada frente a la sala, y el email para recibir el PDF (puede llegar a Notificaciones o a Spam). |
 | 1:30 | — | **Más → Exportar CSV** (después del taller) | Cierre. |
 
 ## Si algo sale mal
@@ -160,7 +160,7 @@ Cada etapa lleva unos 9 minutos: 2 para responder, 3 para el resultado y 4 para 
 ## Datos
 
 - **Respuestas:** se guardan con un identificador anónimo que genera el teléfono.
-- **Emails:** si la persona pide el PDF, el email queda guardado junto a sus respuestas (tabla `taller_envios`) y el PDF en el bucket `taller-informes`. Nada individual aparece en la pantalla del salón; los emails solo salen en el CSV del expositor.
+- **Emails:** si la persona pide el PDF, el email queda guardado junto a sus respuestas (tabla `taller_envios`) y el PDF en el bucket `taller-informes`. Nada individual aparece en la pantalla del salón; los emails solo salen en el CSV del expositor y en el panel `/admin`, solapa **Taller REALCUP**, donde cada persona se identifica con su email (o queda anónima, con su número, si no pidió el PDF).
 - **Topes del envío:** se puede pedir el informe solo después del resultado final, hasta 3 veces por persona y 600 por sesión.
 
 ## Archivos
@@ -176,6 +176,7 @@ src/taller/
   api.js · useParticipante.js · usePanel.js   conexión con la base (consultas cada 2–3 s, cola sin conexión)
 supabase/migrations/003_taller.sql   tablas, funciones, permisos, simulación, siembra de la demo
 netlify/functions/taller-informe.mjs  envío del PDF por email
-netlify/lib/pdfTaller.js · tallerInforme.js   PDF y proceso del envío
+netlify/lib/pdfTaller.js · tallerInforme.js   PDF y proceso del envío (su mirada, la sala, el recorrido, qué mide cada etapa, ideas)
+src/taller/recorrido.js         modelo ilustrativo del recorrido (haz y «de cada 100»), compartido por la pantalla y el PDF
 scripts/taller-local.mjs · taller-sembrar.mjs · test-taller.mjs   base local, demo y pruebas
 ```

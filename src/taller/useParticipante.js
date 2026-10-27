@@ -21,7 +21,7 @@ function uuid() {
 function leerLocal(codigo) {
   let d = null;
   try { d = JSON.parse(localStorage.getItem(KEY(codigo)) || "null"); } catch { /* sin acceso: se arranca de cero */ }
-  return { id: d?.id || uuid(), cola: d?.cola || {}, email: d?.email || "" };
+  return { id: d?.id || uuid(), cola: d?.cola || {}, email: d?.email || "", enviado: d?.enviado || "" };
 }
 function guardarLocal(codigo, d) {
   try { localStorage.setItem(KEY(codigo), JSON.stringify(d)); } catch { /* modo privado: vale solo esta pestaña */ }
@@ -127,11 +127,15 @@ export function useParticipante(codigo) {
     enviarCola();
   }, [persistir, enviarCola]);
 
-  // Pide el PDF por email. Recuerda el email en el teléfono para no tener que escribirlo de nuevo.
+  // Pide el PDF por email. Recuerda el email en el teléfono para no tener que escribirlo de nuevo y,
+  // si salió bien, a qué email se envió (si recarga, sigue viendo que ya lo pidió).
   const pedirInforme = useCallback(async (email) => {
     local.current.email = email;
     persistir();
-    return api.pedirInforme(codigo, local.current.id, email);
+    const r = await api.pedirInforme(codigo, local.current.id, email);
+    local.current.enviado = email;
+    persistir();
+    return r;
   }, [codigo, persistir]);
 
   const cola = local.current.cola;
@@ -140,6 +144,7 @@ export function useParticipante(codigo) {
     respuestas: { ...(est?.mias || {}), ...cola },
     pendientes: Object.keys(cola).length,
     email: local.current.email,
+    enviado: local.current.enviado,
     responder, pedirInforme,
   };
 }

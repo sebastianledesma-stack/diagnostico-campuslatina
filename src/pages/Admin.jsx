@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { NAVY, NAVY_DK, EMERALD, SLATE, CREAM, WHITE, ORANGE_TXT } from "../theme.js";
 import { ETAPAS_DATA } from "../data/etapas.js";
-import { getNivel, fmt1 } from "../lib/scoring.js";
+import { getNivel, fmt1, calcScore } from "../lib/scoring.js";
 import { textoRango, RANGOS_ALUMNOS } from "../data/calificacion.js";
 import { baseConsolidado, datosConsolidado, htmlConsolidado, MIN_GRUPO, claveInstitucion } from "../lib/informeConsolidado.js";
 
@@ -343,9 +343,121 @@ function comparar(a, b, key) {
   return String(a[key] || "").localeCompare(String(b[key] || ""), "es", { sensitivity: "base" });
 }
 
+// ── TALLER REALCUP ───────────────────────────────────────
+// Las respuestas del Diagnóstico colectivo (taller en vivo), sesión por sesión. Cada persona se
+// identifica con el email con el que pidió el PDF; quien no lo pidió queda anónimo, con su número.
+const respondioEtapa = (r, e) => e.preguntas.some((_, q) => r[`${e.id}_${q}`]);
+const miradaTaller = (r) => {
+  const ps = ETAPAS_DATA.filter((e) => respondioEtapa(r, e)).map((e) => calcScore(r, e.id));
+  return ps.length ? ps.reduce((a, b) => a + b, 0) / ps.length : null;
+};
+
+function exportarTallerCSV(sesion, filas) {
+  const preguntas = ETAPAS_DATA.flatMap((e) => e.preguntas.map((_, i) => `${e.id}_${i}`));
+  const headers = ["persona", "email", "origen", "entro", "etapas_respondidas", "su_mirada", ...ETAPAS_DATA.map((e) => `score_${e.id}`), "informe_enviado", ...preguntas];
+  const cell = (v) => { const s = v == null ? "" : String(v); return /[";\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+  const lines = filas.map((p) => [
+    p.email || `Sin email #${p.orden}`, p.email, p.origen, fmtFechaHora(p.creado_at), ETAPAS_DATA.filter((e) => respondioEtapa(p.r, e)).length,
+    p.mirada == null ? "" : fmt1(p.mirada), ...ETAPAS_DATA.map((e) => (respondioEtapa(p.r, e) ? fmt1(calcScore(p.r, e.id)) : "")),
+    p.informe ? fmtFechaHora(p.informe) : "no", ...preguntas.map((k) => p.r[k] || ""),
+  ].map(cell).join(";"));
+  const blob = new Blob(["\ufeff" + [headers.join(";"), ...lines].join("\r\n")], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `taller-${sesion.codigo}-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+function TallerRealcup({ onSinSesion }) {
+  const [datos, setDatos] = useState(null);
+  const [codigo, setCodigo] = useState("");
+  const [error, setError] = useState("");
+  const cargar = useCallback(async (c) => {
+    setError("");
+    try {
+      const res = await fetch(`/api/admin-taller${c ? `?sesion=${encodeURIComponent(c)}` : ""}`);
+      if (res.status === 401) return onSinSesion();
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+      setDatos(data);
+      setCodigo(data.sesion?.codigo || "");
+    } catch (err) {
+      setError(`No pudimos cargar el taller: ${err.message}`);
+      setDatos((d) => d || { sesiones: [], sesion: null, participantes: [] });
+    }
+  }, [onSinSesion]);
+  useEffect(() => { cargar(""); }, [cargar]);
+
+  const filas = useMemo(() => (datos?.participantes || [])
+    .map((p) => ({ ...p, mirada: miradaTaller(p.r) }))
+    .sort((a, b) => Number(!!b.email) - Number(!!a.email) || a.orden - b.orden), [datos]);
+  if (!datos) return <p style={{ color: MUTED }}>Cargando el taller…</p>;
+  const conRespuestas = filas.filter((p) => p.mirada != null);
+  const conEmail = filas.filter((p) => p.email);
+  const sala = conRespuestas.length ? conRespuestas.reduce((t, p) => t + p.mirada, 0) / conRespuestas.length : null;
+  const celda = { padding: "10px 12px", whiteSpace: "nowrap" };
+
+  return (
+    <>
+      {error && <div role="alert" style={{ background: "#FFF0F0", border: "1px solid #CC333355", borderRadius: 2, padding: "12px 14px", marginBottom: 16, fontSize: 14, color: "#CC3333" }}>{error}</div>}
+      <p style={{ fontSize: 14, color: MUTED, lineHeight: 1.6, margin: "0 0 16px", maxWidth: 760 }}>
+        Las respuestas del Diagnóstico colectivo, por sesión. Cada persona se identifica con el email con el que pidió el PDF; quien no lo pidió queda anónimo, con su número de llegada.
+      </p>
+      {!datos.sesion ? <p style={{ color: MUTED }}>Todavía no hay sesiones del taller.</p> : <>
+        <div style={{ display: "flex", gap: 12, alignItems: "flex-end", flexWrap: "wrap", marginBottom: 16 }}>
+          <label style={{ minWidth: 280 }}>
+            <span style={mono(8)}>Sesión</span>
+            <select value={codigo} onChange={(e) => cargar(e.target.value)} style={{ ...input, marginTop: 4 }}>
+              {datos.sesiones.map((s) => <option key={s.codigo} value={s.codigo}>{s.codigo} · {s.nombre}{s.demo ? " (prueba)" : ""}</option>)}
+            </select>
+          </label>
+          <button onClick={() => cargar(codigo)} style={btn(false)}>Actualizar</button>
+          <button onClick={() => exportarTallerCSV(datos.sesion, filas)} disabled={!filas.length} style={{ ...btn(true), opacity: filas.length ? 1 : 0.5 }}>Exportar CSV</button>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginBottom: 16 }}>
+          {[["Personas", conRespuestas.length], ["Con email", conEmail.length], ["Informes enviados", filas.filter((p) => p.informe).length], ["Promedio de la sala", sala == null ? "—" : fmt1(sala)]].map(([t, v]) => (
+            <div key={t} style={{ background: WHITE, border: `1px solid ${LINE}`, borderRadius: 2, padding: 16 }}>
+              <span style={mono(8)}>{t}</span>
+              <div style={{ fontFamily: "'CL Titulos',serif", fontSize: 28, color: NAVY, marginTop: 4 }}>{v}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ background: WHITE, border: `1px solid ${LINE}`, borderRadius: 2, overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 980 }}>
+            <thead>
+              <tr style={{ background: NAVY }}>
+                {["Persona", "Entró", "Etapas", "Su mirada", ...ETAPAS_DATA.map((e) => `${e.num}`), "Informe"].map((t, i) => (
+                  <th key={t} scope="col" title={i >= 4 && i < 11 ? ETAPAS_DATA[i - 4].name : undefined} style={{ ...mono(9, WHITE), padding: "12px", textAlign: "left", whiteSpace: "nowrap" }}>{i >= 4 && i < 11 ? `Etapa ${t}` : t}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filas.length === 0 && <tr><td colSpan={12} style={{ padding: 28, textAlign: "center", color: MUTED }}>Nadie entró a esta sesión todavía.</td></tr>}
+              {filas.map((p) => (
+                <tr key={p.orden} style={{ borderBottom: "1px solid #F0F5F6" }}>
+                  <td style={{ ...celda, fontWeight: p.email ? 600 : 400, color: p.email ? NAVY : MUTED }}>
+                    {p.email || `Sin email · #${p.orden}`}
+                    {p.origen === "simulado" && <span style={{ marginLeft: 8, background: "#EEF4F5", color: NAVY, borderRadius: 2, padding: "2px 6px", fontSize: 11 }}>simulado</span>}
+                  </td>
+                  <td style={{ ...celda, fontFamily: "'CL Etiquetas',sans-serif", fontSize: 11 }}>{fmtFechaHora(p.creado_at)}</td>
+                  <td style={celda}>{ETAPAS_DATA.filter((e) => respondioEtapa(p.r, e)).length}/7</td>
+                  <td style={{ ...celda, fontFamily: "'CL Titulos',serif", fontSize: 17, color: NAVY }}>{p.mirada == null ? "—" : fmt1(p.mirada)}</td>
+                  {ETAPAS_DATA.map((e) => <td key={e.id} style={{ ...celda, color: respondioEtapa(p.r, e) ? NAVY : MUTED }}>{respondioEtapa(p.r, e) ? fmt1(calcScore(p.r, e.id)) : "—"}</td>)}
+                  <td style={celda} title={p.envios > 1 ? `Pidió el informe ${p.envios} veces` : undefined}>{p.informe ? "✅" : p.email ? "⚠️" : "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </>}
+    </>
+  );
+}
+
 // ── SOLAPAS ──────────────────────────────────────────────
 function Solapas({ vista, ir, cantidades }) {
-  const items = [["diagnosticos", "Diagnósticos"], ["informe", "Informe consolidado"], ["tests", "Tests"]];
+  const items = [["diagnosticos", "Diagnósticos"], ["informe", "Informe consolidado"], ["tests", "Tests"], ["taller", "Taller REALCUP"]];
   return (
     <div role="tablist" aria-label="Secciones del panel" style={{ display: "flex", gap: 4, borderBottom: `1px solid ${LINE}`, marginBottom: 20, overflowX: "auto" }}>
       {items.map(([id, texto]) => {
@@ -470,7 +582,7 @@ function Panel({ onSinSesion }) {
   const [page, setPage] = useState(0);
   const [params, setParams] = useSearchParams();
   const selId = params.get("id");
-  const vista = ["informe", "tests"].includes(params.get("vista")) ? params.get("vista") : "diagnosticos";
+  const vista = ["informe", "tests", "taller"].includes(params.get("vista")) ? params.get("vista") : "diagnosticos";
 
   const cargar = useCallback(async () => {
     setError("");
@@ -586,7 +698,7 @@ function Panel({ onSinSesion }) {
 
       <Solapas vista={vista} ir={ir} cantidades={{ diagnosticos: reales.length, tests: tests.length }} />
 
-      {vista === "informe" ? <InformeConsolidado rows={rows} /> : <>
+      {vista === "taller" ? <TallerRealcup onSinSesion={onSinSesion} /> : vista === "informe" ? <InformeConsolidado rows={rows} /> : <>
       {vista === "diagnosticos" ? <Metricas rows={reales} /> : (
         <p style={{ fontSize: 14, color: MUTED, lineHeight: 1.6, margin: "0 0 16px", maxWidth: 760 }}>
           Los diagnósticos marcados como test no cuentan en las métricas, el CSV ni el informe consolidado. Quedan guardados acá por si hace falta revisarlos o restaurarlos.
