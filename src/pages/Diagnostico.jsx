@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback, lazy, Suspense } from "react";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { NAVY, NAVY_DK, EMERALD, SLATE, CREAM, WHITE, EMERALD_TXT, SLATE_TXT, MUTED, TEXT, LINE, BTN_PRIMARY, BTN_DARK, BTN_DISABLED, TOUCH, AMBAR_LUZ, PETROLEO } from "../theme.js";
 import { montarCampo } from "../lib/campo.js";
 import { PAISES_LATAM } from "../data/paises.js";
@@ -126,7 +126,7 @@ function Welcome({onStart}){
 }
 
 // ── REGISTER ─────────────────────────────────────────────
-function Register({onNext}){
+function Register({onNext,onBack}){
   const desk=useIsDesktop();
   const [form,setForm]=useState({universidad:"",pais:"",alumnos_actuales:"",alumnos_meta:"",nombre:"",cargo:"",email:"",whatsapp:""});
   const [enviando,setEnviando]=useState(false);
@@ -158,8 +158,11 @@ function Register({onNext}){
     <div style={{minHeight:"100vh",background:WHITE,display:"flex",flexDirection:"column"}}>
       <div className="cl-oscuro" style={{background:NAVY_DK,borderBottom:"1px solid rgba(255,255,255,.1)"}}>
         <div style={{maxWidth:1120,margin:"0 auto",padding:desk?"14px 32px":"14px 20px",display:"flex",alignItems:"center",gap:20}}>
+          <button type="button" onClick={onBack} aria-label="Volver a la portada del diagnóstico"
+            style={{minHeight:TOUCH,padding:"0 4px 0 0",border:"none",background:"none",color:WHITE,cursor:"pointer",fontSize:16,fontFamily:"'Schibsted Grotesk',sans-serif",whiteSpace:"nowrap"}}>← Volver</button>
+          <span aria-hidden="true" style={{width:1,height:22,background:"rgba(255,255,255,.2)"}}/>
           {desk&&<img src="/campus-latina-sobre-oscuro.svg" alt="Campus Latina" width="106" height="30"/>}
-          <Mono color={SLATE}>Paso 1 de 2 · Datos institucionales</Mono>
+          <Mono color={SLATE}>{desk?"Paso 1 de 2 · Datos institucionales":"Paso 1 de 2"}</Mono>
         </div>
       </div>
       <div style={{flex:1,maxWidth:desk?1120:560,margin:"0 auto",padding:desk?"56px 32px":"32px 20px",width:"100%"}}>
@@ -460,9 +463,10 @@ export default function Diagnostico(){
   const [claveActual,setClaveActual]=useState(claveUrl||null);
   const clave=claveUrl||claveActual;
   const navigate=useNavigate();
+  const location=useLocation();
   const [params]=useSearchParams();
   const [diag,setDiag]=useState(null);           // vista del servidor (respuestas guardadas, quién respondió)
-  const [estado,setEstado]=useState(clave?"cargando":"welcome"); // welcome|register|cargando|no-encontrado|tablero|quiz|processing|report
+  const [estado,setEstado]=useState(clave?"cargando":"welcome"); // welcome|cargando|no-encontrado|tablero|quiz|processing|report
   const [pos,setPos]=useState({etapa:0,pregunta:0,showIntro:true});
   const [borrador,setBorrador]=useState({});     // respuestas de la etapa en curso, antes de guardarla
   const [quien,setQuien]=useState(()=>clave?leerQuien(clave):"");
@@ -475,7 +479,10 @@ export default function Diagnostico(){
   const [envio,setEnvio]=useState("pendiente");
   const [revision,setRevision]=useState(false); // revisando una etapa ya guardada
 
-  useEffect(()=>{window.scrollTo(0,0);},[estado,pos.etapa,pos.pregunta,pos.showIntro]);
+  // El formulario tiene su propia entrada en el historial (la portada empuja una con la marca "datos"):
+  // el botón Atrás del navegador o "← Volver" regresan a la portada en lugar de salir del sitio.
+  const enDatos=location.state?.paso==="datos";
+  useEffect(()=>{window.scrollTo(0,0);},[estado,enDatos,pos.etapa,pos.pregunta,pos.showIntro]);
   useEffect(()=>{if(!aviso)return;const t=setTimeout(()=>setAviso(""),6000);return()=>clearTimeout(t);},[aviso]);
 
   // Colega invitado: el link trae ?inv=<id> y sus etapas quedan destacadas.
@@ -494,7 +501,7 @@ export default function Diagnostico(){
   useEffect(()=>{cargar();},[cargar]);
   useEffect(()=>{if(claveUrl&&claveUrl!==claveActual)setClaveActual(claveUrl);},[claveUrl,claveActual]);
   useEffect(()=>{
-    if(!claveUrl&&claveActual&&!["welcome","register"].includes(estado))navigate(`/d/${claveActual}`,{replace:true});
+    if(!claveUrl&&claveActual&&estado!=="welcome")navigate(`/d/${claveActual}`,{replace:true});
   },[claveUrl,claveActual,estado,navigate]);
   // Recordar el diagnóstico en curso de este navegador, para ofrecer retomarlo desde la portada.
   useEffect(()=>{
@@ -607,8 +614,8 @@ export default function Diagnostico(){
     {ventana?.tipo==="quien"&&<QuienVentana sugerido="" onCerrar={()=>setVentana(null)} onListo={(n)=>{guardarQuien(clave,n);setQuien(n);const i=ventana.etapa;setVentana(null);abrirEtapa(i,n);}}/>}
   </>;
 
-  if(estado==="welcome") return <Welcome onStart={()=>{track("diagnostico_inicio");setEstado("register");}}/>;
-  if(estado==="register") return <Register onNext={handleRegister}/>;
+  if(estado==="welcome"&&enDatos) return <Register onNext={handleRegister} onBack={()=>navigate(-1)}/>;
+  if(estado==="welcome") return <Welcome onStart={()=>{track("diagnostico_inicio");navigate({pathname:location.pathname,search:location.search},{state:{paso:"datos"}});}}/>;
   if(estado==="cargando") return <Cargando/>;
   if(estado==="no-encontrado") return <NoEncontrado/>;
   if(estado==="error") return <Cargando texto="No pudimos cargar el diagnóstico. Revise su conexión y recargue la página."/>;
