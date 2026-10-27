@@ -1,11 +1,19 @@
 // Smoke test del acceso al panel y de /api/admin-data con Supabase simulado (sin servicios reales):
-// clave → cookie de sesión, cookies inválidas o vencidas, paginación de >1000 filas y cierre de sesión.
+// clave → cookie de sesión, cookies inválidas o vencidas, paginación de >1000 filas, marca de cliente y
+// cierre de sesión.
 //   node scripts/test-admin.mjs
 import { createHmac } from "node:crypto";
 Object.assign(process.env, { SUPABASE_URL: "https://mock.supabase.co", SUPABASE_SERVICE_KEY: "service", ADMIN_CLAVE: "clave-de-prueba" });
 const TOTAL = 1234;
-globalThis.fetch = async (url) => {
+let sinColumna = false; // simula la base sin la migración 005
+globalThis.fetch = async (url, opciones = {}) => {
   url = String(url);
+  if (url.startsWith("https://mock.supabase.co/rest/v1/diagnosticos") && opciones.method === "PATCH") {
+    if (sinColumna) return new Response(JSON.stringify({ code: "PGRST204", message: "column not found" }), { status: 400, headers: { "content-type": "application/json" } });
+    const ids = (new URL(url).searchParams.get("id") || "").replace(/^in\.\(|\)$/g, "").split(",").map((x) => x.replace(/"/g, "")).filter(Boolean);
+    const { es_cliente } = JSON.parse(opciones.body);
+    return new Response(JSON.stringify(ids.map((id) => ({ id, es_cliente }))), { status: 200, headers: { "content-type": "application/json" } });
+  }
   if (url.startsWith("https://mock.supabase.co/rest/v1/diagnosticos")) {
     const q = new URL(url).searchParams;
     const a = Number(q.get("offset") || 0), lim = Number(q.get("limit") || 1000);
@@ -17,6 +25,7 @@ globalThis.fetch = async (url) => {
 const { default: login } = await import("../netlify/functions/admin-login.mjs");
 const { default: logout } = await import("../netlify/functions/admin-logout.mjs");
 const { default: datos } = await import("../netlify/functions/admin-data.mjs");
+const { default: cliente } = await import("../netlify/functions/admin-cliente.mjs");
 
 let fallas = 0;
 const esperar = (nombre, real, esperado) => { const ok = real === esperado; if (!ok) fallas++; console.log(`${ok ? "ok  " : "MAL "} ${nombre.padEnd(34)} ${real}${ok ? "" : ` (esperado ${esperado})`}`); };
@@ -41,6 +50,16 @@ esperar("firma adulterada", (await pedirDatos(`${nombre}=${v}.${vence}.${firma.s
 esperar("vencimiento estirado", (await pedirDatos(`${nombre}=${v}.${Number(vence) + 999999}.${firma}`)).status, 401);
 const vieja = `v1.${Math.floor(Date.now() / 1000) - 10}`;
 esperar("cookie vencida (bien firmada)", (await pedirDatos(`${nombre}=${vieja}.${createHmac("sha256", "clave-de-prueba").update(vieja).digest("base64url")}`)).status, 401);
+const pedirCliente = (cookie, body) => cliente(new Request("http://x/api/admin-cliente", { method: "POST", headers: cookie ? { cookie } : {}, body: JSON.stringify(body) }));
+const ids = ["0f8fad5b-d9cb-469f-a165-70867728950e", "7c9e6679-7425-40de-944b-e07fc1f90ae7"];
+const marcado = await pedirCliente(cookie, { ids, es_cliente: true });
+esperar("marcar cliente (2 diagnósticos)", marcado.status === 200 && (await marcado.json()).actualizados, 2);
+esperar("marcar cliente sin cookie", (await pedirCliente(null, { ids, es_cliente: true })).status, 401);
+esperar("marcar cliente con id inválido", (await pedirCliente(cookie, { ids: ["1; drop"], es_cliente: true })).status, 400);
+esperar("marcar cliente sin valor", (await pedirCliente(cookie, { ids })).status, 400);
+sinColumna = true;
+esperar("marcar cliente sin la migración", (await pedirCliente(cookie, { ids, es_cliente: false })).status, 409);
+sinColumna = false;
 const { env } = await import("../netlify/lib/env.js");
 env.ADMIN_CLAVE = "clave-nueva";
 esperar("cambiar la clave cierra sesiones", (await pedirDatos(cookie)).status, 401);

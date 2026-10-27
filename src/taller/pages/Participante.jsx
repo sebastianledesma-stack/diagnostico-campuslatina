@@ -116,9 +116,8 @@ function Etapa({ est, respuestas, responder, pendientes, sinRed }) {
         <p className="t-sube" style={{ "--i": 1, color: "var(--pizarra)", fontSize: 17, marginTop: 14 }}>
           {pendientes > 0
             ? sinRed ? "Sin conexión: sus respuestas se envían solas cuando vuelva la señal." : "Guardando sus respuestas…"
-            : "Mientras la etapa siga abierta, puede cambiar sus respuestas."}
+            : "Sus respuestas ya están guardadas."}
         </p>
-        <button className="t-boton t-boton-sec" style={{ marginTop: 28, alignSelf: "flex-start" }} onClick={() => setPaso(0)}>Revisar mis respuestas</button>
       </Oscura>
     );
   }

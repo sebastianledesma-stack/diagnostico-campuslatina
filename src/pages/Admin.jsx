@@ -4,12 +4,13 @@ import { NAVY, NAVY_DK, EMERALD, SLATE, CREAM, WHITE, ORANGE_TXT } from "../them
 import { ETAPAS_DATA } from "../data/etapas.js";
 import { getNivel, fmt1 } from "../lib/scoring.js";
 import { textoRango, RANGOS_ALUMNOS } from "../data/calificacion.js";
-import { baseConsolidado, datosConsolidado, htmlConsolidado, MIN_GRUPO } from "../lib/informeConsolidado.js";
+import { baseConsolidado, datosConsolidado, htmlConsolidado, MIN_GRUPO, claveInstitucion } from "../lib/informeConsolidado.js";
 
 const NIVELES = ["Inicial", "En desarrollo", "Consolidado", "Avanzado"];
 const PAGE_SIZE = 25;
 const MUTED = "#5E7377";
 const LINE = "#D5E3E5";
+const CLIENTE_BG = "#E1EFF0"; // marca de las universidades que trabajan con Campus Latina
 
 const mono = (size = 9, color = SLATE) => ({ fontFamily: "'CL Etiquetas',sans-serif", fontSize: size, letterSpacing: ".12em", textTransform: "uppercase", color });
 const input = { padding: "10px 12px", border: "1.5px solid #CBDADC", borderRadius:2, fontSize: 14, fontFamily: "'Schibsted Grotesk',sans-serif", color: NAVY, background: WHITE, outline: "none", minHeight: 44, width: "100%" };
@@ -160,10 +161,10 @@ function Metricas({ rows: todasLasFilas }) {
 }
 
 // ── CSV ──────────────────────────────────────────────────
-function exportarCSV(rows) {
+function exportarCSV(rows, esCliente) {
   const preguntas = ETAPAS_DATA.flatMap((e) => e.preguntas.map((_, i) => `${e.id}_${i}`));
   const headers = ["id", "fecha", "estado", "etapas_listas", "universidad", "pais", "alumnos_hoy", "alumnos_meta_3a5_anios", "target", "nombre", "cargo", "email", "whatsapp", "colegas", "score_global", "nivel",
-    ...ETAPAS_DATA.map((e) => `score_${e.id}`), "mail_enviado", "notif_enviada", "test", ...preguntas];
+    ...ETAPAS_DATA.map((e) => `score_${e.id}`), "mail_enviado", "notif_enviada", "test", "cliente", ...preguntas];
   const cell = (v) => {
     const s = v == null ? "" : String(v);
     return /[";\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
@@ -174,7 +175,7 @@ function exportarCSV(rows) {
     (r.colaboradores || []).map((c) => `${c.nombre} <${c.email}>`).join(", "),
     enCurso(r) ? "" : fmt1(r.score_global), r.nivel || "",
     ...ETAPAS_DATA.map((e) => (enCurso(r) ? "" : fmt1(r.scores?.[e.id] || 0))),
-    r.mail_enviado ? "sí" : "no", r.notif_enviada ? "sí" : "no", r.es_test ? "sí" : "no",
+    r.mail_enviado ? "sí" : "no", r.notif_enviada ? "sí" : "no", r.es_test ? "sí" : "no", esCliente(r) ? "sí" : "no",
     ...preguntas.map((k) => r.respuestas?.[k] || ""),
   ].map(cell).join(";"));
   // BOM + ";" para que Excel en español lo abra con acentos y columnas bien separadas.
@@ -187,7 +188,7 @@ function exportarCSV(rows) {
 }
 
 // ── DETALLE ──────────────────────────────────────────────
-function Detalle({ d, onClose, onTest }) {
+function Detalle({ d, cliente, onClose, onTest, onCliente }) {
   useEffect(() => {
     const onKey = (e) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
@@ -226,6 +227,12 @@ function Detalle({ d, onClose, onTest }) {
         </div>
 
         <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 14 }}>
+          {cliente && (
+            <div style={{ background: CLIENTE_BG, border: `1px solid ${LINE}`, borderRadius:2, padding: "12px 14px", fontSize: 14, lineHeight: 1.5, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+              <span><strong>Trabaja con Campus Latina.</strong> La marca vale para todos los diagnósticos de la universidad.</span>
+              <button onClick={() => onCliente(d, false)} style={{ ...btn(false), minHeight: 36 }}>Quitar marca</button>
+            </div>
+          )}
           {d.es_test && (
             <div style={{ background: "#FFF3E8", border: "1px solid #F2C9A5", borderRadius:2, padding: "12px 14px", fontSize: 14, lineHeight: 1.5, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
               <span>Marcado como test: no cuenta en las métricas, el CSV ni el informe consolidado.</span>
@@ -243,6 +250,7 @@ function Detalle({ d, onClose, onTest }) {
             <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
               {waNum && <a href={`https://wa.me/${waNum}?text=${encodeURIComponent(waMsg)}`} target="_blank" rel="noopener noreferrer" style={{ ...btn(true), background: EMERALD, color: NAVY_DK, display: "inline-flex", alignItems: "center", textDecoration: "none" }}>Contactar por WhatsApp →</a>}
               <a href={`mailto:${d.email}?subject=${encodeURIComponent(`Su diagnóstico del proceso de inscripción — ${d.universidad}`)}`} style={{ ...btn(false), display: "inline-flex", alignItems: "center", textDecoration: "none" }}>Escribir mail</a>
+              {!cliente && <button onClick={() => onCliente(d, true)} style={btn(false)}>Trabaja con Campus Latina</button>}
               {!d.es_test && <button onClick={() => onTest(d, true)} style={{ ...btn(false), color: MUTED }}>Marcar como test</button>}
             </div>
             <div style={{ fontSize: 12, color: MUTED, marginTop: 10 }}>
@@ -500,6 +508,35 @@ function Panel({ onSinSesion }) {
       setError(`No pudimos ${valor ? "marcarlo como test" : "quitarle la marca de test"}: ${err.message}`);
     }
   }, [onSinSesion]);
+  // Clientes de Campus Latina: la marca es de la universidad. Se guarda en todos sus diagnósticos y
+  // cualquiera marcado alcanza para mostrarla (también en los que lleguen después).
+  const clientes = useMemo(() => new Set((rows || []).filter((r) => r.es_cliente).map(claveInstitucion)), [rows]);
+  const esCliente = useCallback((r) => clientes.has(claveInstitucion(r)), [clientes]);
+  const marcarCliente = useCallback(async (r, valor) => {
+    setError("");
+    const clave = claveInstitucion(r);
+    const ids = (rows || []).filter((x) => claveInstitucion(x) === clave).map((x) => x.id);
+    const antes = new Map((rows || []).filter((x) => ids.includes(x.id)).map((x) => [x.id, x.es_cliente]));
+    setRows((rs) => rs.map((x) => (ids.includes(x.id) ? { ...x, es_cliente: valor } : x)));
+    const volver = () => setRows((rs) => rs.map((x) => (antes.has(x.id) ? { ...x, es_cliente: antes.get(x.id) } : x)));
+    try {
+      const res = await fetch("/api/admin-cliente", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids, es_cliente: valor }),
+      });
+      if (res.status === 401) { volver(); return onSinSesion(); }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+      setAviso({
+        texto: valor ? `«${r.universidad}» quedó marcada: trabaja con Campus Latina.` : `«${r.universidad}» ya no figura como cliente.`,
+        deshacer: () => marcarCliente(r, !valor),
+      });
+    } catch (err) {
+      volver();
+      setError(`No pudimos ${valor ? "marcarla como cliente" : "quitarle la marca de cliente"}: ${err.message}`);
+    }
+  }, [rows, onSinSesion]);
   const cerrarAviso = useCallback(() => setAviso(null), []);
 
   useEffect(() => { cargar(); }, [cargar]);
@@ -609,7 +646,7 @@ function Panel({ onSinSesion }) {
         </span>
         <div style={{ display: "flex", gap: 8 }}>
           <button onClick={cargar} style={btn(false)}>Actualizar</button>
-          <button onClick={() => exportarCSV(filtrados)} disabled={!filtrados.length} style={{ ...btn(true), opacity: filtrados.length ? 1 : 0.5 }}>Exportar CSV</button>
+          <button onClick={() => exportarCSV(filtrados, esCliente)} disabled={!filtrados.length} style={{ ...btn(true), opacity: filtrados.length ? 1 : 0.5 }}>Exportar CSV</button>
         </div>
       </div>
 
@@ -640,6 +677,7 @@ function Panel({ onSinSesion }) {
                   <td style={{ padding: "10px 12px", whiteSpace: "nowrap", fontFamily: "'CL Etiquetas',sans-serif", fontSize: 11 }}>{fmtFecha(r.created_at)}</td>
                   <td style={{ padding: "10px 12px", fontWeight: 600 }}>
                     {r.universidad}
+                    {esCliente(r) && <span title="Trabaja con Campus Latina" style={{ marginLeft: 8, background: CLIENTE_BG, color: NAVY, border: `1px solid ${NAVY}33`, borderRadius: 2, padding: "2px 6px", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap" }}>Cliente</span>}
                     {!r.es_test && pareceTest(r) && <span title="Email de Campus Latina o «test» en el nombre" style={{ marginLeft: 8, background: "#FFF3E8", color: ORANGE_TXT, borderRadius: 2, padding: "2px 6px", fontSize: 11, fontWeight: 500, whiteSpace: "nowrap" }}>¿Test?</span>}
                   </td>
                   <td style={{ padding: "10px 12px" }}>{r.pais}</td>
@@ -676,7 +714,7 @@ function Panel({ onSinSesion }) {
       )}
       </>}
 
-      {seleccionado && <Detalle d={seleccionado} onClose={() => abrir(null)} onTest={marcarTest} />}
+      {seleccionado && <Detalle d={seleccionado} cliente={esCliente(seleccionado)} onClose={() => abrir(null)} onTest={marcarTest} onCliente={marcarCliente} />}
       {aviso && <Aviso aviso={aviso} onClose={cerrarAviso} />}
     </>
   );
