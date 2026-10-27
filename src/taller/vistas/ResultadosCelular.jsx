@@ -26,29 +26,49 @@ function Hoja({ nombre, sinRed, children }) {
   );
 }
 
-// El puntaje de la sala y, debajo, la mirada propia comparada con la de la sala en lo mismo que respondió.
+// Su mirada en grande (lo propio es lo que más importa en el teléfono) y, al lado, el puntaje de la
+// sala. Si no respondió, solo la sala.
 function Puntaje({ valor, detalle, yo, salaYo = valor, nota }) {
-  const nivel = getNivel(valor).label;
+  const nivelSala = getNivel(valor).label;
+  if (yo == null) {
+    return (
+      <div className="t-tarjeta t-sube" style={{ marginTop: 20, padding: 20 }}>
+        <p className="t-etiqueta">La sala</p>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginTop: 4 }}>
+          <span style={{ fontSize: 64, fontWeight: 700, lineHeight: 1, color: "var(--petroleo)", letterSpacing: "-.02em" }}>{fmt1(valor)}</span>
+          <span style={{ fontSize: 18, color: "var(--apagado)" }}>de 5 · <strong style={{ color: "var(--profundo)" }}>{nivelSala}</strong></span>
+        </div>
+        <div style={{ marginTop: 16 }}><Escalon nivel={nivelSala} /></div>
+        <p className="t-ayuda" style={{ marginTop: 12 }}>{detalle}</p>
+      </div>
+    );
+  }
+  const nivel = getNivel(yo).label;
   return (
-    <div className="t-tarjeta t-sube" style={{ marginTop: 20, padding: 20 }}>
-      <p className="t-etiqueta">La sala</p>
-      <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginTop: 4 }}>
-        <span style={{ fontSize: 64, fontWeight: 700, lineHeight: 1, color: "var(--petroleo)", letterSpacing: "-.02em" }}>{fmt1(valor)}</span>
-        <span style={{ fontSize: 18, color: "var(--apagado)" }}>de 5 · <strong style={{ color: "var(--profundo)" }}>{nivel}</strong></span>
+    <div className="t-tarjeta t-sube" style={{ marginTop: 20, padding: 20, borderColor: "var(--petroleo)", borderWidth: 2 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 16 }}>
+        <div>
+          <p className="t-etiqueta" style={{ color: "var(--petroleo)" }}>Su mirada</p>
+          <p style={{ lineHeight: 1, marginTop: 4 }}>
+            <span style={{ fontSize: 76, fontWeight: 700, color: "var(--petroleo)", letterSpacing: "-.03em" }}>{fmt1(yo)}</span>
+            <span style={{ fontSize: 18, color: "var(--apagado)" }}> de 5</span>
+          </p>
+          <p style={{ fontSize: 17, fontWeight: 700, color: "var(--profundo)", marginTop: 4 }}>{nivel}</p>
+        </div>
+        <div style={{ textAlign: "right", paddingBottom: 4 }}>
+          <p className="t-etiqueta">La sala</p>
+          <p style={{ fontSize: 34, fontWeight: 700, lineHeight: 1.1, color: "var(--profundo)", marginTop: 4 }}>{fmt1(valor)}</p>
+          <p style={{ fontSize: 14, color: "var(--apagado)" }}>{nivelSala}</p>
+        </div>
       </div>
       <div style={{ marginTop: 16 }}><Escalon nivel={nivel} /></div>
-      <p className="t-ayuda" style={{ marginTop: 12 }}>{detalle}</p>
-      {yo != null && (
-        <p style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid var(--linea)", fontSize: 16 }}>
-          Su mirada: <strong style={{ fontSize: 22, color: "var(--profundo)" }}>{fmt1(yo)}</strong>
-          <span style={{ color: "var(--apagado)" }}> · {comparar(yo, salaYo)}</span>
-          {nota && <span className="t-ayuda" style={{ display: "block", marginTop: 4 }}>{nota}</span>}
-        </p>
-      )}
+      <p style={{ marginTop: 14, fontSize: 16, fontWeight: 600, color: "var(--profundo)" }}>{capital(comparar(yo, salaYo))}.</p>
+      <p className="t-ayuda" style={{ marginTop: 4 }}>{detalle}{nota ? ` ${nota}` : ""}</p>
     </div>
   );
 }
 
+const capital = (t) => t.charAt(0).toUpperCase() + t.slice(1);
 const comparar = (yo, sala) => {
   const dif = yo - sala;
   if (Math.abs(dif) < 0.05) return "igual que la sala";
@@ -79,7 +99,7 @@ export function ResultadosEtapa({ res, etapa, mias, nombre, sinRed }) {
 
 // ── Cierre ───────────────────────────────────────────────────────
 
-export function DiagnosticoSala({ res, mias, nombre, sinRed, email, pedirInforme }) {
+export function DiagnosticoSala({ res, mias, nombre, sinRed, email, enviado, pedirInforme }) {
   const filas = res.participantes;
   const dx = diagnostico(filas, res.elegidas);
   const mia = miMirada(mias, filas);
@@ -99,31 +119,47 @@ export function DiagnosticoSala({ res, mias, nombre, sinRed, email, pedirInforme
         <Puntaje valor={dx.global} yo={mia.yo} salaYo={mia.sala ?? dx.global} nota={nota}
           detalle={`${dx.respondidas === 7 ? "Promedio de las 7 etapas" : `Promedio de ${dx.respondidas} de las 7 etapas`} · ${n} ${n === 1 ? "persona" : "personas"}.`} />
       )}
-      <PedirInforme email={email} pedirInforme={pedirInforme} />
+      <PedirInforme email={email} enviado={enviado} pedirInforme={pedirInforme} />
     </Hoja>
   );
 }
 
-// Pedido del PDF por email: le llega su mirada y la de la sala.
-function PedirInforme({ email: inicial, pedirInforme }) {
+// Pedido del PDF por email: le llega su mirada y la de la sala. Una vez enviado, el formulario se
+// esconde (para no confundir) y queda solo una aclaración chica por si se equivocó de email.
+function PedirInforme({ email: inicial, enviado: yaEnviado, pedirInforme }) {
   const [email, setEmail] = useState(inicial || "");
-  const [estado, setEstado] = useState(null); // { ok, texto }
+  const [enviadoA, setEnviadoA] = useState(yaEnviado || "");
+  const [corregir, setCorregir] = useState(false);
+  const [error, setError] = useState("");
   const [enviando, setEnviando] = useState(false);
   async function enviar(ev) {
     ev.preventDefault();
     setEnviando(true);
-    setEstado(null);
+    setError("");
     try {
       await pedirInforme(email.trim());
-      setEstado({ ok: true, texto: `Listo. Le enviamos el informe a ${email.trim()}.` });
+      setEnviadoA(email.trim());
+      setCorregir(false);
     } catch (err) {
-      setEstado({ ok: false, texto: mensaje(err) });
+      setError(mensaje(err));
     }
     setEnviando(false);
   }
+  if (enviadoA && !corregir) {
+    return (
+      <div className="t-tarjeta" role="status" style={{ marginTop: 20, padding: 18, background: "#E1EFF0", borderColor: "var(--petroleo)" }}>
+        <h2 style={{ fontSize: 19, color: "var(--profundo)" }}>Le enviamos el informe en PDF</h2>
+        <p style={{ fontSize: 15, marginTop: 6, color: "var(--texto)", wordBreak: "break-word" }}>A <strong>{enviadoA}</strong>. Puede tardar unos minutos; si no lo ve, revise la carpeta de spam.</p>
+        <p style={{ fontSize: 13, color: "var(--apagado)", marginTop: 10 }}>
+          ¿El email tiene un error? <button type="button" onClick={() => setCorregir(true)}
+            style={{ background: "none", border: 0, padding: 0, font: "inherit", color: "var(--petroleo)", textDecoration: "underline", cursor: "pointer" }}>Corregirlo</button>
+        </p>
+      </div>
+    );
+  }
   return (
     <form className="t-tarjeta" onSubmit={enviar} style={{ marginTop: 20, padding: 18, background: "#E1EFF0", borderColor: "var(--petroleo)" }}>
-      <h2 style={{ fontSize: 19, color: "var(--profundo)" }}>Reciba el informe en PDF</h2>
+      <h2 style={{ fontSize: 19, color: "var(--profundo)" }}>{corregir ? "Enviarlo a otro email" : "Reciba el informe en PDF"}</h2>
       <p className="t-ayuda" style={{ marginTop: 4 }}>Con su mirada y la de la sala. No mostramos su email en pantalla.</p>
       <label className="t-label" htmlFor="email" style={{ marginTop: 12 }}>Email</label>
       <input id="email" className="t-campo" type="email" inputMode="email" autoComplete="email" required value={email}
@@ -131,7 +167,7 @@ function PedirInforme({ email: inicial, pedirInforme }) {
       <button className="t-boton" type="submit" disabled={enviando || !email.trim()} style={{ width: "100%", marginTop: 12 }}>
         {enviando ? "Enviando…" : "Enviarme el PDF"}
       </button>
-      {estado && <p role="status" style={{ marginTop: 10, fontSize: 15, fontWeight: 500, color: estado.ok ? "var(--petroleo)" : "var(--error)" }}>{estado.texto}</p>}
+      {error && <p role="alert" style={{ marginTop: 10, fontSize: 15, fontWeight: 500, color: "var(--error)" }}>{error}</p>}
     </form>
   );
 }

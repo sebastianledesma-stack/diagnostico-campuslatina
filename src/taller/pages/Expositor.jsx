@@ -10,7 +10,7 @@ import { usePanel } from "../usePanel.js";
 import { Escenario, AccesoFacilitador, SinSesion } from "../componentes.jsx";
 import { leerClave, guardarClave, borrarClave } from "../claves.js";
 import { ETAPAS_DATA, VISTAS_ETAPA, VISTAS_CIERRE, urlParticipante, rutaPantalla } from "../datos.js";
-import { completaron, conRespuestas, ideasEtapa } from "../sala.js";
+import { completaron, conRespuestas } from "../sala.js";
 import { exportarCSV } from "../csv.js";
 import { Pantalla, clavePantalla } from "../vistas/Pantalla.jsx";
 
@@ -147,7 +147,6 @@ function Presentacion({ datos, codigo, clave, aplicar, enLinea, salir }) {
           <MenuMas datos={datos} codigo={codigo} clave={clave} simulando={simulando} setSimulando={setSimulando}
             irAlQr={() => ir(PASOS[0])} setAviso={setAviso} salir={salir} cerrar={() => setMenu(null)} />
         )}
-        {datos.fase === "resultados" && datos.vista === "ideas" && <BarraIdeas datos={datos} elegir={elegir} />}
         {aviso && <p className="t-controles-aviso" role="alert">{aviso}</p>}
         <div className="t-barra-expositor">
           <Estado datos={datos} enLinea={enLinea} simulando={simulando} />
@@ -188,19 +187,6 @@ function Estado({ datos, enLinea, simulando }) {
 }
 
 // En las ideas: elegir todas o ninguna de una vez.
-function BarraIdeas({ datos, elegir }) {
-  const e = ETAPAS_DATA[datos.etapa - 1];
-  const ideas = ideasEtapa(datos.participantes, e.id);
-  if (!ideas.length) return null;
-  return (
-    <div className="t-controles-ayuda">
-      <span>Clic en una idea para elegirla o quitarla.</span>
-      <button className="t-ctl" onClick={() => elegir(e.num, ideas.map((i) => i.clave))}>Elegir todas</button>
-      <button className="t-ctl" onClick={() => elegir(e.num, [])}>Ninguna</button>
-    </div>
-  );
-}
-
 // Saltar a cualquier etapa: abrirla (o reabrirla) o ver sus resultados.
 function MenuEtapas({ datos, ejecutar, codigo, clave }) {
   const total = datos.participantes.length;

@@ -2,15 +2,17 @@
 //  1. Su mirada: su puntaje en cada etapa al lado del de la sala, y dónde queda entre todos
 //     (un punto por persona, sin decir quién es quién).
 //  2. La sala: las 7 etapas hoy y con las ideas elegidas, y dónde hubo más y menos acuerdo.
-//  3. El mapa de calor de la sala.
-//  4. Ideas para subir de cada etapa, con las que eligió la sala.
+//  3. El recorrido del aspirante: el haz de la pantalla según su mirada, la sala hoy y con las ideas,
+//     con cuántos de cada 100 aspirantes llegarían a inscribirse (ilustrativo).
+//  4. Qué mide cada etapa y qué implica para el camino del aspirante.
+//  5. Ideas para subir de cada etapa, con las que eligió la sala.
 // Identidad Campus Latina (petróleo con ámbar, Schibsted Grotesk). Sin nada comercial.
 import React from "react";
-import { Document, Page, Text, View, Svg, Path, Rect, Circle, Line, G, StyleSheet, Font, renderToBuffer } from "@react-pdf/renderer";
+import { Document, Page, Text, View, Svg, Path, Circle, Line, StyleSheet, Font, renderToBuffer } from "@react-pdf/renderer";
 import { ETAPAS_DATA } from "../../src/data/etapas.js";
 import { getNivel, fmt1 } from "../../src/lib/scoring.js";
 import { diagnostico, miMirada, estadisticas, ideasEtapa, puntajeEtapa, puntajeConIdeas } from "../../src/taller/sala.js";
-import { colorDe } from "../../src/taller/colores.js";
+import { N, FIN, posEtapa, retencion, acumulada, anchoEn, deCada100 } from "../../src/taller/recorrido.js";
 import * as F from "./fonts-taller.generated.js";
 
 const h = React.createElement;
@@ -78,42 +80,91 @@ function Barra({ valor, potencial, resaltar }) {
     h(View, { style: { position: "absolute", left: 0, top: 0, height: 6, borderRadius: 3, width: `${((valor || 0) / 5) * 100}%`, backgroundColor: resaltar ? C.profundo : "#6FA7AE" } }));
 }
 
-// Mapa de calor: una fila por persona, las 28 preguntas en 7 bloques; la etapa más baja recuadrada.
-function Mapa({ filas, dx, filaMax = 7, altoMax = 300 }) {
-  const con = filas.filter((f) => Object.keys(f.r).length);
-  const cols = ETAPAS_DATA.flatMap((e, b) => e.preguntas.map((p, q) => ({ b, valor: (f) => p.opciones.find((o) => o.letra === f.r[`${e.id}_${q}`])?.valor ?? null })));
-  const prom = (f) => { const vs = cols.map((c) => c.valor(f)).filter((v) => v != null); return vs.reduce((a, v) => a + v, 0) / vs.length; };
-  const orden = [...con].sort((a, b) => prom(b) - prom(a));
-  const gap = 1, bloque = 8, cab = 24;
-  const celda = (ANCHO - 6 * bloque - 21 * gap) / 28;
-  const fila = Math.min(filaMax, altoMax / Math.max(orden.length, 1));
-  const x = (i) => i * celda + (i - cols[i].b) * gap + cols[i].b * bloque;
-  const xb = (b) => x(b * 4);
-  const anchoB = 4 * celda + 3 * gap;
-  const alto = cab + orden.length * (fila + 0.6) + 4;
-  const fuga = dx.fuga ? ETAPAS_DATA.findIndex((e) => e.id === dx.fuga.id) : -1;
-  return h(Svg, { width: ANCHO, height: alto },
-    ...ETAPAS_DATA.map((e, b) => h(G, { key: e.id },
-      h(Text, { x: xb(b) + anchoB / 2, y: 9, textAnchor: "middle", style: { fontSize: 6.5, fontFamily: "Schibsted", fontWeight: b === fuga ? 700 : 400 }, fill: C.profundo },
-        e.name.length * 6.5 * 0.56 > anchoB ? e.name.split(" ")[0] : e.name),
-      dx.etapas[b].puntaje != null && h(Text, { x: xb(b) + anchoB / 2, y: 19, textAnchor: "middle", style: { fontSize: 8, fontFamily: "Schibsted", fontWeight: 700 }, fill: C.profundo }, fmt1(dx.etapas[b].puntaje)))),
-    ...orden.flatMap((f, r) => cols.map((c, i) => {
-      const v = c.valor(f);
-      return h(Rect, { key: `${r}-${i}`, x: x(i), y: cab + r * (fila + 0.6), width: celda, height: fila, fill: v == null ? "#FFFFFF" : colorDe(v, "claro"), stroke: v == null ? C.linea : undefined, strokeWidth: v == null ? 0.4 : 0 });
-    })),
-    fuga >= 0 && (() => {
-      // El recuadro no se sale del ancho útil (la última etapa termina justo en el borde).
-      const x1 = Math.max(0.8, xb(fuga) - 3);
-      const x2 = Math.min(ANCHO - 0.8, xb(fuga) + anchoB + 3);
-      return h(Rect, { x: x1, y: 0.8, width: x2 - x1, height: alto - 1.6, rx: 3, fill: "none", stroke: C.profundo, strokeWidth: 1.2 });
-    })());
+// El haz quieto, como en la pantalla del salón: líneas finas que se angostan en cada etapa según el
+// puntaje, en gris los aspirantes que quedan en el camino y en ámbar los que llegan. Los puntos salen
+// de una semilla fija, así el mismo puntaje se dibuja siempre igual.
+function HazPdf({ puntajes, ancho, alto = 84, semilla = 7 }) {
+  const cum = acumulada(puntajes);
+  const centro = alto / 2, semi = alto * 0.44;
+  const x = (u) => u * FIN * ancho;
+  const y = (u, v) => centro + v * semi * (0.1 + 0.9 * anchoEn(cum, Math.min(u, 1)));
+  const camino = (v) => Array.from({ length: 41 }, (_, k) => `${k ? "L" : "M"}${x(k / 40).toFixed(1)} ${y(k / 40, v).toFixed(1)}`).join(" ");
+  let sd = semilla;
+  const R = () => { sd = (sd * 16807) % 2147483647; return (sd - 1) / 2147483646; };
+  const puntos = [];
+  for (let k = 0; k < 80; k++) {
+    const v = R() * 1.8 - 0.9;
+    let cae = N;
+    for (let i = 0; i < N; i++) if (R() > retencion(puntajes[i])) { cae = i; break; }
+    const hasta = cae < N ? (cae + 0.5) / N : 1;
+    puntos.push({ x: x(R() * hasta), y: null, u: null, v, color: C.petroleo, r: 1.1 });
+    puntos[puntos.length - 1].y = y(puntos[puntos.length - 1].x / (FIN * ancho), v);
+    if (cae < N && R() < 0.45) puntos.push({ x: x(hasta) + 3 + R() * 8, y: y(hasta, v) + 4 + R() * 9, color: "#9AA8AB", r: 1.1 });
+    if (cae === N && R() < 0.7) puntos.push({ x: FIN * ancho + 2 + R() * (ancho * 0.05), y: centro + (R() - 0.5) * semi * 0.3, color: C.coral, r: 1.4 });
+  }
+  return h(Svg, { width: ancho, height: alto },
+    ...[22, 14, 8].map((r, i) => h(Circle, { key: `g${i}`, cx: FIN * ancho + 4, cy: centro, r, fill: C.coral, fillOpacity: (0.05 + 0.1 * cum[N - 1]) * (i + 1) })),
+    ...Array.from({ length: 17 }, (_, k) => h(Path, { key: `l${k}`, d: camino(-1 + (2 * k) / 16), stroke: C.petroleo, strokeOpacity: 0.22, strokeWidth: 0.5, fill: "none" })),
+    ...Array.from({ length: N }, (_, i) => h(Line, { key: `e${i}`, x1: x(posEtapa(i) / FIN), x2: x(posEtapa(i) / FIN), y1: y(posEtapa(i) / FIN, -1.25), y2: y(posEtapa(i) / FIN, 1.25), stroke: C.petroleo, strokeOpacity: 0.35, strokeWidth: 0.5 })),
+    ...puntos.map((p, i) => h(Circle, { key: `p${i}`, cx: p.x, cy: p.y, r: p.r, fill: p.color, fillOpacity: 0.85 })));
 }
 
-function Leyenda() {
-  const caja = (v) => h(View, { style: { width: 12, height: 7, borderRadius: 1.5, backgroundColor: colorDe(v, "claro"), marginRight: 3 } });
-  return h(View, { style: { flexDirection: "row", alignItems: "center", marginTop: 6, fontSize: 7.5, color: C.gris } },
-    ...[["A", 1], ["B", 2], ["C", 4], ["D", 5]].map(([l, v]) => h(View, { key: l, style: { flexDirection: "row", alignItems: "center", marginRight: 10 } }, caja(v), h(Text, null, `${l} · ${v}`))),
-    h(View, { style: { width: 12, height: 7, borderWidth: 1, borderColor: C.profundo, borderRadius: 1.5, marginRight: 3 } }), h(Text, null, "Etapa más baja de la sala"));
+// El recorrido: según su mirada, la sala hoy y la sala con las ideas que eligió.
+function RecorridoPagina({ mia, dx }) {
+  const anchoHaz = ANCHO - 96;
+  const filas = [
+    mia.yo != null && { titulo: "Según su mirada", nota: mia.respondidas < 7 ? "en las etapas que respondió (las demás, como la sala)" : null,
+      ps: mia.etapas.map((e, i) => (e.yo != null ? e.yo : dx.etapas[i].puntaje)) },
+    { titulo: "La sala hoy", ps: dx.etapas.map((e) => e.puntaje) },
+    { titulo: "Con las ideas que eligió la sala", ps: dx.etapas.map((e) => e.conIdeas), ideas: true },
+  ].filter(Boolean);
+  const hoy = deCada100(dx.etapas.map((e) => e.puntaje)), plan = deCada100(dx.etapas.map((e) => e.conIdeas));
+  return h(View, null,
+    h(Text, { style: s.h2 }, "El recorrido del aspirante"),
+    h(Text, { style: s.parrafo }, "Lo mismo que se vio en la pantalla del salón. En cada etapa el haz se angosta según el puntaje: en gris, los aspirantes que quedan en el camino; en ámbar, los que llegan a inscribirse. El número es cuántos de cada 100 que empiezan llegarían a inscribirse con ese recorrido. Es ilustrativo: muestra el efecto del puntaje, no es una medición."),
+    h(View, { style: { position: "relative", height: 18, marginTop: 14, width: anchoHaz } },
+      ...ETAPAS_DATA.map((e, i) => h(Text, { key: e.id, style: { position: "absolute", left: posEtapa(i) * anchoHaz - 32, width: 64, textAlign: "center", fontSize: 6.5, color: C.gris } }, `${e.num}. ${e.name}`))),
+    ...filas.map((f) => {
+      const n = deCada100(f.ps);
+      return h(View, { key: f.titulo, style: { marginTop: 8 }, wrap: false },
+        h(Text, { style: { fontWeight: 700, fontSize: 10, color: C.profundo } }, f.titulo, f.nota ? h(Text, { style: { fontWeight: 400, fontSize: 8, color: C.gris } }, `  ${f.nota}`) : null),
+        h(View, { style: { flexDirection: "row", alignItems: "center" } },
+          h(HazPdf, { puntajes: f.ps, ancho: anchoHaz }),
+          h(View, { style: { width: 96, alignItems: "flex-end" } },
+            h(Text, { style: { fontSize: 26, fontWeight: 700, color: f.ideas ? C.coral : C.profundo } }, String(n)),
+            h(Text, { style: { fontSize: 7, color: C.gris, textAlign: "right" } }, "de cada 100\nse inscriben"))));
+    }),
+    plan > hoy && h(Text, { style: { ...s.parrafo, marginTop: 14, fontWeight: 700, color: C.profundo } },
+      `Con las ideas que eligió la sala, se inscribirían ${plan - hoy} aspirantes más de cada 100 que empiezan.`));
+}
+
+// Qué mide cada etapa (sus 4 preguntas) y qué implica en esta sala para el camino del aspirante, con
+// el mismo modelo del recorrido. Sin describir al aspirante: el foco es lo que hace la universidad.
+function EtapasPagina({ mia, dx }) {
+  return h(View, null,
+    h(Text, { style: s.h2 }, "Qué mide cada etapa"),
+    h(Text, { style: s.parrafo }, "Las 7 etapas son el camino del aspirante, desde que busca dónde estudiar hasta sus primeras semanas de clase. En cada una, el diagnóstico mide qué hace la universidad en ese momento, con 4 preguntas. Lo que se pierde en una etapa ya no llega a la siguiente."),
+    ...dx.etapas.map((e, i) => {
+      const yo = mia.etapas[i].yo;
+      const siguen = e.puntaje == null ? null : Math.round(100 * retencion(e.puntaje));
+      return h(View, { key: e.id, style: { marginTop: 12, borderTopWidth: 0.6, borderTopColor: C.linea, paddingTop: 7 }, wrap: false },
+        h(View, { style: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline" } },
+          h(Text, { style: { fontWeight: 700, fontSize: 11, color: C.profundo } }, `${e.num}. ${e.name}  `, h(Text, { style: { ...s.cursiva, fontSize: 10, color: C.petroleo } }, e.pregunta)),
+          h(Text, null, yo != null ? h(Text, { style: { fontWeight: 700, color: C.petroleo } }, `Usted ${fmt1(yo)}  ·  `) : null, h(Text, { style: { fontWeight: 700 } }, `Sala ${e.puntaje == null ? "—" : fmt1(e.puntaje)}`))),
+        h(View, { style: { flexDirection: "row", marginTop: 5 } },
+          h(View, { style: { flex: 3, marginRight: 16 } },
+            h(Text, { style: s.etiqueta }, "Qué se mide"),
+            ...e.preguntas.map((p, q) => h(Text, { key: q, style: { ...s.parrafo, marginTop: 2 } }, `${q + 1}. ${p.texto}`))),
+          h(View, { style: { flex: 2 } },
+            h(Text, { style: s.etiqueta }, "Qué implica para el camino"),
+            siguen == null
+              ? h(Text, { style: { ...s.parrafo, marginTop: 2 } }, "La sala no respondió esta etapa.")
+              : h(Text, { style: { ...s.parrafo, marginTop: 2 } },
+                "En esta sala, de cada 100 aspirantes que llegan a esta etapa, siguen ",
+                h(Text, { style: { fontWeight: 700, color: C.profundo } }, String(siguen)),
+                e.num < 7 ? " hacia la siguiente." : " después de inscribirse.",
+                dx.fuga?.id === e.id ? h(Text, { style: { fontWeight: 700, color: C.profundo } }, " Es la etapa donde más se pierden.") : null))));
+    }));
 }
 
 function SuMirada({ mia, n }) {
@@ -161,14 +212,6 @@ function LaSala({ filas, elegidas, dx }) {
       h(Text, { style: s.h2 }, "Dónde hubo más acuerdo y más desacuerdo"),
       h(Lista, { titulo: "Más acuerdo", items: est.acuerdo }),
       h(Lista, { titulo: "Más desacuerdo", items: est.desacuerdo })));
-}
-
-function MapaPagina({ filas, dx }) {
-  return h(View, null,
-    h(Text, { style: s.h2 }, "Mapa de calor de la sala"),
-    h(Text, { style: { ...s.parrafo, color: C.gris, marginBottom: 8 } }, "Cada fila es una persona; cada columna, una pregunta, agrupadas por etapa. Más intenso, más desarrollado. Las filas van de la mirada más alta a la más baja."),
-    h(Mapa, { filas, dx, filaMax: 11, altoMax: 600 }),
-    h(Leyenda));
 }
 
 function Lista({ titulo, items }) {
@@ -221,7 +264,11 @@ function Informe({ nombre, fecha, mias, participantes, elegidas }) {
       h(Pie, { nombre })),
     h(Page, { size: "A4", style: s.pagina },
       h(Encabezado, { nombre, fecha }),
-      h(MapaPagina, { filas, dx }),
+      h(RecorridoPagina, { mia, dx }),
+      h(Pie, { nombre })),
+    h(Page, { size: "A4", style: s.pagina },
+      h(Encabezado, { nombre, fecha }),
+      h(EtapasPagina, { mia, dx }),
       h(Pie, { nombre })),
     h(Page, { size: "A4", style: s.pagina },
       h(Encabezado, { nombre, fecha }),

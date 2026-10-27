@@ -131,7 +131,6 @@ button:focus:not(:focus-visible){outline:none}
 .t-menu-item{display:block;width:100%;text-align:left;padding:10px 8px;border:0;border-radius:8px;background:none;color:#fff;font:inherit;font-size:15px;cursor:pointer;text-decoration:none}
 .t-menu-item:hover{background:rgba(255,255,255,.08)}
 .t-controles-aviso{padding:8px 14px;border-radius:10px;background:#7A1D14;font-size:15px}
-.t-controles-ayuda{display:flex;align-items:center;gap:10px;padding:8px 10px 8px 16px;border-radius:12px;background:rgba(10,35,41,.92);border:1px solid rgba(255,255,255,.14);font-size:15px;color:var(--pizarra)}
 
 @keyframes t-cae{from{opacity:0;transform:translateY(-120px)}to{opacity:1;transform:none}}
 @keyframes t-aparece{from{opacity:0}to{opacity:1}}

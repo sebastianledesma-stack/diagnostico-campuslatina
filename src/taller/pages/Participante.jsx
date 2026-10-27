@@ -37,7 +37,7 @@ export default function Participante({ codigo: fijo }) {
     const listo = p.res && (fase === "cierre" ? p.res.reveladas.length === 7 : p.res.reveladas.includes(etapa));
     if (!listo) return <Oscura nombre={est.nombre} sinRed={p.sinRed}><Titulo>Mire la pantalla</Titulo></Oscura>;
     return fase === "cierre"
-      ? <DiagnosticoSala res={p.res} mias={p.respuestas} nombre={est.nombre} sinRed={p.sinRed} email={p.email} pedirInforme={p.pedirInforme} />
+      ? <DiagnosticoSala res={p.res} mias={p.respuestas} nombre={est.nombre} sinRed={p.sinRed} email={p.email} enviado={p.enviado} pedirInforme={p.pedirInforme} />
       : <ResultadosEtapa res={p.res} etapa={etapa} mias={p.respuestas} nombre={est.nombre} sinRed={p.sinRed} />;
   }
   return <Espera est={est} sinRed={p.sinRed} />;

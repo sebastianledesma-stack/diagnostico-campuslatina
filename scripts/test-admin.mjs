@@ -14,6 +14,18 @@ globalThis.fetch = async (url, opciones = {}) => {
     const { es_cliente } = JSON.parse(opciones.body);
     return new Response(JSON.stringify(ids.map((id) => ({ id, es_cliente }))), { status: 200, headers: { "content-type": "application/json" } });
   }
+  const tabla = (url.match(/\/rest\/v1\/(taller_[a-z]+)/) || [])[1];
+  if (tabla) {
+    const q = new URL(url).searchParams, a = Number(q.get("offset") || 0);
+    const datos = {
+      taller_sesiones: [{ id: "s1", codigo: "DEMO", nombre: "Ensayo", demo: true, fase: "cierre", created_at: "2026-10-27T10:00:00Z" },
+        { id: "s2", codigo: "REALCUP", nombre: "REALCUP 2026", demo: false, fase: "cierre", created_at: "2026-10-26T10:00:00Z" }],
+      taller_participantes: [{ id: "p1", orden: 1, origen: "movil", creado_at: "2026-10-26T10:01:00Z" }, { id: "p2", orden: 2, origen: "movil", creado_at: "2026-10-26T10:02:00Z" }],
+      taller_respuestas: [{ participante_id: "p1", pregunta: "descubrimiento_0", letra: "C" }, { participante_id: "p2", pregunta: "descubrimiento_0", letra: "A" }],
+      taller_envios: [{ participante_id: "p1", email: "a@x.edu", enviado_at: "2026-10-26T11:00:00Z", error: null }],
+    }[tabla];
+    return new Response(JSON.stringify(a ? [] : datos), { status: 200, headers: { "content-type": "application/json" } });
+  }
   if (url.startsWith("https://mock.supabase.co/rest/v1/diagnosticos")) {
     const q = new URL(url).searchParams;
     const a = Number(q.get("offset") || 0), lim = Number(q.get("limit") || 1000);
@@ -26,6 +38,7 @@ const { default: login } = await import("../netlify/functions/admin-login.mjs");
 const { default: logout } = await import("../netlify/functions/admin-logout.mjs");
 const { default: datos } = await import("../netlify/functions/admin-data.mjs");
 const { default: cliente } = await import("../netlify/functions/admin-cliente.mjs");
+const { default: taller } = await import("../netlify/functions/admin-taller.mjs");
 
 let fallas = 0;
 const esperar = (nombre, real, esperado) => { const ok = real === esperado; if (!ok) fallas++; console.log(`${ok ? "ok  " : "MAL "} ${nombre.padEnd(34)} ${real}${ok ? "" : ` (esperado ${esperado})`}`); };
@@ -60,6 +73,12 @@ esperar("marcar cliente sin valor", (await pedirCliente(cookie, { ids })).status
 sinColumna = true;
 esperar("marcar cliente sin la migración", (await pedirCliente(cookie, { ids, es_cliente: false })).status, 409);
 sinColumna = false;
+const pedirTaller = (cookie, q = "") => taller(new Request(`http://x/api/admin-taller${q}`, { headers: cookie ? { cookie } : {} }));
+const t1 = await (await pedirTaller(cookie)).json();
+esperar("taller: elige REALCUP", t1.sesion?.codigo, "REALCUP");
+esperar("taller: email como id", t1.participantes.map((p) => p.email || `#${p.orden}`).join(","), "a@x.edu,#2");
+esperar("taller: sin ids internos", JSON.stringify(t1).includes('"p1"') || JSON.stringify(t1).includes('"s2"'), false);
+esperar("taller sin cookie", (await pedirTaller(null)).status, 401);
 const { env } = await import("../netlify/lib/env.js");
 env.ADMIN_CLAVE = "clave-nueva";
 esperar("cambiar la clave cierra sesiones", (await pedirDatos(cookie)).status, 401);

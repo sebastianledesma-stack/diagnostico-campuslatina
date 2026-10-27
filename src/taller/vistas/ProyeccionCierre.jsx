@@ -1,12 +1,14 @@
-// Cierre en la pantalla proyectada (1920×1080), en 3 pasos: el viaje de la sala (las 7 etapas como un
-// recorrido, hoy y con las ideas elegidas) y el recorrido del aspirante, primero hoy y después con las
-// ideas de la sala: el haz se abre y llegan más. La etapa más baja se marca con un rótulo, no con el
+// Cierre en la pantalla proyectada (1920×1080), en 4 pasos: el viaje de la sala (las 7 etapas como un
+// recorrido, hoy y con las ideas elegidas), el recorrido del aspirante, primero hoy y después con las
+// ideas de la sala (el haz se abre y llegan más), y el informe que recibe cada asistente. La etapa más baja se marca con un rótulo, no con el
 // destaque (ámbar, --coral): el destaque es lo que se puede ganar.
 import { fmt1 } from "../../lib/scoring.js";
 import { diagnostico } from "../sala.js";
 import { Cabecera } from "./proyector.jsx";
 import { NIVELES } from "./Salud.jsx";
+import { useEffect, useRef, useState } from "react";
 import { Haz, posEtapa } from "./Haz.jsx";
+import { deCada100 } from "../recorrido.js";
 
 const marco = { position: "absolute", inset: 0, padding: "52px 112px 44px", display: "flex", flexDirection: "column" };
 const personas = (datos) => datos.participantes.filter((f) => Object.keys(f.r).length).length;
@@ -100,6 +102,10 @@ export function ViajeSala({ datos }) {
 export function RecorridoSala({ datos, plan = false }) {
   const dx = diagnostico(datos.participantes, datos.elegidas);
   const puntajes = dx.etapas.map((e) => (plan ? e.conIdeas : e.puntaje));
+  // El impacto, con el mismo modelo del haz: de cada 100 aspirantes que empiezan, cuántos se inscriben.
+  const hoy100 = deCada100(dx.etapas.map((e) => e.puntaje));
+  const plan100 = deCada100(dx.etapas.map((e) => e.conIdeas));
+  const llegan = useCuenta(plan ? plan100 : hoy100);
   const caja = (activo, rotulo, valor) => (
     <div style={{ padding: "16px 26px", background: activo ? "#fff" : "transparent", color: activo ? "var(--profundo)" : "var(--apagado)", transition: "all .5s" }}>
       <span style={{ ...etiqueta, fontSize: 18, display: "block" }}>{rotulo}</span>
@@ -121,7 +127,13 @@ export function RecorridoSala({ datos, plan = false }) {
       </div>
       <div style={{ position: "relative", marginTop: 36 }}>
         <Haz puntajes={puntajes} />
-        <p style={{ ...etiqueta, position: "absolute", right: 0, top: 70, fontWeight: 700, color: AMBAR_TEXTO }}>Se inscriben</p>
+        <div style={{ position: "absolute", right: 0, top: 0, textAlign: "right" }}>
+          <p style={{ lineHeight: 1, fontWeight: 700, color: AMBAR_TEXTO }}>
+            {plan && plan100 > hoy100 && <span style={{ fontSize: 40, marginRight: 14 }}>+{plan100 - hoy100}</span>}
+            <span style={{ fontSize: 104, letterSpacing: "-.04em" }}>{llegan}</span>
+          </p>
+          <p style={{ ...etiqueta, fontWeight: 700, color: AMBAR_TEXTO, marginTop: 4 }}>de cada 100 se inscriben</p>
+        </div>
       </div>
       <div style={{ position: "relative", height: 130, marginTop: 10 }}>
         {dx.etapas.map((e, i) => {
@@ -140,8 +152,66 @@ export function RecorridoSala({ datos, plan = false }) {
         })}
       </div>
       <p style={{ fontSize: 20, color: "var(--apagado)", marginTop: "auto" }}>
-        Ilustrativo: en cada etapa el haz se angosta según el puntaje de la sala. En gris, los aspirantes que quedan en el camino; en ámbar, los que llegan a inscribirse.
+        Ilustrativo: en cada etapa el haz se angosta según el puntaje de la sala, y el número es cuántos de cada 100 aspirantes llegarían a inscribirse con ese recorrido. En gris, los que quedan en el camino; en ámbar, los que llegan.
       </p>
     </div>
   );
+}
+
+// El informe: lo que le llega a cada asistente por email, con 4 páginas de ejemplo (datos de muestra,
+// public/taller/informe-*.png; se regeneran si cambia el PDF de netlify/lib/pdfTaller.js).
+const PAGINAS = [
+  { img: "/taller/informe-1.png", titulo: "Su mirada", texto: "Su puntaje en cada etapa al lado del de la sala" },
+  { img: "/taller/informe-2.png", titulo: "El recorrido", texto: "Según su mirada, la sala hoy y con las ideas" },
+  { img: "/taller/informe-3.png", titulo: "Qué mide cada etapa", texto: "Y qué implica para el camino del aspirante" },
+  { img: "/taller/informe-4.png", titulo: "Ideas para subir", texto: "Las de cada etapa, con las que eligió la sala" },
+];
+export function InformeSala({ datos }) {
+  return (
+    <div style={marco}>
+      <Cabecera nombre={datos.nombre} derecha={`El informe · ${personas(datos)} personas`} />
+      <div className="t-sube" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: 36 }}>
+        <h1 style={{ fontSize: 64, lineHeight: 1.05, fontWeight: 700, letterSpacing: "-.02em", color: "var(--profundo)" }}>
+          Lo que le llega por email<br />
+          <span className="t-cursiva" style={{ fontSize: 52, color: "var(--petroleo)", fontWeight: 400 }}>un PDF con su mirada y la de la sala</span>
+        </h1>
+        <p style={{ fontSize: 30, fontWeight: 700, color: "var(--profundo)", textAlign: "right", lineHeight: 1.3 }}>
+          Pídalo en su teléfono:<br /><span style={{ color: AMBAR_TEXTO }}>escriba su email</span>
+        </p>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 40, marginTop: 44 }}>
+        {PAGINAS.map((p, i) => (
+          <figure key={p.img} className="t-sube" style={{ "--i": i + 1, margin: 0 }}>
+            <img src={p.img} alt={`Página de ejemplo: ${p.titulo}`} style={{ display: "block", width: "100%", aspectRatio: "780 / 1104", objectFit: "cover", objectPosition: "top",
+              borderRadius: 6, boxShadow: "0 1px 0 rgba(18,58,66,.08), 0 18px 40px rgba(18,58,66,.14)", background: "#fff" }} />
+            <figcaption style={{ marginTop: 18 }}>
+              <p style={{ fontSize: 26, fontWeight: 700, color: "var(--profundo)" }}><span style={{ color: "var(--petroleo)", marginRight: 10 }}>{i + 1}</span>{p.titulo}</p>
+              <p style={{ fontSize: 20, color: "var(--apagado)", marginTop: 4, lineHeight: 1.35 }}>{p.texto}</p>
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+      <p style={{ fontSize: 18, color: "var(--apagado)", marginTop: "auto" }}>Páginas de ejemplo, con datos de muestra. Cada informe lleva la mirada de quien lo pide y los resultados de esta sala.</p>
+    </div>
+  );
+}
+
+// Un número que viaja desde el valor anterior hasta el nuevo (el contador de los que se inscriben).
+function useCuenta(valor, ms = 1400) {
+  const [v, setV] = useState(valor);
+  const actual = useRef(valor);
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { actual.current = valor; setV(valor); return undefined; }
+    const inicio = actual.current;
+    let raf = 0, t0 = null;
+    const paso = (ts) => {
+      if (t0 == null) t0 = ts;
+      const t = Math.min(1, (ts - t0) / ms), n = inicio + (valor - inicio) * (1 - Math.pow(1 - t, 3));
+      actual.current = n; setV(Math.round(n));
+      if (t < 1) raf = requestAnimationFrame(paso);
+    };
+    raf = requestAnimationFrame(paso);
+    return () => cancelAnimationFrame(raf);
+  }, [valor, ms]);
+  return v;
 }
