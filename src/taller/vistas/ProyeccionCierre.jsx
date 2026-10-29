@@ -1,14 +1,12 @@
 // Cierre en la pantalla proyectada (1920×1080), en 4 pasos: el viaje de la sala (las 7 etapas como un
 // recorrido, hoy y con las ideas elegidas), el recorrido del aspirante, primero hoy y después con las
-// ideas de la sala (el haz se abre y llegan más), y el informe que recibe cada asistente. La etapa más baja se marca con un rótulo, no con el
-// destaque (ámbar, --coral): el destaque es lo que se puede ganar.
+// ideas de la sala (el haz se abre y llegan más), y el informe que recibe cada asistente. La etapa más
+// baja se marca con un rótulo, no con el destaque (ámbar, --coral): el destaque es lo que se puede ganar.
 import { fmt1 } from "../../lib/scoring.js";
 import { diagnostico } from "../sala.js";
 import { Cabecera } from "./proyector.jsx";
 import { NIVELES } from "./Salud.jsx";
-import { useEffect, useRef, useState } from "react";
 import { Haz, posEtapa } from "./Haz.jsx";
-import { deCada100 } from "../recorrido.js";
 
 const marco = { position: "absolute", inset: 0, padding: "52px 112px 44px", display: "flex", flexDirection: "column" };
 const personas = (datos) => datos.participantes.filter((f) => Object.keys(f.r).length).length;
@@ -102,10 +100,6 @@ export function ViajeSala({ datos }) {
 export function RecorridoSala({ datos, plan = false }) {
   const dx = diagnostico(datos.participantes, datos.elegidas);
   const puntajes = dx.etapas.map((e) => (plan ? e.conIdeas : e.puntaje));
-  // El impacto, con el mismo modelo del haz: de cada 100 aspirantes que empiezan, cuántos se inscriben.
-  const hoy100 = deCada100(dx.etapas.map((e) => e.puntaje));
-  const plan100 = deCada100(dx.etapas.map((e) => e.conIdeas));
-  const llegan = useCuenta(plan ? plan100 : hoy100);
   const caja = (activo, rotulo, valor) => (
     <div style={{ padding: "16px 26px", background: activo ? "#fff" : "transparent", color: activo ? "var(--profundo)" : "var(--apagado)", transition: "all .5s" }}>
       <span style={{ ...etiqueta, fontSize: 18, display: "block" }}>{rotulo}</span>
@@ -127,13 +121,7 @@ export function RecorridoSala({ datos, plan = false }) {
       </div>
       <div style={{ position: "relative", marginTop: 36 }}>
         <Haz puntajes={puntajes} />
-        <div style={{ position: "absolute", right: 0, top: 0, textAlign: "right" }}>
-          <p style={{ lineHeight: 1, fontWeight: 700, color: AMBAR_TEXTO }}>
-            {plan && plan100 > hoy100 && <span style={{ fontSize: 40, marginRight: 14 }}>+{plan100 - hoy100}</span>}
-            <span style={{ fontSize: 104, letterSpacing: "-.04em" }}>{llegan}</span>
-          </p>
-          <p style={{ ...etiqueta, fontWeight: 700, color: AMBAR_TEXTO, marginTop: 4 }}>de cada 100 se inscriben</p>
-        </div>
+        <p style={{ ...etiqueta, position: "absolute", right: 0, top: 70, fontWeight: 700, color: AMBAR_TEXTO }}>Se inscriben</p>
       </div>
       <div style={{ position: "relative", height: 130, marginTop: 10 }}>
         {dx.etapas.map((e, i) => {
@@ -152,7 +140,7 @@ export function RecorridoSala({ datos, plan = false }) {
         })}
       </div>
       <p style={{ fontSize: 20, color: "var(--apagado)", marginTop: "auto" }}>
-        Ilustrativo: en cada etapa el haz se angosta según el puntaje de la sala, y el número es cuántos de cada 100 aspirantes llegarían a inscribirse con ese recorrido. En gris, los que quedan en el camino; en ámbar, los que llegan.
+        Ilustrativo: en cada etapa el haz se angosta según el puntaje de la sala. En gris, los aspirantes que quedan en el camino; en ámbar, los que llegan a inscribirse.
       </p>
     </div>
   );
@@ -194,24 +182,4 @@ export function InformeSala({ datos }) {
       <p style={{ fontSize: 18, color: "var(--apagado)", marginTop: "auto" }}>Páginas de ejemplo, con datos de muestra. Cada informe lleva la mirada de quien lo pide y los resultados de esta sala.</p>
     </div>
   );
-}
-
-// Un número que viaja desde el valor anterior hasta el nuevo (el contador de los que se inscriben).
-function useCuenta(valor, ms = 1400) {
-  const [v, setV] = useState(valor);
-  const actual = useRef(valor);
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { actual.current = valor; setV(valor); return undefined; }
-    const inicio = actual.current;
-    let raf = 0, t0 = null;
-    const paso = (ts) => {
-      if (t0 == null) t0 = ts;
-      const t = Math.min(1, (ts - t0) / ms), n = inicio + (valor - inicio) * (1 - Math.pow(1 - t, 3));
-      actual.current = n; setV(Math.round(n));
-      if (t < 1) raf = requestAnimationFrame(paso);
-    };
-    raf = requestAnimationFrame(paso);
-    return () => cancelAnimationFrame(raf);
-  }, [valor, ms]);
-  return v;
 }

@@ -105,7 +105,7 @@ Los pasos, en orden:
 2. Por cada etapa: **etapa abierta** (contador en vivo) → **resultado** → **ideas para subir**.
 3. **Resultado final: el viaje** → **el recorrido** → **con las ideas** → **el informe**.
 
-La pantalla proyectada va en fondo claro. En el resultado de una etapa, cada pregunta tiene una barra con el promedio de la sala sobre la escala de 1 a 5, con los 4 niveles de fondo; la más baja va más oscura y con el rótulo "La más baja". En el cierre, **el viaje** muestra las 7 etapas como un recorrido (petróleo, hoy; ámbar punteado, con las ideas elegidas) y **el recorrido** es el haz del diagnóstico con los puntajes de la sala: en cada etapa se angosta según su puntaje y los aspirantes que llegan se encienden en ámbar. Arriba a la derecha, cuántos de cada 100 aspirantes llegarían a inscribirse con ese recorrido; al pasar a **con las ideas**, el haz se abre en movimiento y el número sube. Es ilustrativo y lo dice en pantalla. **El informe** muestra 4 páginas de ejemplo del PDF que recibe cada asistente (imágenes en `public/taller/`; si cambia el PDF, regenerarlas).
+La pantalla proyectada va en fondo claro. En el resultado de una etapa, cada pregunta tiene una barra con el promedio de la sala sobre la escala de 1 a 5, con los 4 niveles de fondo; la más baja va más oscura y con el rótulo "La más baja". En el cierre, **el viaje** muestra las 7 etapas como un recorrido (petróleo, hoy; ámbar punteado, con las ideas elegidas) y **el recorrido** es el haz del diagnóstico con los puntajes de la sala: en cada etapa se angosta según su puntaje y los aspirantes que llegan se encienden en ámbar. Al pasar a **con las ideas**, el haz se abre en movimiento. Es ilustrativo y lo dice en pantalla. **El informe** muestra 4 páginas de ejemplo del PDF que recibe cada asistente (imágenes en `public/taller/`; si cambia el PDF, regenerarlas).
 
 "Mostrar resultados" cierra la etapa: lo que llegue después ya no cuenta. En los teléfonos no aparece nada hasta que ustedes muestran los resultados.
 
@@ -177,6 +177,6 @@ src/taller/
 supabase/migrations/003_taller.sql   tablas, funciones, permisos, simulación, siembra de la demo
 netlify/functions/taller-informe.mjs  envío del PDF por email
 netlify/lib/pdfTaller.js · tallerInforme.js   PDF y proceso del envío (su mirada, la sala, el recorrido, qué mide cada etapa, ideas)
-src/taller/recorrido.js         modelo ilustrativo del recorrido (haz y «de cada 100»), compartido por la pantalla y el PDF
+src/taller/recorrido.js         modelo ilustrativo del recorrido (el haz), compartido por la pantalla y el PDF; sin cantidades de aspirantes
 scripts/taller-local.mjs · taller-sembrar.mjs · test-taller.mjs   base local, demo y pruebas
 ```
