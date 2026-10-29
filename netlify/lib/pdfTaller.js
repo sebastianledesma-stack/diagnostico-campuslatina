@@ -25,7 +25,7 @@ Font.register({ family: "Schibsted", fonts: [
 Font.register({ family: "Newsreader", fonts: [{ src: F.NEWSREADER_ITALIC, fontStyle: "italic" }] });
 Font.registerHyphenationCallback((w) => [w]); // no cortar palabras con guiones
 
-const C = { petroleo: "#0B6470", profundo: "#123A42", noche: "#0A2329", texto: "#1F3A40", gris: "#4D6166", linea: "#D5E3E5", bruma: "#EAF3F4", coral: "#F08C1A", coralSuave: "#FFCF8A", punto: "#A8CDD1" };
+const C = { petroleo: "#0B6470", profundo: "#123A42", noche: "#0A2329", texto: "#1F3A40", gris: "#4D6166", linea: "#D5E3E5", bruma: "#EAF3F4", coral: "#F08C1A", coralSuave: "#FFCF8A", punto: "#A8CDD1", ambarTexto: "#A85F08" }; // coral = ámbar (destaque); ambarTexto, el mismo en texto chico
 const ANCHO = 515; // ancho útil de la hoja A4 con márgenes de 40 pt
 
 const s = StyleSheet.create({
@@ -71,7 +71,7 @@ function Ubicacion({ yo, sala, todos, ancho = ANCHO, alto = 18 }) {
     ...[1, 2, 3, 4, 5].map((v) => h(Line, { key: `t${v}`, x1: x(v), x2: x(v), y1: alto / 2 - 2, y2: alto / 2 + 2, stroke: C.linea, strokeWidth: 0.8 })),
     ...todos.map((v, i) => h(Circle, { key: i, cx: x(v), cy: alto / 2, r: 2.4, fill: C.punto, fillOpacity: 0.8 })),
     sala != null && h(Line, { x1: x(sala), x2: x(sala), y1: 1.5, y2: alto - 1.5, stroke: C.profundo, strokeWidth: 1.4 }),
-    yo != null && h(Circle, { cx: x(yo), cy: alto / 2, r: 4.6, fill: C.petroleo, stroke: "#FFFFFF", strokeWidth: 1.2 }));
+    yo != null && h(Circle, { cx: x(yo), cy: alto / 2, r: 4.8, fill: C.coral, stroke: "#FFFFFF", strokeWidth: 1.2 }));
 }
 
 function Barra({ valor, potencial, resaltar }) {
@@ -120,7 +120,7 @@ function RecorridoPagina({ mia, dx }) {
   ].filter(Boolean);
   return h(View, null,
     h(Text, { style: s.h2 }, "El recorrido del aspirante"),
-    h(Text, { style: s.parrafo }, "Lo mismo que se vio en la pantalla del salón. En cada etapa el haz se angosta según el puntaje: en gris, los aspirantes que quedan en el camino; en ámbar, los que llegan a inscribirse. Es ilustrativo: muestra el efecto del puntaje en el camino, no es una medición."),
+    h(Text, { style: s.parrafo }, "Lo mismo que se vio en la pantalla del salón: en cada etapa el haz se angosta según el puntaje. En gris, los aspirantes que quedan en el camino; en ámbar, los que llegan. Es una ilustración, no una medición."),
     h(View, { style: { position: "relative", height: 18, marginTop: 14, width: ANCHO } },
       ...ETAPAS_DATA.map((e, i) => h(Text, { key: e.id, style: { position: "absolute", left: posEtapa(i) * ANCHO - 34, width: 68, textAlign: "center", fontSize: 6.5, color: C.gris } }, `${e.num}. ${e.name}`))),
     ...filas.map((f) => h(View, { key: f.titulo, style: { marginTop: 10 }, wrap: false },
@@ -141,7 +141,7 @@ function EtapasPagina({ mia, dx }) {
       return h(View, { key: e.id, style: { marginTop: 12, borderTopWidth: 0.6, borderTopColor: C.linea, paddingTop: 7 }, wrap: false },
         h(View, { style: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline" } },
           h(Text, { style: { fontWeight: 700, fontSize: 11, color: C.profundo } }, `${e.num}. ${e.name}  `, h(Text, { style: { ...s.cursiva, fontSize: 10, color: C.petroleo } }, e.pregunta)),
-          h(Text, null, yo != null ? h(Text, { style: { fontWeight: 700, color: C.petroleo } }, `Usted ${fmt1(yo)}  ·  `) : null, h(Text, { style: { fontWeight: 700 } }, `Sala ${e.puntaje == null ? "—" : fmt1(e.puntaje)}`))),
+          h(Text, null, yo != null ? h(Text, { style: { fontWeight: 700, color: C.ambarTexto } }, `Usted ${fmt1(yo)}  ·  `) : null, h(Text, { style: { fontWeight: 700 } }, `Sala ${e.puntaje == null ? "—" : fmt1(e.puntaje)}`))),
         h(View, { style: { flexDirection: "row", marginTop: 5 } },
           h(View, { style: { flex: 3, marginRight: 16 } },
             h(Text, { style: s.etiqueta }, "Qué se mide"),
@@ -151,9 +151,9 @@ function EtapasPagina({ mia, dx }) {
             e.puntaje == null
               ? h(Text, { style: { ...s.parrafo, marginTop: 2 } }, "La sala no respondió esta etapa.")
               : h(Text, { style: { ...s.parrafo, marginTop: 2 } },
-                "En esta sala la etapa está en nivel ",
+                "En esta sala, nivel ",
                 h(Text, { style: { fontWeight: 700, color: C.profundo } }, getNivel(e.puntaje).label.toLowerCase()),
-                e.num < 7 ? ". Lo que se pierde acá ya no llega a la etapa siguiente." : ". Lo que se pierde acá ya se había inscripto.",
+                ".",
                 dx.fuga?.id === e.id ? h(Text, { style: { fontWeight: 700, color: C.profundo } }, " Es la etapa donde más se pierden aspirantes.") : null))));
     }));
 }
@@ -162,9 +162,9 @@ function SuMirada({ mia, n }) {
   const etapas = mia.etapas.filter((e) => e.yo != null);
   return h(View, null,
     h(Text, { style: s.h2 }, "Su mirada y la de la sala"),
-    h(Text, { style: s.parrafo }, `Usted respondió pensando en una universidad típica de su región, igual que las otras ${n - 1} personas de la sala. Cada punto gris es una persona (sin identificar a nadie); el punto petróleo es usted y la línea, el promedio de la sala.${mia.respondidas < 7 ? ` La comparación es solo en ${mia.respondidas === 1 ? "la etapa que respondió" : `las ${mia.respondidas} etapas que respondió`}.` : ""}`),
+    h(Text, { style: s.parrafo }, `Usted respondió pensando en una universidad típica de su región, igual que las otras ${n - 1} personas de la sala. Cada punto gris es una persona (sin identificar a nadie); el punto ámbar es usted y la línea, el promedio de la sala.${mia.respondidas < 7 ? ` La comparación es solo en ${mia.respondidas === 1 ? "la etapa que respondió" : `las ${mia.respondidas} etapas que respondió`}.` : ""}`),
     h(View, { style: { flexDirection: "row", marginTop: 12, alignItems: "flex-end" } },
-      h(View, { style: { marginRight: 36 } }, h(Text, { style: s.etiqueta }, "Usted"), h(Text, { style: { fontSize: 34, fontWeight: 700, color: C.petroleo } }, fmt1(mia.yo))),
+      h(View, { style: { marginRight: 36 } }, h(Text, { style: { ...s.etiqueta, color: C.ambarTexto } }, "Usted"), h(Text, { style: { fontSize: 34, fontWeight: 700, color: C.coral } }, fmt1(mia.yo))),
       h(View, { style: { marginRight: 36 } }, h(Text, { style: s.etiqueta }, "La sala"), h(Text, { style: { fontSize: 34, fontWeight: 700, color: C.profundo } }, fmt1(mia.sala))),
       mia.ubicacion != null && h(Text, { style: { ...s.parrafo, flex: 1, marginBottom: 6 } }, `Usted ve la universidad más desarrollada que ${Math.round(mia.ubicacion * 10)} de cada 10 personas de la sala (${getNivel(mia.yo).label.toLowerCase()} para usted, ${getNivel(mia.sala).label.toLowerCase()} para la sala).`)),
     h(View, { style: { marginTop: 8 } }, h(Ubicacion, { yo: mia.yo, sala: mia.sala, todos: mia.todos, alto: 22 })),
@@ -172,7 +172,7 @@ function SuMirada({ mia, n }) {
       ...etapas.map((e) => h(View, { key: e.id, style: { ...s.fila, flexDirection: "column", alignItems: "stretch" }, wrap: false },
         h(View, { style: { flexDirection: "row", justifyContent: "space-between" } },
           h(Text, { style: { fontWeight: 600, color: C.profundo } }, `${e.num}. ${e.name}`),
-          h(Text, null, h(Text, { style: { fontWeight: 700, color: C.petroleo } }, `Usted ${fmt1(e.yo)}`), `  ·  Sala ${fmt1(e.sala)}  ·  ${diferencia(e.yo, e.sala)}`)),
+          h(Text, null, h(Text, { style: { fontWeight: 700, color: C.ambarTexto } }, `Usted ${fmt1(e.yo)}`), `  ·  Sala ${fmt1(e.sala)}  ·  ${diferencia(e.yo, e.sala)}`)),
         h(View, { style: { marginTop: 3 } }, h(Ubicacion, { yo: e.yo, sala: e.sala, todos: e.todos, alto: 14 }))))));
 }
 
