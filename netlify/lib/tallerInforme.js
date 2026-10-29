@@ -49,7 +49,7 @@ function htmlMail(nombre) {
 <div style="max-width:560px;margin:0 auto;padding:32px 24px;font-family:Arial,Helvetica,sans-serif;color:#1F3A40;font-size:15px;line-height:1.6">
   <p style="font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:#4D6166;margin:0">Diagnóstico colectivo · ${escapar(nombre)}</p>
   <h1 style="font-size:24px;color:#123A42;margin:8px 0 16px">El viaje invisible del aspirante</h1>
-  <p>Gracias por participar. Adjuntamos el informe en PDF con su mirada sobre una universidad típica de su región y la de la sala: dónde coincidió con el resto, dónde no, y las ideas que la sala eligió para subir el puntaje.</p>
+  <p>Gracias por participar. Adjuntamos el informe en PDF con su mirada sobre su universidad y la de la sala: dónde coincidió con el resto, dónde no, y las ideas que la sala eligió para subir el puntaje.</p>
   <p style="color:#4D6166;font-size:13px;margin-top:24px">Campus Latina</p>
 </div></body></html>`;
 }

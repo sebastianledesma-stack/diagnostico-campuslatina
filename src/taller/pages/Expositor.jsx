@@ -1,8 +1,8 @@
 // /f/<código> — Frontend del expositor (escritorio). Es lo que se proyecta en el salón, con los
 // controles encima: aparecen al mover el mouse y se esconden solos a los 3 s. Se avanza como en una
 // presentación: → (o el control remoto de diapositivas) pasa al paso siguiente del taller y ← vuelve.
-//   Pantalla del QR → por cada etapa: abierta · resultado · ideas para subir → cierre: el viaje · el
-//   recorrido · con las ideas.
+//   Antes de empezar → pantalla del QR → por cada etapa: abierta · resultado · ideas para subir →
+//   cierre: el viaje · el recorrido · con las ideas · el informe.
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import * as api from "../api.js";
@@ -16,6 +16,7 @@ import { Pantalla, clavePantalla } from "../vistas/Pantalla.jsx";
 
 // Los pasos del taller, en orden.
 const PASOS = [
+  { fase: "espera", etapa: 0, vista: "protocolo", texto: "Antes de empezar" },
   { fase: "espera", etapa: 0, texto: "Pantalla del QR" },
   ...ETAPAS_DATA.flatMap((e) => [
     { fase: "abierta", etapa: e.num, texto: `Abrir etapa ${e.num}` },
@@ -27,12 +28,13 @@ const PASOS = [
 // Texto del botón: en los resultados, con la etapa ("Etapa 3 · Mapa de calor").
 const etiqueta = (p) => (p.fase === "resultados" ? `Etapa ${p.etapa} · ${p.texto}` : p.texto);
 
-// Dónde está el taller en la lista de pasos. La pantalla del QR entre etapas queda "entre" la etapa
-// anterior y la siguiente. Una vista que ya no existe (el mapa de calor) cuenta como la primera.
+// Dónde está el taller en la lista de pasos. Al principio, «Antes de empezar» y después el QR; la
+// pantalla del QR entre etapas queda "entre" la etapa anterior y la siguiente. Una vista que ya no
+// existe (el mapa de calor) cuenta como la primera.
 function posicion(d) {
   const i = (f) => PASOS.findIndex(f);
   const vista = (lista) => (lista.some((v) => v.id === d.vista) ? d.vista : lista[0].id);
-  if (d.fase === "espera") return d.etapa === 0 ? 0 : i((p) => p.fase === "resultados" && p.etapa === d.etapa && p.vista === "ideas") + 0.5;
+  if (d.fase === "espera") return d.etapa === 0 ? (d.vista === "protocolo" ? 0 : 1) : i((p) => p.fase === "resultados" && p.etapa === d.etapa && p.vista === "ideas") + 0.5;
   if (d.fase === "abierta") return i((p) => p.fase === "abierta" && p.etapa === d.etapa);
   if (d.fase === "resultados") return i((p) => p.fase === "resultados" && p.etapa === d.etapa && p.vista === vista(VISTAS_ETAPA));
   return i((p) => p.fase === "cierre" && p.vista === vista(VISTAS_CIERRE));
@@ -91,7 +93,7 @@ function Presentacion({ datos, codigo, clave, aplicar, enLinea, salir }) {
     if (!paso || ocupado) return;
     setMenu(null);
     ejecutar(() => {
-      if (paso.fase === "espera") return api.control(codigo, clave, "espera");
+      if (paso.fase === "espera") return api.control(codigo, clave, "espera", null, paso.vista);
       if (paso.fase === "abierta") return api.control(codigo, clave, "abrir", paso.etapa);
       if (paso.fase === "resultados") {
         return datos.fase === "resultados" && datos.etapa === paso.etapa
@@ -145,7 +147,7 @@ function Presentacion({ datos, codigo, clave, aplicar, enLinea, salir }) {
         {menu === "etapas" && <MenuEtapas datos={datos} ejecutar={ejecutar} codigo={codigo} clave={clave} />}
         {menu === "mas" && (
           <MenuMas datos={datos} codigo={codigo} clave={clave} simulando={simulando} setSimulando={setSimulando}
-            irAlQr={() => ir(PASOS[0])} setAviso={setAviso} salir={salir} cerrar={() => setMenu(null)} />
+            irAlQr={() => ir(PASOS[1])} setAviso={setAviso} salir={salir} cerrar={() => setMenu(null)} />
         )}
         {aviso && <p className="t-controles-aviso" role="alert">{aviso}</p>}
         <div className="t-barra-expositor">

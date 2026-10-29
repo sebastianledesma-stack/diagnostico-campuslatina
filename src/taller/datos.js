@@ -6,9 +6,10 @@ export const HERRAMIENTA = "Diagnóstico colectivo";
 export const TALLER = "El viaje invisible del aspirante";
 export const EVENTO_POR_DEFECTO = "REALCUP 2026 · Guayaquil";
 
-// Consigna: anónimo, sin respuestas correctas, pero a conciencia (la discusión se alimenta de eso).
+// Consigna: cada uno responde por su universidad, con la realidad (o lo más cercano a ella), sabiendo
+// que sus respuestas las ve solo esa persona: en la pantalla del salón solo aparece el promedio.
 export const CONSIGNA_TITULO = "No hay respuestas correctas.";
-export const CONSIGNA = "Responda a conciencia lo que cree que representa a una universidad (o a varias) de su región: lo que pasa con más frecuencia, no lo ideal.";
+export const CONSIGNA = "Responda con la realidad de su universidad, o con lo que considere más cercano a ella. Sus respuestas las ve solo usted.";
 
 // El taller de REALCUP tiene su propia dirección, sin código: /realcup2026 (asistentes),
 // /realcup2026/expositor y /realcup2026/pantalla. Las demás sesiones (ensayos) usan /s, /f y /p.

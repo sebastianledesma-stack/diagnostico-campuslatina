@@ -28,7 +28,7 @@ create table if not exists public.taller_sesiones (
   -- Etapas cuyos resultados ya se mostraron: solo esas llegan a los teléfonos.
   reveladas      smallint[] not null default '{}',
   -- Qué se proyecta. En resultados: 'resultado', 'mapa' o 'ideas'. En el cierre: 'resumen', 'mapa' o 'estadisticas'.
-  vista          text not null default 'resultado' check (vista in ('resultado', 'mapa', 'ideas', 'resumen', 'estadisticas', 'informe')),
+  vista          text not null default 'protocolo' check (vista in ('resultado', 'mapa', 'ideas', 'resumen', 'estadisticas', 'informe', 'protocolo')),
   -- Ideas para subir que la sala eligió en cada etapa: { "<etapa>": ["r0", "n2", ...] }
   -- (r<i> = acción de arranque i de src/data/recs.js; n<q> = próximo nivel de la pregunta q).
   elegidas       jsonb not null default '{}'::jsonb,
@@ -320,7 +320,7 @@ end $$;
 --   abrir <etapa>            abre (o reabre) una etapa; si se reabre, sus resultados vuelven a ocultarse
 --   mostrar [etapa] [vista]  cierra la etapa y muestra sus resultados en pantalla y teléfonos
 --   cierre [vista]           la sala completa, con todas las etapas
---   espera                   vuelve a la pantalla del QR
+--   espera [protocolo]       vuelve a la pantalla del QR (o, con 'protocolo', a «Antes de empezar»)
 create or replace function public.taller_control(p_codigo text, p_clave text, p_accion text, p_etapa int default null, p_vista text default null)
 returns jsonb language plpgsql security definer set search_path = public, pg_temp as $$
 declare
@@ -332,6 +332,7 @@ begin
   if p_accion in ('abrir', 'mostrar') and v_etapa not between 1 and 7 then raise exception 'etapa_invalida'; end if;
   if p_accion = 'mostrar' and coalesce(p_vista, 'resultado') not in ('resultado', 'mapa', 'ideas') then raise exception 'datos_invalidos'; end if;
   if p_accion = 'cierre' and coalesce(p_vista, 'resumen') not in ('resumen', 'mapa', 'estadisticas', 'informe') then raise exception 'datos_invalidos'; end if;
+  if p_accion = 'espera' and coalesce(p_vista, 'protocolo') <> 'protocolo' then raise exception 'datos_invalidos'; end if;
   case p_accion
     when 'abrir' then
       update taller_sesiones
@@ -347,7 +348,8 @@ begin
          set fase = 'cierre', reveladas = '{1,2,3,4,5,6,7}', vista = coalesce(p_vista, 'resumen'), actualizado_at = now()
        where id = s.id;
     when 'espera' then
-      update taller_sesiones set fase = 'espera', actualizado_at = now() where id = s.id;
+      -- Con p_vista = 'protocolo', «Antes de empezar»; si no, la pantalla del QR.
+      update taller_sesiones set fase = 'espera', vista = coalesce(p_vista, 'resultado'), actualizado_at = now() where id = s.id;
     else
       raise exception 'accion_invalida';
   end case;
