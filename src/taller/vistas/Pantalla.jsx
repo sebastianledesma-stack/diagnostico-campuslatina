@@ -2,7 +2,7 @@
 // (con controles) y la pantalla espejo /p (sin controles).
 import { Qr } from "../Qr.jsx";
 import { HERRAMIENTA, ETAPAS_DATA, urlParticipante, urlCorta } from "../datos.js";
-import { Pie } from "./proyector.jsx";
+import { Cabecera, Pie } from "./proyector.jsx";
 import { EtapaAbierta, ResultadoEtapa, IdeasEtapa } from "./ProyeccionEtapa.jsx";
 import { ViajeSala, RecorridoSala, InformeSala } from "./ProyeccionCierre.jsx";
 
@@ -24,7 +24,59 @@ export function Pantalla({ datos, onElegir }) {
     if (datos.vista === "informe") return <InformeSala datos={datos} />;
     return <ViajeSala datos={datos} />;
   }
+  if (datos.vista === "protocolo" && datos.etapa === 0) return <Protocolo datos={datos} />;
   return <Espera datos={datos} />;
+}
+
+// Antes de empezar: cómo funciona el ejercicio. Lo que responde cada uno lo ve solo esa persona (en la
+// pantalla solo el promedio), conviene responder con la realidad de su universidad, y de dónde sale el
+// diagnóstico (las cifras son las de campuslatina.com).
+const PUNTOS = [
+  ["Sus respuestas las ve solo usted.", "Nadie más en la sala: en esta pantalla aparece solo el promedio de todos."],
+  ["Para que le sirva, responda con la realidad de su universidad.", "O con lo que considere más cercano a ella. No hay respuestas correctas."],
+  ["En su teléfono verá cómo está su universidad frente al promedio de la sala.", "Etapa por etapa, y al final, con un informe en PDF si lo pide."],
+];
+const CIFRAS = [
+  ["+2,5M", "jóvenes y adultos alcanzados en procesos de admisión en los últimos 5 años"],
+  ["+200K", "estudiantes matriculados en carreras de grado, pregrado y posgrado"],
+];
+function Protocolo({ datos }) {
+  return (
+    <div style={{ position: "absolute", inset: 0, padding: "52px 112px 44px", display: "flex", flexDirection: "column" }}>
+      <Cabecera nombre={datos.nombre} derecha={HERRAMIENTA} />
+      <div style={{ flex: 1, display: "grid", gridTemplateColumns: "minmax(0, 1fr) 640px", gap: 112, alignItems: "center" }}>
+        <div>
+          <h1 className="t-sube" style={{ fontSize: 96, lineHeight: 1, fontWeight: 700, letterSpacing: "-.02em", color: "var(--profundo)" }}>
+            Antes de <span className="t-cursiva" style={{ color: "var(--petroleo)", fontWeight: 400 }}>empezar</span>
+          </h1>
+          <ol style={{ listStyle: "none", margin: "56px 0 0", padding: 0 }}>
+            {PUNTOS.map(([titulo, texto], i) => (
+              <li key={titulo} className="t-sube" style={{ "--i": i + 1, display: "flex", gap: 28, marginTop: i ? 40 : 0 }}>
+                <span style={{ flex: "none", width: 56, height: 56, borderRadius: "50%", background: "var(--petroleo)", color: "#fff", display: "grid", placeItems: "center", fontSize: 28, fontWeight: 700 }}>{i + 1}</span>
+                <div>
+                  <p style={{ fontSize: 38, lineHeight: 1.2, fontWeight: 700, color: "var(--profundo)" }}>{titulo}</p>
+                  <p style={{ fontSize: 26, lineHeight: 1.4, color: "var(--apagado)", marginTop: 8 }}>{texto}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+        <div className="t-sube" style={{ "--i": 4, background: "#fff", border: "1px solid var(--linea)", borderRadius: 24, padding: "44px 48px" }}>
+          <p style={{ fontSize: 20, fontWeight: 600, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--petroleo)" }}>De dónde sale este diagnóstico</p>
+          {CIFRAS.map(([cifra, texto], i) => (
+            <div key={cifra} style={{ marginTop: i ? 28 : 24 }}>
+              <p style={{ fontSize: 88, lineHeight: 1, fontWeight: 700, letterSpacing: "-.04em", color: i ? "var(--coral)" : "var(--profundo)" }}>{cifra}</p>
+              <p style={{ fontSize: 22, lineHeight: 1.35, color: "var(--apagado)", marginTop: 8 }}>{texto}</p>
+            </div>
+          ))}
+          <p style={{ fontSize: 24, lineHeight: 1.4, color: "var(--profundo)", marginTop: 32, paddingTop: 28, borderTop: "1px solid var(--linea)" }}>
+            Con un modelo construido sobre esa experiencia armamos este diagnóstico y detectamos las palancas que más pesan para crecer. El objetivo: simplificar la lectura del proceso para tomar decisiones estratégicas a la escala de su universidad.
+          </p>
+        </div>
+      </div>
+      <Pie />
+    </div>
+  );
 }
 
 // QR grande, la dirección y cuántos ya entraron. También entre etapas, para quien llega tarde.

@@ -162,11 +162,11 @@ function SuMirada({ mia, n }) {
   const etapas = mia.etapas.filter((e) => e.yo != null);
   return h(View, null,
     h(Text, { style: s.h2 }, "Su mirada y la de la sala"),
-    h(Text, { style: s.parrafo }, `Usted respondió pensando en una universidad típica de su región, igual que las otras ${n - 1} personas de la sala. Cada punto gris es una persona (sin identificar a nadie); el punto ámbar es usted y la línea, el promedio de la sala.${mia.respondidas < 7 ? ` La comparación es solo en ${mia.respondidas === 1 ? "la etapa que respondió" : `las ${mia.respondidas} etapas que respondió`}.` : ""}`),
+    h(Text, { style: s.parrafo }, `Usted respondió por su universidad, igual que las otras ${n - 1} personas de la sala por la suya. Cada punto gris es una persona (sin identificar a nadie); el punto ámbar es usted y la línea, el promedio de la sala.${mia.respondidas < 7 ? ` La comparación es solo en ${mia.respondidas === 1 ? "la etapa que respondió" : `las ${mia.respondidas} etapas que respondió`}.` : ""}`),
     h(View, { style: { flexDirection: "row", marginTop: 12, alignItems: "flex-end" } },
       h(View, { style: { marginRight: 36 } }, h(Text, { style: { ...s.etiqueta, color: C.ambarTexto } }, "Usted"), h(Text, { style: { fontSize: 34, fontWeight: 700, color: C.coral } }, fmt1(mia.yo))),
       h(View, { style: { marginRight: 36 } }, h(Text, { style: s.etiqueta }, "La sala"), h(Text, { style: { fontSize: 34, fontWeight: 700, color: C.profundo } }, fmt1(mia.sala))),
-      mia.ubicacion != null && h(Text, { style: { ...s.parrafo, flex: 1, marginBottom: 6 } }, `Usted ve la universidad más desarrollada que ${Math.round(mia.ubicacion * 10)} de cada 10 personas de la sala (${getNivel(mia.yo).label.toLowerCase()} para usted, ${getNivel(mia.sala).label.toLowerCase()} para la sala).`)),
+      mia.ubicacion != null && h(Text, { style: { ...s.parrafo, flex: 1, marginBottom: 6 } }, `Según sus respuestas, su universidad está más desarrollada que la de ${Math.round(mia.ubicacion * 10)} de cada 10 personas de la sala (${getNivel(mia.yo).label.toLowerCase()} para usted, ${getNivel(mia.sala).label.toLowerCase()} el promedio de la sala).`)),
     h(View, { style: { marginTop: 8 } }, h(Ubicacion, { yo: mia.yo, sala: mia.sala, todos: mia.todos, alto: 22 })),
     h(View, { style: { marginTop: 14 } },
       ...etapas.map((e) => h(View, { key: e.id, style: { ...s.fila, flexDirection: "column", alignItems: "stretch" }, wrap: false },

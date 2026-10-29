@@ -1,6 +1,6 @@
 # Diagnóstico colectivo · El viaje invisible del aspirante
 
-Versión en vivo del diagnóstico para el taller de Campus Latina en **REALCUP 2026 (Guayaquil)**: 90 minutos, entre 40 y 50 asistentes. Cada asistente responde desde su teléfono, etapa por etapa, pensando en una universidad típica de su región. Los expositores muestran los resultados de la sala cuando lo deciden, los discuten con la sala y eligen entre todos las ideas para subir el puntaje. Al final, cada asistente ve su mirada frente a la de la sala y puede pedir el informe en PDF por email.
+Versión en vivo del diagnóstico para el taller de Campus Latina en **REALCUP 2026 (Guayaquil)**: 90 minutos, entre 40 y 50 asistentes. Cada asistente responde desde su teléfono, etapa por etapa, por su universidad: con la realidad o lo más cercano a ella. Los expositores muestran los resultados de la sala cuando lo deciden, los discuten con la sala y eligen entre todos las ideas para subir el puntaje. Al final, cada asistente ve su mirada frente a la de la sala y puede pedir el informe en PDF por email.
 
 ## Las direcciones de REALCUP
 
@@ -101,7 +101,7 @@ Usa el mismo Supabase, Resend y Netlify que el diagnóstico (ver [README.md](REA
 | En **Ideas para subir** | Clic en una idea para elegirla o quitarla (de a una) |
 
 Los pasos, en orden:
-1. Pantalla del QR.
+1. **Antes de empezar** (cómo funciona) → **pantalla del QR**.
 2. Por cada etapa: **etapa abierta** (contador en vivo) → **resultado** → **ideas para subir**.
 3. **Resultado final: el viaje** → **el recorrido** → **con las ideas** → **el informe**.
 
@@ -115,8 +115,8 @@ Cada etapa lleva unos 9 minutos: 2 para responder, 3 para el resultado y 4 para 
 
 | Minuto | En pantalla | Qué tocar | Qué hacer con la sala |
 |---|---|---|---|
-| 0:00 | QR y "N personas ya entraron" | — | Bienvenida. Pedir que escaneen el QR; quien no puede, escribe la dirección que está al lado. |
-| 0:05 | QR | — | La consigna: no hay respuestas correctas; responder a conciencia lo que pasa con más frecuencia en una universidad típica de su región, no lo ideal. Es anónimo. |
+| 0:00 | Antes de empezar | — | Bienvenida. Sus respuestas las ve solo cada uno; en la pantalla, solo el promedio. Responder con la realidad de su universidad (o lo más cercano). De dónde sale el diagnóstico y para qué sirve. |
+| 0:04 | QR y "N personas ya entraron" | **→** Pantalla del QR | Pedir que escaneen el QR; quien no puede, escribe la dirección que está al lado. |
 | 0:08 | Etapa 1 abierta, contador | **→** Abrir etapa 1 | Leer la pregunta guía ("¿Lo encuentran?"). El teléfono muestra la consigna y las 4 preguntas. |
 | 0:10 | Resultado: puntaje y una fila por pregunta | **→** Mostrar resultados (cuando el contador está cerca del total) | ¿Por qué dio esto? ¿Qué sorprende? ¿Dónde coincidimos y dónde no? La pregunta más baja va en negrita. |
 | 0:13 | Ideas para subir | **→**, después clic en las ideas que elige la sala | Debatir cuáles aplicarían y elegirlas entre todos; ver cuánto sube la etapa. |

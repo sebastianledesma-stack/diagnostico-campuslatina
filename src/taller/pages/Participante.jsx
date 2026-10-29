@@ -141,7 +141,7 @@ function Etapa({ est, respuestas, responder, pendientes, sinRed }) {
         <div className="t-progreso" aria-hidden="true">
           {e.preguntas.map((_, q) => <span key={q} data-hecho={q !== paso && respuestas[claveDe(q)] ? "" : undefined} data-actual={q === paso ? "" : undefined} />)}
         </div>
-        <span className="t-chip">Una universidad típica de su región</span>
+        <span className="t-chip">Su universidad</span>
         <h1 id="pregunta" className="t-sube" key={paso} style={{ fontSize: 23, lineHeight: 1.25, color: "var(--profundo)", marginTop: 14 }}>{pregunta.texto}</h1>
         {pregunta.ayuda && <p style={{ fontSize: 16, color: "var(--apagado)", marginTop: 6 }}>{pregunta.ayuda}</p>}
         <div role="group" aria-labelledby="pregunta" style={{ marginTop: 20 }}>
