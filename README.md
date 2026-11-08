@@ -49,12 +49,24 @@ scripts/                  PDF de ejemplo y smoke tests de las functions (sin ser
 docs/                     JSX original de referencia
 ```
 
+## Setup en otra máquina
+
+Requisitos: macOS, Git, Node 22 (`.nvmrc`; con nvm: `nvm use`) y Google Chrome (solo para regenerar imágenes con `scripts/og-image.mjs`). No hace falta instalar nada global: Netlify CLI se usa con `npx`.
+
+1. Clonar: `git clone https://github.com/sebastianledesma-stack/diagnostico-campuslatina.git && cd diagnostico-campuslatina`
+2. Instalar dependencias: `npm ci`
+3. Copiar a mano el archivo de secretos **`.env.local`** desde la otra máquina (no está en Git). Si no está a mano, `cp .env.example .env.local` y completar con los valores de Netlify → Site configuration → Environment variables.
+4. Correr: `npm run dev` (http://localhost:5173). Ojo: `/api/*` corre contra la **base real** de Supabase con las claves de `.env.local`; los mails no se envían, solo se muestran en la consola.
+5. Verificar que compila: `npm run build`.
+
+Opcional: `.claude/launch.json` tiene vistas previas para Claude Code; `web-prototipo` espera el repo `campuslatina-web` clonado al lado (`../campuslatina-web`).
+
 ## Desarrollo local
 
 ```bash
 npm install
 cp .env.example .env.local   # completar valores
-npm run dev                  # solo frontend en http://localhost:5173 (sin /api)
+npm run dev                  # frontend + /api en http://localhost:5173 (base real, mails solo en consola)
 npx netlify dev              # frontend + functions en http://localhost:8888
 ```
 
