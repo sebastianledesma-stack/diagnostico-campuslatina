@@ -162,6 +162,13 @@ Cada etapa lleva unos 9 minutos: 2 para responder, 3 para el resultado y 4 para 
 - **Respuestas:** se guardan con un identificador anónimo que genera el teléfono.
 - **Emails:** si la persona pide el PDF, el email queda guardado junto a sus respuestas (tabla `taller_envios`) y el PDF en el bucket `taller-informes`. Nada individual aparece en la pantalla del salón; los emails solo salen en el CSV del expositor y en el panel `/admin`, solapa **Taller REALCUP**, donde cada persona se identifica con su email (o queda anónima, con su número, si no pidió el PDF).
 - **Topes del envío:** se puede pedir el informe solo después del resultado final, hasta 3 veces por persona y 600 por sesión.
+- **Si un envío falla:** el email queda guardado igual (en el panel figura sin informe). Para mandárselo después, desde una computadora con el `.env.local`:
+
+  ```bash
+  npm run taller:reenviar
+  ```
+
+  Lista los pendientes de `REALCUP` sin enviar nada: el último pedido de cada persona que falló o quedó sin respuesta del servidor hace más de 2 minutos. Si a ese mismo email ya le llegó un pedido anterior, no lo repite. Con `-- --enviar` los manda con el mismo PDF que quedó guardado (o lo rearma con sus respuestas si no se guardó) y los marca como enviados en el panel. Otras opciones: otro código de sesión (`-- PRUEBA`), un pedido puntual aunque ya haya salido (`-- --envio 16`), o `-- --pdf carpeta` para guardar los PDF sin enviarlos. El código está en [scripts/taller-reenviar.mjs](scripts/taller-reenviar.mjs).
 
 ## Archivos
 

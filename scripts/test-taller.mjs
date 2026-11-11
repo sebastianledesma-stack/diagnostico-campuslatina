@@ -4,6 +4,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { abrirBase, llamar } from "./taller-local.mjs";
+import { pendientes, datosDesdeTablas } from "./taller-reenviar.mjs";
 
 const db = await abrirBase();
 // Idempotente: correrla dos veces no rompe nada.
@@ -118,6 +119,14 @@ const env1 = await iniciar("Persona@Ejemplo.com");
 assert.equal(env1.email, "persona@ejemplo.com");
 assert.deepEqual(env1.mias, { descubrimiento_0: "C", descubrimiento_1: "D" });
 assert.equal(env1.participantes.length, 3);
+// El reenvío (scripts/taller-reenviar.mjs) rearma el PDF con los mismos datos que el primer envío.
+const { id: sesionId, ...sesionFila } = (await db.query("select id, codigo, nombre, elegidas from public.taller_sesiones where codigo = $1", [codigo])).rows[0];
+const tablas = {
+  sesion: { id: sesionId, ...sesionFila },
+  participantes: (await db.query("select id, orden, origen from public.taller_participantes where sesion_id = $1", [sesionId])).rows,
+  respuestas: (await db.query("select participante_id, pregunta, letra from public.taller_respuestas where sesion_id = $1", [sesionId])).rows,
+};
+assert.deepEqual(datosDesdeTablas({ ...tablas, envio: { id: env1.envio, email: env1.email, participante_id: A } }), env1);
 await db.query("select public.taller_envio_terminar($1, $2, true)", [env1.envio, "REALCUP/a.pdf"]);
 await iniciar("persona@ejemplo.com");
 await iniciar("persona@ejemplo.com");
@@ -196,6 +205,27 @@ assert.equal(est.acuerdo.length, 3);
 paso("cálculos de la sala: puntaje, ideas, mirada propia y estadísticas");
 
 // ── Sesión de demo sembrada: solo desde el SQL Editor (no desde la API) y siempre igual
+// Qué pedidos quedan para reenviar: el último de cada persona, si falló o se cortó hace más de 2 minutos.
+{
+  const ahora = Date.parse("2026-11-12T15:00:00Z");
+  const hace = (min) => new Date(ahora - min * 60000).toISOString();
+  const envios = [
+    { id: 1, participante_id: "a", email: "a@x.co", creado_at: hace(10), enviado_at: hace(9), error: null }, // salió
+    { id: 2, participante_id: "b", email: "b@x.co", creado_at: hace(10), enviado_at: null, error: "no se pudo enviar el mail" }, // falló
+    { id: 3, participante_id: "c", email: "c@x.co", creado_at: hace(10), enviado_at: null, error: "no se pudo enviar el mail" },
+    { id: 4, participante_id: "c", email: "c2@x.co", creado_at: hace(6), enviado_at: hace(5), error: null }, // corrigió el email y salió
+    { id: 5, participante_id: "d", email: "d@x.co", creado_at: hace(0.5), enviado_at: null, error: null }, // en curso
+    { id: 6, participante_id: "e", email: "e@x.co", creado_at: hace(30), enviado_at: null, error: null }, // el servidor se cortó
+    { id: 7, participante_id: "f", email: "f@x.co", creado_at: hace(21), enviado_at: hace(20), error: null },
+    { id: 8, participante_id: "f", email: "f@x.co", creado_at: hace(3), enviado_at: null, error: "no se pudo enviar el mail" }, // a ese email ya le llegó
+    { id: 9, participante_id: "g", email: "g@x.co", creado_at: hace(8), enviado_at: hace(7), error: null },
+    { id: 10, participante_id: "g", email: "g2@x.co", creado_at: hace(4), enviado_at: null, error: "no se pudo enviar el mail" }, // corrigió y falló
+  ];
+  assert.deepEqual(pendientes(envios, { ahora }).map((e) => e.id), [2, 6, 10]);
+  assert.deepEqual(pendientes(envios, { ahora, envio: 1 }).map((e) => e.id), [1]);
+  assert.deepEqual(pendientes(envios, { ahora, envio: 99 }), []);
+}
+paso("reenvío del informe: pendientes y PDF rearmado con los mismos datos");
 await assert.rejects(() => rpc("taller_sembrar", { p_codigo: "DEMO", p_clave: "demo2026" }), /permission denied/);
 const sembrar = (cierre) => comoServidor("select public.taller_sembrar('DEMO', 'demo2026', p_cierre => $1) as r", [cierre]);
 assert.deepEqual(await sembrar(false), { codigo: "DEMO", participantes: 46 });

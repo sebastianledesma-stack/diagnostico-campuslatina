@@ -24,7 +24,7 @@ export async function procesarInforme({ codigo, participante, email } = {}, io) 
 
   const fecha = new Date();
   const pdf = await generarInformeTaller(datos, fecha);
-  const ruta = `${datos.codigo}/${fecha.toISOString().slice(0, 10)}-${participante}-${datos.envio}.pdf`;
+  const ruta = rutaInforme(datos.codigo, participante, datos.envio, fecha);
   let guardado = true;
   try {
     await io.guardar(ruta, pdf);
@@ -32,14 +32,23 @@ export async function procesarInforme({ codigo, participante, email } = {}, io) 
     guardado = false;
     console.error("[taller-informe] guardar", err);
   }
-  const ok = await io.enviar({
-    to: datos.email,
-    subject: `Su informe del Diagnóstico colectivo · ${datos.nombre}`,
-    html: htmlMail(datos.nombre),
-    attachments: [{ filename: "diagnostico-colectivo.pdf", content: pdf }],
-  }, { idempotencyKey: `taller-envio-${datos.envio}` });
+  const ok = await io.enviar(mailInforme(datos, pdf), { idempotencyKey: `taller-envio-${datos.envio}` });
   await io.terminar(datos.envio, guardado ? ruta : null, ok, ok ? null : "no se pudo enviar el mail");
   return ok ? { status: 200, cuerpo: { ok: true } } : { status: 502, cuerpo: { message: "envio_fallido" } };
+}
+
+// Dónde queda el PDF en Storage (bucket taller-informes). También lo usa scripts/taller-reenviar.mjs.
+export const rutaInforme = (codigo, participante, envio, fecha = new Date()) =>
+  `${codigo}/${fecha.toISOString().slice(0, 10)}-${participante}-${envio}.pdf`;
+
+// El mail con el PDF adjunto. También lo usa scripts/taller-reenviar.mjs, para que el reenvío sea idéntico.
+export function mailInforme({ email, nombre }, pdf) {
+  return {
+    to: email,
+    subject: `Su informe del Diagnóstico colectivo · ${nombre}`,
+    html: htmlMail(nombre),
+    attachments: [{ filename: "diagnostico-colectivo.pdf", content: pdf }],
+  };
 }
 
 const escapar = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);

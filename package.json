@@ -11,7 +11,8 @@
     "pdf:sample": "node scripts/sample-pdf.mjs",
     "taller:local": "TALLER_LOCAL=1 VITE_TALLER_API_URL=/taller-api vite --host --port 5175",
     "test:taller": "node scripts/test-taller.mjs",
-    "taller:sembrar": "node scripts/taller-sembrar.mjs"
+    "taller:sembrar": "node scripts/taller-sembrar.mjs",
+    "taller:reenviar": "node scripts/taller-reenviar.mjs"
   },
   "engines": {
     "node": ">=20"
