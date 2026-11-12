@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { NAVY, NAVY_DK, EMERALD, SLATE, CREAM, WHITE, ORANGE_TXT } from "../theme.js";
 import { ETAPAS_DATA } from "../data/etapas.js";
 import { getNivel, fmt1, calcScore } from "../lib/scoring.js";
-import { textoRango, RANGOS_ALUMNOS } from "../data/calificacion.js";
+import { textoRango, textoMeta, RANGOS_ALUMNOS } from "../data/calificacion.js";
 import { baseConsolidado, datosConsolidado, htmlConsolidado, MIN_GRUPO, claveInstitucion } from "../lib/informeConsolidado.js";
 
 const NIVELES = ["Inicial", "En desarrollo", "Consolidado", "Avanzado"];
@@ -163,7 +163,7 @@ function Metricas({ rows: todasLasFilas }) {
 // ── CSV ──────────────────────────────────────────────────
 function exportarCSV(rows, esCliente) {
   const preguntas = ETAPAS_DATA.flatMap((e) => e.preguntas.map((_, i) => `${e.id}_${i}`));
-  const headers = ["id", "fecha", "estado", "etapas_listas", "universidad", "pais", "alumnos_hoy", "alumnos_meta_3a5_anios", "target", "nombre", "cargo", "email", "whatsapp", "colegas", "score_global", "nivel",
+  const headers = ["id", "fecha", "estado", "etapas_listas", "universidad", "pais", "alumnos_hoy", "meta_3a5_anios", "target", "nombre", "cargo", "email", "whatsapp", "colegas", "score_global", "nivel",
     ...ETAPAS_DATA.map((e) => `score_${e.id}`), "mail_enviado", "notif_enviada", "test", "cliente", ...preguntas];
   const cell = (v) => {
     const s = v == null ? "" : String(v);
@@ -171,7 +171,7 @@ function exportarCSV(rows, esCliente) {
   };
   const lines = rows.map((r) => [
     r.id, fmtFechaHora(r.created_at), enCurso(r) ? "en curso" : "completo", etapasListas(r), r.universidad, r.pais,
-    textoRango(r.alumnos_actuales), textoRango(r.alumnos_meta), r.target ? "sí" : "no", r.nombre, r.cargo, r.email, r.whatsapp,
+    textoRango(r.alumnos_actuales), textoMeta(r.alumnos_meta), r.target ? "sí" : "no", r.nombre, r.cargo, r.email, r.whatsapp,
     (r.colaboradores || []).map((c) => `${c.nombre} <${c.email}>`).join(", "),
     enCurso(r) ? "" : fmt1(r.score_global), r.nivel || "",
     ...ETAPAS_DATA.map((e) => (enCurso(r) ? "" : fmt1(r.scores?.[e.id] || 0))),
@@ -262,7 +262,7 @@ function Detalle({ d, cliente, onClose, onTest, onCliente }) {
             <span style={mono(8)}>Calificación</span>
             <div style={{ fontSize: 14, marginTop: 8, lineHeight: 1.8 }}>
               🎓 Alumnos hoy: <strong>{textoRango(d.alumnos_actuales)}</strong><br />
-              📈 Meta a 3–5 años: <strong>{textoRango(d.alumnos_meta)}</strong><br />
+              📈 Meta a 3–5 años: <strong>{textoMeta(d.alumnos_meta)}</strong><br />
               🎯 {d.target ? <strong>Target: se le ofrece la reunión de 45 min</strong> : d.alumnos_actuales ? "No target: se le ofrece escribir por mail" : "Sin datos (diagnóstico anterior a la calificación)"}
             </div>
             {(d.colaboradores || []).length > 0 && (

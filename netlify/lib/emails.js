@@ -6,7 +6,7 @@ import { ETAPAS_DATA } from "../../src/data/etapas.js";
 import { getNivel, etapasCriticas, topRecomendaciones, sinAcciones as todoEnD, fmt1, r1 } from "../../src/lib/scoring.js";
 import { datosInforme } from "../../src/lib/informePdf.js";
 import { AUTORIDAD, VALIDAR } from "../../src/data/textos.js";
-import { textoRango } from "../../src/data/calificacion.js";
+import { textoRango, textoMeta } from "../../src/data/calificacion.js";
 import { env } from "./env.js";
 
 const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -202,7 +202,7 @@ ${cabecera({
     ${row("Email", `<a href="mailto:${esc(d.email)}" style="color:${PETROLEO};">${esc(d.email)}</a>`)}
     ${row("WhatsApp", waNum ? `<a href="https://wa.me/${waNum}" style="color:${PETROLEO};">${esc(d.whatsapp)}</a>` : esc(d.whatsapp))}
     ${row("Alumnos hoy", esc(textoRango(d.alumnos_actuales)))}
-    ${row("Meta 3–5 años", esc(textoRango(d.alumnos_meta)))}
+    ${row("Meta 3–5 años", esc(textoMeta(d.alumnos_meta)))}
     ${Number(d.score_global) >= 4.5 ? row("Puntaje alto", "<strong>Validar con datos:</strong> una autoevaluación tan alta suele ser optimista") : ""}
     ${row("Calificación", d.target ? "<strong>Target: se le ofreció la reunión de 45 min</strong>" : "No target: se le ofreció escribir por mail")}
     ${colegas.length ? row("Colegas", esc(colegas.join(", "))) : ""}
@@ -225,7 +225,7 @@ ${cabecera({
     `Directivo: ${d.nombre}${d.cargo ? ` — ${d.cargo}` : ""}`,
     `Email: ${d.email}`,
     `WhatsApp: ${d.whatsapp}`,
-    `Alumnos hoy: ${textoRango(d.alumnos_actuales)} · Meta a 3–5 años: ${textoRango(d.alumnos_meta)}`,
+    `Alumnos hoy: ${textoRango(d.alumnos_actuales)} · Meta a 3–5 años: ${textoMeta(d.alumnos_meta)}`,
     Number(d.score_global) >= 4.5 ? `Puntaje alto: validar con datos (una autoevaluación tan alta suele ser optimista)` : "",
     `${d.target ? "TARGET (reunión de 45 min)" : "No target (contacto por mail)"}`,
     colegas.length ? `Colegas: ${colegas.join(", ")}` : "",
