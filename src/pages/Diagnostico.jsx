@@ -6,7 +6,7 @@ import { PAISES_LATAM } from "../data/paises.js";
 import { ETAPAS_DATA } from "../data/etapas.js";
 import { calcScore, calcResultados, etapasCriticas } from "../lib/scoring.js";
 import { crearDiagnostico, leerDiagnostico, guardarEtapa, invitarColega, finalizarDiagnostico, leerQuien, guardarQuien, etapaCompleta } from "../lib/api.js";
-import { RANGOS_ALUMNOS } from "../data/calificacion.js";
+import { RANGOS_ALUMNOS, METAS_CRECIMIENTO } from "../data/calificacion.js";
 import { Tablero, InvitarVentana, QuienVentana, Cargando, NoEncontrado } from "./Tablero.jsx";
 import { track } from "../lib/analytics.js";
 import { Informe } from "./Informe.jsx";
@@ -46,12 +46,8 @@ function Welcome({onStart}){
   // Precarga el selector de teléfono (pesado) con la primera interacción: llega antes del registro sin frenar la carga.
   useEffect(()=>{const pre=()=>{import("../components/PhoneField.jsx");};const ev=["pointerdown","keydown","touchstart"];ev.forEach(e=>addEventListener(e,pre,{once:true,passive:true}));return()=>ev.forEach(e=>removeEventListener(e,pre));},[]);
 
-  const BENEFICIOS=[
-    ["Dónde se van los aspirantes","Los 7 momentos del recorrido, de un vistazo: dónde el proceso es fuerte y dónde se pierden inscriptos."],
-    ["Por qué se van","Las trabas concretas que frenan a los aspirantes en cada momento."],
-    ["Qué resolver primero","Las acciones de cada etapa, ordenadas por el impacto que tienen en la inscripción."],
-    ["Cuánto se puede mejorar","Elija las acciones que su equipo puede implementar y vea cuánto sube el puntaje."],
-  ];
+  // Solo los títulos: la portada tiene que dejar al botón como lo segundo que se ve después del titular.
+  const BENEFICIOS=["Dónde se van los aspirantes","Por qué se van","Qué resolver primero","Cuánto se puede mejorar"];
   const btn={width:"100%",maxWidth:420,...BTN_DARK,border:"none",borderRadius:0,minHeight:TOUCH+8,padding:"14px 24px",lineHeight:1.3,textAlign:"center",fontSize:16,fontWeight:700,fontFamily:"'Schibsted Grotesk',sans-serif",cursor:"pointer"};
   const regla="1px solid rgba(255,255,255,.16)";
 
@@ -70,7 +66,7 @@ function Welcome({onStart}){
             ¿Por qué se inscriben <em className="cl-hi-oscuro">menos estudiantes</em> de los esperados?
           </h1>
           <p className="wl-lead cl-sube" style={{"--i":2,fontSize:17,color:"rgba(255,255,255,.72)",lineHeight:1.65,marginBottom:30,maxWidth:500}}>
-            En 10 minutos, descubra en qué momento su universidad pierde aspirantes, desde la primera búsqueda en Google hasta el primer día de clases, y qué resolver primero.
+            Descubra en qué momento su universidad pierde aspirantes, desde la primera búsqueda en Google hasta el primer día de clases, y qué resolver primero.
           </p>
         </div>
         {enCurso?.clave&&(
@@ -84,28 +80,19 @@ function Welcome({onStart}){
         </div>
         <div className="wl-ben cl-sube" style={{"--i":4,borderTop:regla,paddingTop:20,marginBottom:32}}>
           <Mono color={EMERALD}>Lo que va a saber al terminar</Mono>
-          <ol className="wl-ben-grid" style={{listStyle:"none",padding:0,margin:"16px 0 0",display:"flex",flexDirection:"column",gap:16}}>
-            {BENEFICIOS.map(([title,desc],i)=>(
-              <li key={title} style={{display:"grid",gridTemplateColumns:"34px minmax(0,1fr)",alignItems:"baseline"}}>
+          <ol style={{listStyle:"none",padding:0,margin:"6px 0 0"}}>
+            {BENEFICIOS.map((title,i)=>(
+              <li key={title} className="wl-ben-item" style={{display:"grid",gridTemplateColumns:"34px minmax(0,1fr)",alignItems:"baseline",padding:"12px 0",borderBottom:i<BENEFICIOS.length-1?regla:"none",fontSize:17,lineHeight:1.35,color:WHITE,fontWeight:600}}>
                 <Mono color={EMERALD}>{num2(i+1)}</Mono>
-                <div>
-                  <div style={{fontSize:16,color:WHITE,fontWeight:600}}>{title}</div>
-                  <div style={{fontSize:14,color:"rgba(255,255,255,.6)",lineHeight:1.5,marginTop:3}}>{desc}</div>
-                </div>
+                <span>{title}</span>
               </li>
             ))}
           </ol>
-        </div>
-        <div className="wl-jue cl-sube" style={{"--i":5,borderLeft:`2px solid ${EMERALD}`,paddingLeft:18,marginBottom:32}}>
-          <Mono color={EMERALD}>Más publicidad no alcanza</Mono>
-          <p style={{fontSize:16,color:"rgba(255,255,255,.75)",lineHeight:1.65,margin:"8px 0 0"}}>
-            Si el proceso pierde aspirantes en el camino, invertir en campañas es llenar un balde agujereado. Este diagnóstico muestra dónde está el agujero.
-          </p>
-          <p style={{fontSize:15,color:"rgba(255,255,255,.6)",lineHeight:1.65,margin:"10px 0 0"}}>
-            Lo creamos en Campus Latina: ayudamos a inscribir a más de 200.000 estudiantes en Argentina, y ahora llevamos esa experiencia al resto de Latinoamérica.
+          <p className="wl-resp" style={{fontSize:15,color:"rgba(255,255,255,.6)",lineHeight:1.6,margin:"18px 0 0",paddingLeft:14,borderLeft:`2px solid ${EMERALD}`}}>
+            Lo creamos en Campus Latina, donde ayudamos a inscribir a más de 200.000 estudiantes en Argentina.
           </p>
         </div>
-        <div className="wl-datos cl-sube" style={{"--i":6,display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",marginBottom:32}}>
+        <div className="wl-datos cl-sube" style={{"--i":5,display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",marginBottom:32}}>
           {[["28","preguntas"],["7","etapas"],["10 min","duración"]].map(([val,label],i)=>(
             <div key={label} style={{padding:i?"2px 0 2px 18px":"2px 18px 2px 0",borderLeft:i?regla:"none"}}>
               <div style={{...titular(34),letterSpacing:"-.04em",color:WHITE,lineHeight:1}}>{val}</div>
@@ -180,13 +167,13 @@ function Register({onNext,onBack}){
               <LabelField label="Nombre de la universidad o institución" required htmlFor="f-universidad"/>
               <input id="f-universidad" required autoComplete="organization" value={form.universidad} onChange={e=>set("universidad",e.target.value)} placeholder="Ej: Universidad Nacional de Córdoba" style={campo}/>
             </div>
-            {[["alumnos_actuales","Estudiantes que tiene hoy"],["alumnos_meta","Estudiantes que quiere tener en 3 a 5 años"]].map(([k,l])=>(
+            {[["alumnos_actuales","Estudiantes que tiene hoy",RANGOS_ALUMNOS,"Seleccione un rango"],["alumnos_meta","Cuánto quiere crecer en 3 a 5 años",METAS_CRECIMIENTO,"Seleccione una opción"]].map(([k,l,opciones,vacio])=>(
               <div key={k}>
                 <LabelField label={l} required htmlFor={`f-${k}`}/>
                 <div style={{position:"relative"}}>
                   <select id={`f-${k}`} required value={form[k]} onChange={e=>set(k,e.target.value)} style={{...campo,color:form[k]?NAVY:MUTED,appearance:"none",cursor:"pointer"}}>
-                    <option value="">Seleccione un rango</option>
-                    {RANGOS_ALUMNOS.map(r=><option key={r.id} value={r.id}>{r.texto}</option>)}
+                    <option value="">{vacio}</option>
+                    {opciones.map(r=><option key={r.id} value={r.id}>{r.texto}</option>)}
                   </select>
                   <span aria-hidden="true" style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",color:NAVY,pointerEvents:"none",fontSize:14}}>▾</span>
                 </div>

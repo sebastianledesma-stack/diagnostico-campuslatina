@@ -14,7 +14,7 @@ import {
 } from "../lib/diagnostico.js";
 import { ETAPAS_DATA } from "../../src/data/etapas.js";
 import { calcResultados } from "../../src/lib/scoring.js";
-import { esRangoValido, esTarget } from "../../src/data/calificacion.js";
+import { esRangoValido, esMetaValida, esTarget } from "../../src/data/calificacion.js";
 
 const ETAPAS = new Map(ETAPAS_DATA.map((e) => [e.id, e]));
 
@@ -52,7 +52,7 @@ async function crear(req) {
     alumnos_meta: texto(b.alumnos_meta, 20),
   };
   if (!row.universidad || !row.pais || !row.nombre || !EMAIL.test(row.email) || row.whatsapp.length < 4
-    || !esRangoValido(row.alumnos_actuales) || !esRangoValido(row.alumnos_meta)) {
+    || !esRangoValido(row.alumnos_actuales) || !esMetaValida(row.alumnos_meta)) {
     return json({ error: "Datos incompletos" }, 400);
   }
   const clave = nuevaClave();
