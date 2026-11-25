@@ -2,11 +2,15 @@
 // Las sesiones del Diagnóstico colectivo (taller en vivo) y, de la elegida, cada participante con sus
 // respuestas y el email con el que pidió el PDF (su identificación; si no lo pidió, queda anónimo).
 // Sin sesión elegida: REALCUP si existe, si no la más reciente que no sea de prueba.
+// GET /api/admin-taller?completos=1  quienes respondieron las 28 preguntas en sesiones reales (no demo),
+// de todas las sesiones, para sumarlos al informe consolidado.
 import { json } from "../lib/env.js";
 import { verificarAdmin } from "../lib/adminAuth.js";
+import { ETAPAS_DATA } from "../../src/data/etapas.js";
 
 const PAGE = 1000; // máximo de filas por request en Supabase
 const CODIGO = /^[A-Z0-9]{4,8}$/;
+const PREGUNTAS = ETAPAS_DATA.reduce((n, e) => n + e.preguntas.length, 0); // 28
 
 // Todas las filas de una consulta, de a PAGE (las respuestas de 300 personas son 8.400 filas).
 async function todas(consulta) {
@@ -26,6 +30,7 @@ export default async (req) => {
   if (sinAcceso) return sinAcceso;
 
   try {
+    if (new URL(req.url).searchParams.get("completos")) return json({ completos: await completos(db) });
     const sesiones = await todas(() => db.from("taller_sesiones").select("id, codigo, nombre, demo, fase, created_at").order("created_at", { ascending: false }));
     const pedida = String(new URL(req.url).searchParams.get("sesion") || "").toUpperCase();
     const sesion = (CODIGO.test(pedida) && sesiones.find((s) => s.codigo === pedida))
@@ -55,5 +60,23 @@ export default async (req) => {
     return json({ error: "Error de base de datos" }, 500);
   }
 };
+
+// Las personas con el diagnóstico completo (28 respuestas) de las sesiones que no son de prueba.
+async function completos(db) {
+  const sesiones = await todas(() => db.from("taller_sesiones").select("id, codigo").eq("demo", false).order("created_at"));
+  if (!sesiones.length) return [];
+  const ids = sesiones.map((s) => s.id);
+  const codigo = new Map(sesiones.map((s) => [s.id, s.codigo]));
+  const [participantes, respuestas, envios] = await Promise.all([
+    todas(() => db.from("taller_participantes").select("sesion_id, id, creado_at").in("sesion_id", ids).eq("origen", "movil").order("orden")),
+    todas(() => db.from("taller_respuestas").select("sesion_id, participante_id, pregunta, letra").in("sesion_id", ids).order("sesion_id").order("participante_id").order("pregunta")),
+    todas(() => db.from("taller_envios").select("sesion_id, participante_id, email").in("sesion_id", ids).order("id")),
+  ]);
+  const clave = (s, p) => `${s}/${p}`;
+  const porPersona = new Map(participantes.map((p) => [clave(p.sesion_id, p.id), { id: p.id, sesion: codigo.get(p.sesion_id), creado_at: p.creado_at, email: "", respuestas: {} }]));
+  for (const r of respuestas) { const p = porPersona.get(clave(r.sesion_id, r.participante_id)); if (p) p.respuestas[r.pregunta] = r.letra; }
+  for (const e of envios) { const p = porPersona.get(clave(e.sesion_id, e.participante_id)); if (p) p.email = e.email; }
+  return [...porPersona.values()].filter((p) => Object.keys(p.respuestas).length === PREGUNTAS);
+}
 
 export const config = { path: "/api/admin-taller" };

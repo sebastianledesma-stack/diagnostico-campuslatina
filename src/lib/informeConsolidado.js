@@ -4,7 +4,7 @@
 // respuestas de esa institución, para enviársela a quien participó.
 import { ETAPAS_DATA } from "../data/etapas.js";
 import { NIVEL_DESC, AUTORIDAD } from "../data/textos.js";
-import { calcResultados, getNivel, fmt1 } from "./scoring.js";
+import { calcGlobal, getNivel, fmt1 } from "./scoring.js";
 import { campo, escalon, esc } from "./informePdf.js";
 
 const TINTA = "#0A2329", PETROLEO = "#0B6470", AGUA = "#7FD6DE", AMBAR = "#F08C1A", AMBAR_LUZ = "#FFAE4A", AMBAR_CLARO = "#FFCF8A", GRIS = "#4D6166", LINEA = "#D5E3E5", BRUMA = "#EAF3F4", SLATE = "#A9C2C6";
@@ -41,25 +41,99 @@ function porcentajes(cuenta) {
 const normalizar = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 export const claveInstitucion = (r) => `${normalizar(r.universidad)}|${normalizar(r.pais)}`;
 
-// Completos, sin los marcados como test y dentro del período. Una institución cuenta una sola vez:
-// si completó el diagnóstico más de una vez, se toma el más reciente.
-export function baseConsolidado(rows, { desde, hasta } = {}) {
+// Dominios que no identifican a una institución: correo personal y los de Campus Latina (quien hace el
+// diagnóstico en nombre de una universidad). Con esos, la institución sale del nombre que se cargó.
+const NO_INSTITUCIONAL = /^(gmail|googlemail|hotmail|outlook|live|msn|yahoo|ymail|icloud|me|aol|proton|protonmail|gmx|zoho)\.|^campus(argentina|aegentina|latina)\./;
+const TLD_PAIS = {
+  ar: "Argentina", bo: "Bolivia", br: "Brasil", cl: "Chile", co: "Colombia", cr: "Costa Rica", cu: "Cuba", ec: "Ecuador",
+  sv: "El Salvador", gt: "Guatemala", hn: "Honduras", mx: "México", ni: "Nicaragua", pa: "Panamá", py: "Paraguay",
+  pe: "Perú", pr: "Puerto Rico", do: "República Dominicana", uy: "Uruguay", ve: "Venezuela",
+};
+// El dominio de la institución, sin subdominios: alumnos.uai.edu.ar → uai.edu.ar. Vacío si es genérico.
+export function dominioInstitucional(email) {
+  const d = String(email || "").toLowerCase().trim().split("@")[1] || "";
+  if (!d.includes(".") || NO_INSTITUCIONAL.test(d)) return "";
+  const partes = d.split(".");
+  const n = partes.length >= 3 && /^(edu|ac|com|org|gob|gov|net)$/.test(partes[partes.length - 2]) ? 3 : 2;
+  return partes.slice(-n).join(".");
+}
+const paisDeDominio = (d) => TLD_PAIS[d.split(".").pop()] || "";
+
+// Una persona del taller con las 28 respuestas, con la forma de una fila de diagnóstico.
+const filaTaller = (p) => ({
+  id: `taller:${p.sesion}:${p.id}`, origen: "taller", sesion: p.sesion, universidad: "", pais: "",
+  email: p.email || "", respuestas: p.respuestas, created_at: p.creado_at, estado: "completo",
+});
+
+// Las respuestas de una institución: si la respondió más de una persona (o más de una vez), cada pregunta
+// reparte su peso entre las letras que eligieron y su valor es el promedio. Con una sola, es la de siempre.
+function institucion(miembros) {
+  const orden = [...miembros].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  const web = orden.filter((r) => r.origen === "web");
+  const dominio = orden.map((r) => dominioInstitucional(r.email)).find(Boolean) || "";
+  const pesos = {}, respuestas = {}, scores = {};
+  ETAPAS_DATA.forEach((e) => {
+    const valores = e.preguntas.map((p, q) => {
+      const k = `${e.id}_${q}`;
+      const letras = orden.map((r) => r.respuestas?.[k]).filter((l) => LETRAS.includes(l));
+      if (!letras.length) return null;
+      const valor = media(letras.map((l) => p.opciones[LETRAS.indexOf(l)].valor));
+      pesos[k] = LETRAS.map((l) => letras.filter((x) => x === l).length / letras.length);
+      // La letra que la representa: la más elegida y, si empatan, la más cercana al promedio.
+      const i = pesos[k].map((w, j) => [w, -Math.abs(p.opciones[j].valor - valor), j]).sort((a, b) => b[0] - a[0] || b[1] - a[1])[0][2];
+      respuestas[k] = LETRAS[i];
+      return valor;
+    }).filter((v) => v != null);
+    scores[e.id] = valores.length ? Number(media(valores).toFixed(2)) : 0;
+  });
+  const conNombre = web[0] || orden.find((r) => r.universidad);
+  return {
+    id: (web[0] || orden[0]).id,
+    universidad: conNombre?.universidad || dominio || `Participante del taller ${orden[0].sesion || ""}`.trim(),
+    pais: conNombre?.pais || paisDeDominio(dominio) || "",
+    alumnos_actuales: web.find((r) => r.alumnos_actuales)?.alumnos_actuales || "",
+    created_at: orden[0].created_at,
+    dominio, web: web.length, taller: orden.length - web.length,
+    respuestas, pesos, scores, score_global: calcGlobal(scores),
+  };
+}
+
+// Completos del período, sin los marcados como test, de la web y del taller (sesiones reales). Cada
+// institución cuenta una sola vez: se juntan los diagnósticos con el mismo dominio de mail institucional
+// o el mismo nombre y país, y se promedian sus respuestas. Las personas del taller sin mail institucional
+// no se pueden asociar a ninguna institución: cuentan cada una por separado.
+export function baseConsolidado(rows, { desde, hasta } = {}, taller = []) {
   const d = desde ? new Date(`${desde}T00:00:00`) : null;
   const h = hasta ? new Date(`${hasta}T23:59:59.999`) : null;
-  const delPeriodo = rows.filter((r) => (!d || new Date(r.created_at) >= d) && (!h || new Date(r.created_at) <= h));
-  const completos = delPeriodo.filter((r) => !r.es_test && r.estado !== "en_curso" && r.respuestas);
-  const porInstitucion = new Map();
-  [...completos].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).forEach((r) => {
-    if (!porInstitucion.has(claveInstitucion(r))) porInstitucion.set(claveInstitucion(r), r);
+  const enPeriodo = (r) => (!d || new Date(r.created_at) >= d) && (!h || new Date(r.created_at) <= h);
+  const delPeriodo = rows.filter(enPeriodo);
+  const web = delPeriodo.filter((r) => !r.es_test && r.estado !== "en_curso" && r.respuestas).map((r) => ({ ...r, origen: "web" }));
+  const deTaller = taller.map(filaTaller).filter(enPeriodo);
+  const todos = [...web, ...deTaller];
+
+  // Grupos: dos diagnósticos van juntos si comparten dominio o nombre y país (y, por transitividad, los demás).
+  const padre = todos.map((_, i) => i);
+  const raiz = (i) => (padre[i] === i ? i : (padre[i] = raiz(padre[i])));
+  const vistas = new Map();
+  todos.forEach((r, i) => {
+    const dom = dominioInstitucional(r.email);
+    [dom && `d:${dom}`, normalizar(r.universidad) && `n:${claveInstitucion(r)}`].filter(Boolean).forEach((k) => {
+      if (vistas.has(k)) padre[raiz(i)] = raiz(vistas.get(k));
+      else vistas.set(k, i);
+    });
   });
-  const filas = [...porInstitucion.values()];
+  const grupos = new Map();
+  todos.forEach((r, i) => grupos.set(raiz(i), [...(grupos.get(raiz(i)) || []), r]));
+  const filas = [...grupos.values()].map(institucion);
   return {
     filas,
-    completos: completos.length,
-    repetidos: completos.length - filas.length,
+    completos: todos.length,
+    web: web.length,
+    taller: deTaller.length,
+    repetidos: todos.length - filas.length,
     enCurso: delPeriodo.filter((r) => !r.es_test && r.estado === "en_curso").length,
     tests: delPeriodo.filter((r) => r.es_test).length,
-    paises: new Set(filas.map((r) => r.pais)).size,
+    paises: new Set(filas.map((r) => r.pais).filter(Boolean)).size,
   };
 }
 
@@ -88,8 +162,8 @@ function gruposTamano(inst) {
 function gruposPais(inst) {
   const porPais = new Map();
   inst.forEach((x) => porPais.set(x.fila.pais, [...(porPais.get(x.fila.pais) || []), x]));
-  const mostrados = [...porPais].filter(([, xs]) => xs.length >= MIN_GRUPO).sort((a, b) => b[1].length - a[1].length);
-  let resto = [...porPais].filter(([, xs]) => xs.length < MIN_GRUPO).flatMap(([, xs]) => xs);
+  const mostrados = [...porPais].filter(([pais, xs]) => pais && xs.length >= MIN_GRUPO).sort((a, b) => b[1].length - a[1].length);
+  let resto = [...porPais].filter(([pais, xs]) => !pais || xs.length < MIN_GRUPO).flatMap(([, xs]) => xs);
   while (resto.length > 0 && resto.length < MIN_GRUPO && mostrados.length) resto = resto.concat(mostrados.pop()[1]);
   const grupos = mostrados.map(([pais, xs]) => ({ texto: pais, inst: xs }));
   if (resto.length >= MIN_GRUPO) grupos.push({ texto: "Otros países", inst: resto });
@@ -101,9 +175,9 @@ const resumenGrupo = ({ texto, inst }) => ({
   etapas: Object.fromEntries(ETAPAS_DATA.map((e) => [e.id, media(inst.map((x) => x.scores[e.id]))])),
 });
 
-// Todo lo que el informe necesita a partir de las filas de la base (una por institución).
+// Todo lo que el informe necesita a partir de las instituciones de baseConsolidado.
 export function datosConsolidado(filas, { institucion = null } = {}) {
-  const inst = filas.map((fila) => ({ fila, ...calcResultados(fila.respuestas || {}) }));
+  const inst = filas.map((fila) => ({ fila, scores: fila.scores, score_global: fila.score_global }));
   const n = inst.length;
   const global = media(inst.map((x) => x.score_global));
   const etapas = ETAPAS_DATA.map((e) => {
@@ -112,9 +186,10 @@ export function datosConsolidado(filas, { institucion = null } = {}) {
       ...e, prom: media(vals), p25: cuantil(vals, 0.25), p75: cuantil(vals, 0.75),
       niveles: NIVELES.map((nv) => vals.filter((v) => getNivel(v).label === nv).length),
       preguntas: e.preguntas.map((p, q) => {
-        const letras = inst.map((x) => x.fila.respuestas?.[`${e.id}_${q}`]).filter((l) => LETRAS.includes(l));
-        const cuenta = LETRAS.map((l) => letras.filter((x) => x === l).length);
-        const total = letras.length;
+        // Cada institución suma 1, repartido entre las letras que eligieron quienes la respondieron.
+        const pesos = inst.map((x) => x.fila.pesos?.[`${e.id}_${q}`]).filter(Boolean);
+        const cuenta = LETRAS.map((_, i) => pesos.reduce((a, w) => a + w[i], 0));
+        const total = pesos.length;
         return {
           q, texto: p.texto, opciones: p.opciones, cuenta, total,
           bajo: total ? (cuenta[0] + cuenta[1]) / total : 0,
@@ -137,7 +212,7 @@ export function datosConsolidado(filas, { institucion = null } = {}) {
 
   let suyo = null;
   if (institucion) {
-    const r = calcResultados(institucion.respuestas || {});
+    const r = { scores: institucion.scores, score_global: institucion.score_global };
     const otros = inst.filter((x) => x.fila.id !== institucion.id);
     const difs = etapas.map((e) => ({ etapa: e, dif: r.scores[e.id] - e.prom }));
     suyo = {
@@ -215,10 +290,10 @@ function practica(p, { pct, texto, suyo }) {
 }
 
 const tablaGrupos = (titulo, grupos, d, cabecera = "") => `<div class="grupo-seg">${cabecera}<span class="lbl">${titulo}</span>
-  <table class="seg"><thead><tr><th>Grupo</th><th class="n">Inst.</th><th class="n">Global</th>${d.etapas.map((e) => `<th class="n">${num2(e.num)}</th>`).join("")}</tr></thead><tbody>
-  ${[{ texto: "Todas las instituciones", n: d.n, global: d.global, etapas: Object.fromEntries(d.etapas.map((e) => [e.id, e.prom])), todas: true }, ...grupos].map((g) => {
+  <table class="seg"><thead><tr><th>Grupo</th><th class="n">Global</th>${d.etapas.map((e) => `<th class="n">${num2(e.num)}</th>`).join("")}</tr></thead><tbody>
+  ${[{ texto: "Todas las instituciones", global: d.global, etapas: Object.fromEntries(d.etapas.map((e) => [e.id, e.prom])), todas: true }, ...grupos].map((g) => {
     const baja = Math.min(...d.etapas.map((e) => Number(fmt1(g.etapas[e.id]))));
-    return `<tr${g.todas ? ' class="todas"' : ""}><td>${esc(g.texto)}</td><td class="n">${g.n}</td><td class="n g">${fmt1(g.global)}</td>${d.etapas.map((e) => `<td class="n${Number(fmt1(g.etapas[e.id])) === baja ? " baja" : ""}">${fmt1(g.etapas[e.id])}</td>`).join("")}</tr>`;
+    return `<tr${g.todas ? ' class="todas"' : ""}><td>${esc(g.texto)}</td><td class="n g">${fmt1(g.global)}</td>${d.etapas.map((e) => `<td class="n${Number(fmt1(g.etapas[e.id])) === baja ? " baja" : ""}">${fmt1(g.etapas[e.id])}</td>`).join("")}</tr>`;
   }).join("")}</tbody></table></div>`;
 
 // ── EL DOCUMENTO ──────────────────────────────────────────
@@ -394,7 +469,7 @@ h3{font-size:14pt;letter-spacing:-.025em;line-height:1.1}.preg{font-size:11pt;ma
   </div>
   <div class="bloque sec regla"><span class="lbl">Metodología</span><div class="metodo">
     <p>El diagnóstico es una autoevaluación de 28 preguntas sobre las 7 etapas del recorrido del aspirante, respondida por los equipos directivos de cada institución. Cada respuesta vale 1, 2, 4 o 5 puntos (A, B, C o D); el puntaje de una etapa es el promedio de sus 4 preguntas y el global, el promedio de las 7 etapas.</p>
-    <p>Base: ${d.n} ${d.n === 1 ? "institución" : "instituciones"} con el diagnóstico completo${d.desde ? `, entre el ${fechaLarga(d.desde)} y el ${fechaLarga(d.hasta)}` : ""}. Si una institución lo completó más de una vez, se toma el más reciente. No se incluyen diagnósticos incompletos ni pruebas internas.</p>
+    <p>Base: los diagnósticos completos${d.desde ? ` entre el ${fechaLarga(d.desde)} y el ${fechaLarga(d.hasta)}` : ""}, respondidos en línea o en talleres presenciales. Cada institución cuenta una sola vez: si la respondió más de una persona, o más de una vez, se promedian sus respuestas. No se incluyen diagnósticos incompletos ni pruebas internas.</p>
     <p>Los resultados se presentan siempre agregados y ningún dato identifica a una institución: los grupos con menos de ${MIN_GRUPO} instituciones no se muestran por separado. Al ser una autoevaluación, refleja cómo ve cada equipo su propio proceso.</p>
   </div></div>
   <div class="cierre"><span class="lbl">Campus Latina</span>${s
