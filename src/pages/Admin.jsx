@@ -488,10 +488,24 @@ function Aviso({ aviso, onClose }) {
 }
 
 // ── INFORME CONSOLIDADO ──────────────────────────────────
-function InformeConsolidado({ rows }) {
+function InformeConsolidado({ rows, onSinSesion }) {
   const [periodo, setPeriodo] = useState({ desde: "", hasta: "" });
   const [instId, setInstId] = useState("");
-  const base = useMemo(() => baseConsolidado(rows, periodo), [rows, periodo]);
+  // Quienes completaron las 28 preguntas en un taller real (no demo). Mientras carga, el informe usa solo la web.
+  const [taller, setTaller] = useState({ completos: [], estado: "cargando" });
+  useEffect(() => {
+    let vivo = true;
+    fetch("/api/admin-taller?completos=1")
+      .then(async (res) => {
+        if (res.status === 401) return onSinSesion();
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+        if (vivo) setTaller({ completos: data.completos || [], estado: "ok" });
+      })
+      .catch((err) => vivo && setTaller({ completos: [], estado: `No pudimos sumar los del taller: ${err.message}` }));
+    return () => { vivo = false; };
+  }, [onSinSesion]);
+  const base = useMemo(() => baseConsolidado(rows, periodo, taller.completos), [rows, periodo, taller]);
   const instituciones = useMemo(() => [...base.filas].sort((a, b) => a.universidad.localeCompare(b.universidad, "es", { sensitivity: "base" })), [base]);
   const institucion = instituciones.find((r) => r.id === instId) || null;
   // Si el período deja afuera a la institución elegida, se vuelve a la versión general.
@@ -528,7 +542,7 @@ function InformeConsolidado({ rows }) {
             <span style={mono(8)}>Versión</span>
             <select value={instId} onChange={(e) => setInstId(e.target.value)} style={{ ...input, marginTop: 4 }}>
               <option value="">General, para compartir con todas</option>
-              {instituciones.map((r) => <option key={r.id} value={r.id}>Personalizada · {r.universidad} ({r.pais})</option>)}
+              {instituciones.map((r) => <option key={r.id} value={r.id}>Personalizada · {r.universidad}{r.pais ? ` (${r.pais})` : ""}</option>)}
             </select>
           </label>
           <button onClick={descargar} disabled={!datos} style={{ ...btn(true), opacity: datos ? 1 : 0.5 }}>Descargar PDF</button>
@@ -536,10 +550,14 @@ function InformeConsolidado({ rows }) {
       </div>
 
       <div style={{ ...card, fontSize: 14, lineHeight: 1.6 }}>
-        <strong>{n} {n === 1 ? "institución" : "instituciones"}</strong> de {base.paises} {base.paises === 1 ? "país" : "países"} · {base.completos} diagnósticos completos
+        <strong>{n} {n === 1 ? "institución" : "instituciones"}</strong> de {base.paises} {base.paises === 1 ? "país" : "países"} · {base.completos} diagnósticos completos: {base.web} de la web y {base.taller} del taller
         <div style={{ color: MUTED, fontSize: 13 }}>
-          No entran: {base.repetidos} repetidos (de cada institución se toma el más reciente), {base.enCurso} en curso y {base.tests} marcados como test.
+          Los de una misma institución (mismo dominio de mail o mismo nombre y país) se promedian en uno: {base.repetidos} {base.repetidos === 1 ? "se sumó" : "se sumaron"} así.
+          No entran: {base.enCurso} en curso, {base.tests} marcados como test, los talleres de prueba y quienes no completaron las 28 preguntas del taller.
+          El informe no muestra cuántas instituciones participaron.
         </div>
+        {taller.estado === "cargando" && <div style={{ color: MUTED, fontSize: 13 }}>Cargando los del taller…</div>}
+        {taller.estado !== "cargando" && taller.estado !== "ok" && <p style={{ ...alerta, margin: "10px 0 0" }}>{taller.estado}</p>}
         {n > 0 && n < 10 && (
           <p style={{ ...alerta, color: ORANGE_TXT, background: "#FFF3E8", margin: "10px 0 0" }}>
             Con {n} {n === 1 ? "institución" : "instituciones"} el informe es preliminar: conviene tener al menos 10 antes de compartirlo. Las aperturas por país y por tamaño aparecen solo con grupos de {MIN_GRUPO} o más.
@@ -551,7 +569,8 @@ function InformeConsolidado({ rows }) {
             <div style={{ columns: "280px", columnGap: 24, fontSize: 13, marginTop: 8 }}>
               {instituciones.map((r) => (
                 <div key={r.id} style={{ breakInside: "avoid", padding: "3px 0" }}>
-                  {r.universidad} <span style={{ color: MUTED }}>· {r.pais} · {fmtFecha(r.created_at)} · {fmt1(r.score_global)}</span>
+                  {r.universidad} <span style={{ color: MUTED }}>· {r.pais || "sin país"} · {fmtFecha(r.created_at)} · {fmt1(r.score_global)}
+                    {(r.web + r.taller > 1 || r.taller > 0) && ` · ${[r.web && `${r.web} web`, r.taller && `${r.taller} taller`].filter(Boolean).join(" + ")}`}</span>
                 </div>
               ))}
             </div>
@@ -698,7 +717,7 @@ function Panel({ onSinSesion }) {
 
       <Solapas vista={vista} ir={ir} cantidades={{ diagnosticos: reales.length, tests: tests.length }} />
 
-      {vista === "taller" ? <TallerRealcup onSinSesion={onSinSesion} /> : vista === "informe" ? <InformeConsolidado rows={rows} /> : <>
+      {vista === "taller" ? <TallerRealcup onSinSesion={onSinSesion} /> : vista === "informe" ? <InformeConsolidado rows={rows} onSinSesion={onSinSesion} /> : <>
       {vista === "diagnosticos" ? <Metricas rows={reales} /> : (
         <p style={{ fontSize: 14, color: MUTED, lineHeight: 1.6, margin: "0 0 16px", maxWidth: 760 }}>
           Los diagnósticos marcados como test no cuentan en las métricas, el CSV ni el informe consolidado. Quedan guardados acá por si hace falta revisarlos o restaurarlos.
